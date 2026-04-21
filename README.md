@@ -1,5 +1,11 @@
 # dpo2u-solana
 
+[![CI](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml/badge.svg)](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![SP1](https://img.shields.io/badge/SP1-v6.1.0-blue)](https://github.com/succinctlabs/sp1)
+[![Solana](https://img.shields.io/badge/Solana-3.1.13-9945FF)](https://solana.com)
+[![Anchor](https://img.shields.io/badge/Anchor-0.31.1-512BD4)](https://www.anchor-lang.com)
+
 Privacy-preserving LGPD/GDPR compliance attestation stack on **Solana** with **SP1** zero-knowledge proofs.
 
 Part of the [DPO2U](https://github.com/fredericosanntana/DPO2U) compliance platform — this repo contains the Solana-specific layer: ZK circuits, on-chain verifier, and Anchor programs.

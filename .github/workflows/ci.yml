@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+
+jobs:
+  verifier-tests:
+    name: sp1-solana verifier (v5 + v6 unit + regression)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            sp1-solana/target
+          key: ${{ runner.os }}-cargo-verifier-${{ hashFiles('sp1-solana/**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-verifier-
+      - name: Install stable Rust
+        run: rustup default 1.95.0 && rustup component add clippy rustfmt
+      - name: Build verifier
+        working-directory: sp1-solana/verifier
+        run: cargo build --verbose
+      - name: Run DPO2U v6 regression tests
+        working-directory: sp1-solana/verifier
+        run: cargo test --test dpo2u_v6 --verbose
+
+  sbf-build:
+    name: dpo2u-compliance-verifier SBF build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.local/share/solana
+            sp1-solana/target
+          key: ${{ runner.os }}-sbf-${{ hashFiles('sp1-solana/**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-sbf-
+      - name: Install Rust
+        run: rustup default 1.95.0
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v3.1.13/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Build compliance verifier (SBF)
+        working-directory: sp1-solana
+        run: cargo build-sbf --manifest-path example/program/Cargo.toml
+      - name: Verify artifact exists
+        run: test -f sp1-solana/target/deploy/dpo2u_compliance_verifier.so
+
+  anchor-check:
+    name: Anchor programs cargo check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            solana-programs/target
+          key: ${{ runner.os }}-anchor-${{ hashFiles('solana-programs/**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-anchor-
+      - name: Install Rust
+        run: rustup default 1.95.0
+      - name: Check all 5 Anchor programs compile
+        working-directory: solana-programs
+        run: cargo check --all --no-default-features
+
+  zk-lib-check:
+    name: zk-circuits lib (alloy types) check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            zk-circuits/target
+          key: ${{ runner.os }}-zk-lib-${{ hashFiles('zk-circuits/**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-zk-lib-
+      - name: Install Rust
+        run: rustup default 1.95.0
+      - name: cargo check (lib crate only — program needs SP1 toolchain, script needs 32GB)
+        working-directory: zk-circuits/lib
+        run: cargo check --verbose
