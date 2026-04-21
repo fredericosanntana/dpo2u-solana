@@ -1,143 +1,246 @@
 # dpo2u-solana
 
+**First LGPD-native zero-knowledge compliance attestation stack on Solana.**
+
 [![CI](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml/badge.svg)](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![SP1](https://img.shields.io/badge/SP1-v6.1.0-blue)](https://github.com/succinctlabs/sp1)
 [![Solana](https://img.shields.io/badge/Solana-3.1.13-9945FF)](https://solana.com)
 [![Anchor](https://img.shields.io/badge/Anchor-0.31.1-512BD4)](https://www.anchor-lang.com)
 
-Privacy-preserving LGPD/GDPR compliance attestation stack on **Solana** with **SP1** zero-knowledge proofs.
+> ⚡ **Submission to Colosseum Frontier 2026 — [see team + narrative](./TEAM.md)**
 
-Part of the [DPO2U](https://github.com/fredericosanntana/DPO2U) compliance platform — this repo contains the Solana-specific layer: ZK circuits, on-chain verifier, and Anchor programs.
+An auditor needs to verify a company's LGPD/GDPR compliance score meets a
+policy threshold — without learning the score itself. `dpo2u-solana` closes
+this contradiction: the company generates a zero-knowledge proof of
+`score ≥ threshold`, the Solana on-chain verifier runs the Groth16 pairing
+check in ~156k compute units (~$0.0002), and only then does the compliance
+registry record the attestation PDA.
 
-## Status
+Score stays private. Proof is public. Everything is enforceable.
 
-🟢 **Sprint 4c complete** — end-to-end Groth16 proof verification on Solana (localnet). Real on-chain tx confirmed: [`9GwKQ23yAjKk...574`](https://explorer.solana.com/tx/9GwKQ23yAjKkDGMMHRUBWcRHPb1QQ3kxULPCh52hoSRxBH3LJr41gewrSV78SxgDbPR4Qand3vNBczWdvZbR574?cluster=custom).
+---
 
-## What this does
+## 🎬 Demo
 
-An auditor (DPO, regulator) wants proof that a company's LGPD compliance score meets a policy threshold — without learning the actual score. The company generates a zero-knowledge proof of `score >= threshold`, commits to the subject identifier, and registers the attestation on Solana. Verifiers check the proof on-chain in ~156k compute units.
+> 📺 _Demo video link will land here after recording (ETA: day 10 of sprint)._
 
-```
-off-chain prover                       on-chain verifier
-─────────────────                      ──────────────────────
-score (private) ──┐                    Attestation PDA
-threshold (pub) ──┼─► SP1 zkVM ──┐     keyed (subject, commitment)
-subject (pub) ────┘              │      │
-                                 ▼      ▼
-                         Groth16 proof ───► sp1-solana verifier
-                         (356 B, BN254)     → compliance-registry
-```
-
-## Stack
-
-| Layer | Framework | Package |
-|---|---|---|
-| zkVM program (RISC-V) | SP1 6.1.0 | `zk-circuits/program/` |
-| Prover CLI | sp1-sdk 6.0.1 + gnark | `zk-circuits/script/` |
-| On-chain Groth16 verifier | sp1-solana (forked, patched for SP1 v6) | `sp1-solana/` |
-| Attestation / DID / Payment programs | Anchor 0.31.1 | `solana-programs/` |
-
-## Packages
-
-### `zk-circuits/` — SP1 compliance_threshold circuit
-
-Proves "there exists a private `score` such that `score >= threshold`, for a given public `threshold` + `subject_commitment`". Verifier sees only `{threshold, subject_commitment, meets_threshold}`, never the score itself.
-
-- `lib/` — shared `PublicValuesStruct` (alloy-sol-types ABI)
-- `program/` — zkVM RISC-V program compiled via cargo-prove
-- `script/` — CLI: `./target/release/prove --prove --score 85 --threshold 70 --subject "did:..."`
-
-See `zk-circuits/proofs/README.md` for reproduction steps and SP1 v6 proof format decoding.
-
-### `sp1-solana/` — forked Groth16 verifier with SP1 v6 patch
-
-Upstream sp1-solana (`succinctlabs/sp1-solana@4181cae`) supports SP1 up to v5. This fork adds:
-
-- `verifier/src/lib.rs::verify_proof_v6()` — parses the SP1 v6 proof envelope (`exitCode + vkRoot + nonce` ABI-encoded before the 256 B Groth16 proof), validates metadata, and builds a 5-element `PublicInputs` vector for the pairing check.
-- `verifier/vk/v6.1.0/groth16_vk.bin` — SP1 v6.1.0 verification key (492 B, 6 K points).
-- `example/program/` → `dpo2u-compliance-verifier` — on-chain verifier program wired to DPO2U's program vkey hash.
-
-### `solana-programs/` — 5 Anchor programs
-
-| Program | Purpose |
-|---|---|
-| `compliance-registry` | Per-subject attestation PDA `[b"attestation", subject, commitment]`. Stores commitment + storage URI + issuer + revocation state. |
-| `agent-registry` | Agent DID + capability bitmask (READ=1, WRITE=2, TREASURY=4, DEPLOY=8, GOVERNANCE=16). |
-| `payment-gateway` | Invoice PDA `[b"invoice", payer, tool, nonce]` for MCP tool payments. |
-| `fee-distributor` | 70/20/10 split: treasury / operator / reserve. |
-| `agent-wallet-factory` | Deterministic PDA wallet per agent seed. |
-
-## Quickstart
+**60-second reproducibility — no SP1 install, no validator setup:**
 
 ```bash
-# Prerequisites: cargo 1.95+, solana-cli 3.1+, anchor 0.31.1, sp1up, cargo-prove
-# (build on a box with ≥ 32 GB RAM — Groth16 wrap peaks at ~26 GB)
+git clone https://github.com/fredericosanntana/dpo2u-solana
+cd dpo2u-solana/sp1-solana
 
-# 1. Build SP1 circuit + prover
-cd zk-circuits
-cargo build --release --bin prove
-
-# 2. Generate a proof (first run ~25 min; subsequent runs ~5 min cached)
-./target/release/prove --prove \
-  --score 85 --threshold 70 \
-  --subject "did:test:company:acme" \
-  --out-proof proofs/proof.bin \
-  --out-public proofs/public_values.bin \
-  --out-vkey proofs/vkey.hex
-
-# 3. Build the on-chain verifier
-cd ../sp1-solana
-cargo build-sbf --manifest-path example/program/Cargo.toml
-
-# 4. Deploy to local validator
-solana-test-validator --rpc-port 18899 &
-solana program deploy target/deploy/dpo2u_compliance_verifier.so \
-  --program-id target/deploy/dpo2u_compliance_verifier-keypair.json
-
-# 5. Build Anchor programs
-cd ../solana-programs
-anchor build
-anchor deploy  # or: solana program deploy ... per program
+# Run the committed proof through the on-chain verifier via solana-program-test
+cargo run --release -p dpo2u-driver -- --verbose
 ```
 
-## Architecture notes
+Expected output:
 
-### Why Groth16 (not Plonk / STARK)?
+```
+┌─ DPO2U compliance proof ──────────────────────────────────────────┐
+│ threshold           : 70                                           │
+│ subject_commitment  : 0x0913644c8b396ebcee2b280e10247556a2f65c4a8e │
+│ meets_threshold     : true                                         │
+│ proof size          : 356 bytes                                    │
+└───────────────────────────────────────────────────────────────────┘
+dpo2u compliance v6 proof verified: 96 public-input bytes
+✓ on-chain verification succeeded — pairing check passed on Solana runtime
+```
 
-- Smallest proof (~356 B vs kilobytes for STARKs) → cheap Solana tx
-- Constant verification cost (pairing check) → predictable compute budget
-- Solana BN254 precompile via `alt_bn128` syscalls → native performance
+For the end-to-end integration — proof → verifier CPI → attestation PDA:
 
-### Memory budget for proving
+```bash
+cd solana-programs && pnpm install && pnpm test
+# 19 tests pass: scaffolds + verified-attestation (happy path + 3 rejection modes)
+```
 
-| Phase | Peak RAM |
+---
+
+## 🏗️ Architecture
+
+```
+off-chain prover                       on-chain
+─────────────────                      ────────────────────────────────
+score (private) ──┐                    compliance-registry
+threshold (pub) ──┼─► SP1 v6 zkVM ──┐  create_verified_attestation
+subject (pub) ────┘                 │       │
+                                    ▼       ▼ CPI
+                       Groth16 proof ──► dpo2u-compliance-verifier
+                       (356 B, BN254)         │
+                                              ▼
+                                       alt_bn128 syscall
+                                       (Solana BN254 precompile)
+                                              │
+                                              ▼ Ok ✓
+                                       write Attestation PDA
+                                       { subject, commitment, verified=true,
+                                         threshold, issuer, timestamps }
+```
+
+The **CPI link** is the load-bearing detail: `compliance-registry` does not
+trust the caller's claimed commitment — it ABI-decodes `PublicValuesStruct`
+from the proof's public values, requires `commitment == subject_commitment`
+from the proof, requires `meets_threshold == true`, and only then delegates
+to the verifier. If the Groth16 pairing fails inside the CPI, the whole
+transaction reverts — no attestation is written.
+
+---
+
+## 📦 Repository layout
+
+| Path | Role |
 |---|---|
-| RISC-V execution | ~2 GB |
-| Core STARK prove | 8–12 GB |
-| Groth16 wrap (gnark) | 14–20 GB |
-| **Total peak** | **~26 GB** (VM), ~19 GB anonymous resident |
+| [`zk-circuits/program/`](./zk-circuits/program) | SP1 v6 RISC-V program that proves `score ≥ threshold` |
+| [`zk-circuits/lib/`](./zk-circuits/lib) | `PublicValuesStruct` ABI shared host/zkVM |
+| [`zk-circuits/script/`](./zk-circuits/script) | Prover CLI (`execute` \| `prove --groth16`) |
+| [`zk-circuits/proofs/`](./zk-circuits/proofs) | **Committed fixture proof** (threshold=70, subject=`did:test:company:acme`) |
+| [`sp1-solana/verifier/`](./sp1-solana/verifier) | Forked Groth16 verifier + **SP1 v6 patch** (`verify_proof_v6`) |
+| [`sp1-solana/example/program/`](./sp1-solana/example/program) | `dpo2u-compliance-verifier` — on-chain program wrapping the verifier |
+| [`sp1-solana/example/script/`](./sp1-solana/example/script) | `dpo2u-driver` — Rust CLI for local reproducibility |
+| [`solana-programs/programs/`](./solana-programs/programs) | 5 Anchor programs (see below) |
+| [`solana-programs/tests/`](./solana-programs/tests) | LiteSVM + solana-bankrun test suites (19 tests) |
 
-Recommended: 32 GB RAM + 16-32 GB persistent swap for dev boxes. Production: SP1 network prover (Succinct Labs) eliminates local memory requirements.
+### Anchor programs
 
-### SP1 v6 proof format
+| Program | Program ID (devnet) | Purpose |
+|---|---|---|
+| [`compliance-registry`](./solana-programs/programs/compliance-registry) | `FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3` | ZK-verified attestation PDAs |
+| [`dpo2u-compliance-verifier`](./sp1-solana/example/program) | `9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB` | SP1 v6 Groth16 verifier |
+| [`agent-registry`](./solana-programs/programs/agent-registry) | `d8NoVV3Xz9PU9AoTA1SokMJjwY55kN7CEbVjhySGYym` | DPO/auditor agent DIDs + capability bitmask |
+| [`payment-gateway`](./solana-programs/programs/payment-gateway) | `CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn` | MCP tool-call invoicing (idempotent by nonce) |
+| [`fee-distributor`](./solana-programs/programs/fee-distributor) | `9M88ZwVVrY5HF3T1XhuN1Hwen9YX7885c3TMed7u9zRd` | 70/20/10 split: treasury / operator / reserve |
+| [`agent-wallet-factory`](./solana-programs/programs/agent-wallet-factory) | `BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f` | Deterministic PDA wallet per agent seed |
 
-96-byte envelope between the 4-byte selector and the 256-byte Groth16 proof:
+> 📍 Devnet deploy transactions and Explorer links will be added after
+> final pre-submission deploy (ETA: day 9 of sprint).
+
+---
+
+## 🧪 Technical novelty — SP1 v6 patch
+
+Upstream [`succinctlabs/sp1-solana`](https://github.com/succinctlabs/sp1-solana@4181cae)
+supports SP1 v5. v6 changed the proof envelope format (added `exitCode + vkRoot + nonce` metadata and expanded public inputs from 2 to 5). This fork adds a new `verify_proof_v6` entry point (~120 LOC) that:
+
+1. Parses the 96 B metadata envelope between the selector and the Groth16 proof
+2. Validates `exitCode == 0` (zkVM halted successfully) and `vkRoot == expected` (pinned per SP1 version — prevents circuit-version confusion attacks)
+3. Builds a 5-input `PublicInputs` vector and runs the pairing via `groth16-solana`
+
+The existing `verify_proof` v5 entry point is untouched — the fork is
+backward-compatible. An upstream PR to `succinctlabs/sp1-solana` is
+planned.
+
+Regression tests (committed fixtures + 4 scenarios — positive, tampered,
+non-zero exit, wrong vk_root) live in
+[`sp1-solana/verifier/tests/dpo2u_v6.rs`](./sp1-solana/verifier/tests/dpo2u_v6.rs).
 
 ```
-bytes 0..4     selector   (sha256(GROTH16_VK)[..4])
+bytes 0..4     selector   (sha256(GROTH16_VK_6_1_0)[..4])
 bytes 4..36    exitCode   (u256, must be 0)
-bytes 36..68   vkRoot     (u256, pinned SP1 version constant)
+bytes 36..68   vkRoot     (u256, pinned: 0x002f850e...f25352 for v6.1.0)
 bytes 68..100  nonce      (u256, freely chosen by prover)
 bytes 100..356 pi_a + pi_b + pi_c  (uncompressed G1, G2, G1)
 ```
 
-Maps to **5 public inputs** for the pairing check (vs 2 in SP1 v5). See `sp1-solana/verifier/src/lib.rs::verify_proof_v6`.
+---
 
-## Contributing / Upstream
+## 📐 Why Solana
 
-The v6 patch in `sp1-solana/` is minimal (~120 LOC) and backward-compatible with v5 via the untouched `verify_proof` entry point. An upstream PR to `succinctlabs/sp1-solana` is planned — meanwhile this fork tracks the v6 circuit.
+| Constraint | Why Solana wins |
+|---|---|
+| Proof verification cost | BN254 precompile via `alt_bn128_*` syscalls — ~156k CU per pairing |
+| Transaction economics | ~$0.0002 per attestation → LGPD-scale volumes feasible |
+| Groth16 proof size | 356 B fits in one tx, no lookup tables |
+| Finality | Sub-second — compliance events can be referenced same block |
+| Ecosystem | Privacy-adjacent infra (Arcium, Light Protocol) actively growing |
+
+---
+
+## 🧠 Why Brazil
+
+LGPD (Lei Geral de Proteção de Dados, 2020) is the motivating regime. The
+collision between "the auditor must verify the score" and "but the score
+itself is sensitive business data" is a live problem facing ~50M registered
+CNPJs. The design primitives (threshold policies, DPO workflows, subject
+commitments as `did:br:cnpj:...`) are LGPD-native, not retrofitted. The
+same stack generalizes — but starting from a real regulatory reality
+produces better primitives than starting from a spec.
+
+See [TEAM.md](./TEAM.md) for the team + shipping model.
+
+---
+
+## 🚀 Running things locally
+
+### Fast path — verify a committed proof (no SP1 install)
+
+```bash
+cd sp1-solana && cargo run --release -p dpo2u-driver -- --verbose
+```
+
+### Full path — regenerate a proof from scratch (needs 32 GB RAM)
+
+```bash
+cd zk-circuits
+cargo build --release --bin prove
+
+./target/release/prove --prove \
+  --score 85 --threshold 70 \
+  --subject "did:br:cnpj:12.345.678/0001-99" \
+  --out-proof proofs/proof.bin \
+  --out-public proofs/public_values.bin \
+  --out-vkey proofs/vkey.hex
+# First run: ~25 min + ~26 GB peak RAM (Groth16 wrap)
+# Subsequent runs: ~5 min (cached setup)
+```
+
+### Build & test the Anchor programs
+
+```bash
+cd solana-programs
+anchor build
+pnpm install
+pnpm test    # 19 tests: 15 scaffolds + 4 verified-attestation (CPI)
+```
+
+### Deploy to devnet
+
+```bash
+# Assumes you have a funded devnet wallet at ~/.config/solana/id.json
+solana config set -ud
+solana airdrop 50   # may need multiple + faucet.solana.com for large balances
+
+cd sp1-solana/example/program
+cargo build-sbf --sbf-out-dir ../../target/deploy
+solana program deploy ../../target/deploy/dpo2u_compliance_verifier.so
+
+cd ../../../solana-programs
+anchor deploy --provider.cluster devnet
+```
+
+---
+
+## 📂 Documentation
+
+- [**`TEAM.md`**](./TEAM.md) — team, chairman + AI-agent model, Brazil context
+- [**`docs/HACKATHON.md`**](./docs/HACKATHON.md) — submission checklist & targets
+- [`sp1-solana/README.md`](./sp1-solana/README.md) — v6 verifier library deep dive
+- [`zk-circuits/proofs/README.md`](./zk-circuits/proofs/README.md) — SP1 v6 proof format, reproduction steps
+- [`solana-programs/tests/README.md`](./solana-programs/tests/README.md) — test harness notes
+
+## 🤝 Contributing / Upstream
+
+The v6 patch in `sp1-solana/` is minimal (~120 LOC) and backward-compatible
+with v5 via the untouched `verify_proof` entry point. An upstream PR to
+`succinctlabs/sp1-solana` is planned.
+
+For DPO2U-level contributions, open a GitHub issue or PR.
 
 ## License
 
-MIT — see `LICENSE`. The `sp1-solana/` fork retains the original MIT license from Succinct Labs.
+MIT — see [`LICENSE`](./LICENSE). The `sp1-solana/` fork retains the
+original MIT license from Succinct Labs.
+
+---
+
+*Brasil vai ser o flagship market da Solana. Não é IF, é WHEN.* 🇧🇷
