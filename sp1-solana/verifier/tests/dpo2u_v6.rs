@@ -3,7 +3,7 @@
 //!
 //! Fixtures are the exact bytes produced by `packages/zk-circuits/script` and
 //! accepted by the on-chain `dpo2u-compliance-verifier` program deployed in
-//! Sprint 4c (localnet program 9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB).
+//! Sprint 4c (localnet program 5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW).
 
 use sp1_solana::{verify_proof_v6, GROTH16_VK_6_1_0_BYTES};
 

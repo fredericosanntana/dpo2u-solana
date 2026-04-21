@@ -16,7 +16,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::Instruction, program::invoke};
 
-declare_id!("FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3");
+declare_id!("7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK");
 
 /// On-chain program that verifies SP1 v6 Groth16 proofs.
 /// Deployed separately at `sp1-solana/example/program/src/lib.rs`.
@@ -26,7 +26,7 @@ declare_id!("FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3");
 /// localnet ID from Sprint 4c is hardcoded below.
 pub mod verifier {
     use anchor_lang::prelude::*;
-    declare_id!("9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB");
+    declare_id!("5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW");
 }
 
 /// Borsh-serializable proof envelope — wire-compatible with

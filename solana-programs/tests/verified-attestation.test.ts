@@ -37,7 +37,7 @@ import { BorshCoder } from '@coral-xyz/anchor';
 import idl from '../target/idl/compliance_registry.json' assert { type: 'json' };
 import { PROGRAM_IDS, deriveAttestationPda } from './helpers.js';
 
-const VERIFIER_PROGRAM_ID = new PublicKey('9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB');
+const VERIFIER_PROGRAM_ID = new PublicKey('5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW');
 
 const REPO_ROOT = path.resolve(__dirname, '../../');
 const REGISTRY_SO_DIR = path.join(REPO_ROOT, 'solana-programs/target/deploy');

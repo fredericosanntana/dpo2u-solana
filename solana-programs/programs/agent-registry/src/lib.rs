@@ -7,7 +7,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("d8NoVV3Xz9PU9AoTA1SokMJjwY55kN7CEbVjhySGYym");
+declare_id!("5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7");
 
 // Permission bits (match the off-chain DPO2U agent model: see 00-META docs)
 pub const PERM_READ: u16 = 1;

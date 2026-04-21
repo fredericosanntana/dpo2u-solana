@@ -19,22 +19,22 @@ describe('DPO2UClient — pure helpers (no network)', () => {
     // If any of these drift, the CI integration test would fail anyway,
     // but this catches the drift at the SDK layer first with a clearer error.
     expect(PROGRAM_IDS.compliance_registry.toBase58()).toBe(
-      'FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3',
+      '7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK',
     );
     expect(PROGRAM_IDS.agent_registry.toBase58()).toBe(
-      'd8NoVV3Xz9PU9AoTA1SokMJjwY55kN7CEbVjhySGYym',
+      '5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7',
     );
     expect(PROGRAM_IDS.payment_gateway.toBase58()).toBe(
-      'CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn',
+      '4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q',
     );
     expect(PROGRAM_IDS.fee_distributor.toBase58()).toBe(
-      '9M88ZwVVrY5HF3T1XhuN1Hwen9YX7885c3TMed7u9zRd',
+      '88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x',
     );
     expect(PROGRAM_IDS.agent_wallet_factory.toBase58()).toBe(
-      'BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f',
+      'AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in',
     );
     expect(VERIFIER_PROGRAM_ID.toBase58()).toBe(
-      '9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB',
+      '5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW',
     );
   });
 

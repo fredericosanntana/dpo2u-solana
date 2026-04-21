@@ -17,7 +17,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn");
+declare_id!("4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q");
 
 #[program]
 pub mod payment_gateway {

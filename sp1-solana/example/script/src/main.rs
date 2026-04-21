@@ -26,7 +26,7 @@ use solana_sdk::{
 
 // Pinned by the compliance-registry program — must match the localnet/devnet
 // deployment address of dpo2u-compliance-verifier.
-const VERIFIER_PROGRAM_ID_STR: &str = "9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB";
+const VERIFIER_PROGRAM_ID_STR: &str = "5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW";
 
 #[derive(Parser, Debug)]
 #[command(

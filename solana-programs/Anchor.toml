@@ -6,26 +6,22 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-agent_registry = "d8NoVV3Xz9PU9AoTA1SokMJjwY55kN7CEbVjhySGYym"
-agent_wallet_factory = "BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f"
-compliance_registry = "FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3"
-fee_distributor = "9M88ZwVVrY5HF3T1XhuN1Hwen9YX7885c3TMed7u9zRd"
-payment_gateway = "CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn"
+agent_registry = "5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7"
+agent_wallet_factory = "AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in"
+compliance_registry = "7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK"
+fee_distributor = "88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x"
+payment_gateway = "4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q"
 
 [programs.localnet]
-agent_registry = "d8NoVV3Xz9PU9AoTA1SokMJjwY55kN7CEbVjhySGYym"
-agent_wallet_factory = "BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f"
-compliance_registry = "FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3"
-fee_distributor = "9M88ZwVVrY5HF3T1XhuN1Hwen9YX7885c3TMed7u9zRd"
-payment_gateway = "CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn"
+agent_registry = "5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7"
+agent_wallet_factory = "AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in"
+compliance_registry = "7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK"
+fee_distributor = "88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x"
+payment_gateway = "4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q"
 
 [registry]
 url = "https://api.apr.dev"
 
-# Default provider points to devnet for hackathon submission.
-# For local testing: `anchor test` reads the [test.validator] block below
-# and spins up solana-test-validator on port 18899.
-# To target localnet RPC directly: `anchor deploy --provider.cluster localnet`
 [provider]
 cluster = "devnet"
 wallet = "~/.config/solana/id.json"
@@ -43,6 +39,6 @@ upgradeable = false
 
 [test.validator]
 bind_address = "127.0.0.1"
+gossip_port = 18000
 ledger = ".anchor/test-ledger"
 rpc_port = 18899
-gossip_port = 18000

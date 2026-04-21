@@ -28,7 +28,7 @@ First-run cost: ~25 min + 26 GB peak memory (STARK + Groth16 wrap). Requires 16+
 | Component | Status |
 |---|---|
 | SP1 prover (`target/release/prove`) | ✅ Produces valid SP1 v6.1.0 Groth16 proof (356 B) |
-| sp1-solana verifier (forked + patched for v6) | ✅ Program ID `9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB` (localnet) |
+| sp1-solana verifier (forked + patched for v6) | ✅ Program ID `5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW` (localnet) |
 | `SolanaDriver.generateZKProof` → real SP1 proof | ✅ Spawns subprocess, reads proof/public_values/vkey |
 | `SolanaDriver.verifyZKProof` → on-chain tx | ✅ `valid:true _mock:false` — pairing succeeds on-chain |
 

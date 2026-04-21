@@ -19,7 +19,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("9M88ZwVVrY5HF3T1XhuN1Hwen9YX7885c3TMed7u9zRd");
+declare_id!("88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x");
 
 pub const TREASURY_BPS: u16 = 7000; // 70%
 pub const OPERATOR_BPS: u16 = 2000; // 20%

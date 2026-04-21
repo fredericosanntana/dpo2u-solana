@@ -10,7 +10,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f");
+declare_id!("AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in");
 
 #[program]
 pub mod agent_wallet_factory {

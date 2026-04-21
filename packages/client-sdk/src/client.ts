@@ -24,15 +24,15 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const PROGRAM_IDS = {
-  compliance_registry: new PublicKey('FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3'),
-  agent_registry: new PublicKey('d8NoVV3Xz9PU9AoTA1SokMJjwY55kN7CEbVjhySGYym'),
-  payment_gateway: new PublicKey('CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn'),
-  fee_distributor: new PublicKey('9M88ZwVVrY5HF3T1XhuN1Hwen9YX7885c3TMed7u9zRd'),
-  agent_wallet_factory: new PublicKey('BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f'),
+  compliance_registry: new PublicKey('7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK'),
+  agent_registry: new PublicKey('5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7'),
+  payment_gateway: new PublicKey('4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q'),
+  fee_distributor: new PublicKey('88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x'),
+  agent_wallet_factory: new PublicKey('AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in'),
 } as const;
 
 export const VERIFIER_PROGRAM_ID = new PublicKey(
-  '9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB',
+  '5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW',
 );
 
 export type ClusterName = 'localnet' | 'devnet' | 'testnet' | 'mainnet-beta';
