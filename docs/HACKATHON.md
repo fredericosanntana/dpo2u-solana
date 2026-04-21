@@ -50,7 +50,7 @@ not a blocker for the global pool.
 - [ ] Public GitHub repo with README hook in 15 seconds
 - [ ] 2-minute demo video (YouTube unlisted OK)
 - [ ] Pitch deck (5-8 slides, Google Slides view-only)
-- [ ] Devnet deployment — 6 program IDs with clickable Explorer links
+- [x] Devnet deployment — 6 program IDs with clickable Explorer links ([log](./devnet-deployments.md), deployed 2026-04-21)
 - [ ] CI badge green on latest commit
 - [ ] TEAM.md with chairman + AI-agent attribution + Superteam BR ack
 - [ ] LICENSE + clear project description

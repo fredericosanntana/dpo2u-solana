@@ -52,7 +52,7 @@ $ cargo run -p dpo2u-driver -- --verbose
   │ proof size          : 356 bytes           │
   └───────────────────────────────────────────┘
   ✓ on-chain verification succeeded
-  ✓ attestation PDA: FrvXc4bq... [Explorer↗]
+  ✓ attestation PDA: 71b2EPzr... [Explorer↗]
 ```
 
 No SP1 install. No validator setup. 60 seconds from clone to verified.

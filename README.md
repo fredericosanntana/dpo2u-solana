@@ -105,15 +105,14 @@ transaction reverts — no attestation is written.
 
 | Program | Program ID (devnet) | Purpose |
 |---|---|---|
-| [`compliance-registry`](./solana-programs/programs/compliance-registry) | `FrvXc4bqCG3268LVaLR3nwogWmDsVwnSqRE6M1dcdJc3` | ZK-verified attestation PDAs |
-| [`dpo2u-compliance-verifier`](./sp1-solana/example/program) | `9mM8YFGjVQNqdVHfidfhFd76nBnC1Cbj5bxi17AwQFuB` | SP1 v6 Groth16 verifier |
-| [`agent-registry`](./solana-programs/programs/agent-registry) | `d8NoVV3Xz9PU9AoTA1SokMJjwY55kN7CEbVjhySGYym` | DPO/auditor agent DIDs + capability bitmask |
-| [`payment-gateway`](./solana-programs/programs/payment-gateway) | `CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn` | MCP tool-call invoicing (idempotent by nonce) |
-| [`fee-distributor`](./solana-programs/programs/fee-distributor) | `9M88ZwVVrY5HF3T1XhuN1Hwen9YX7885c3TMed7u9zRd` | 70/20/10 split: treasury / operator / reserve |
-| [`agent-wallet-factory`](./solana-programs/programs/agent-wallet-factory) | `BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f` | Deterministic PDA wallet per agent seed |
+| [`compliance-registry`](./solana-programs/programs/compliance-registry) | `7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK` | ZK-verified attestation PDAs |
+| [`dpo2u-compliance-verifier`](./sp1-solana/example/program) | `5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW` | SP1 v6 Groth16 verifier |
+| [`agent-registry`](./solana-programs/programs/agent-registry) | `5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7` | DPO/auditor agent DIDs + capability bitmask |
+| [`payment-gateway`](./solana-programs/programs/payment-gateway) | `4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q` | MCP tool-call invoicing (idempotent by nonce) |
+| [`fee-distributor`](./solana-programs/programs/fee-distributor) | `88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x` | 70/20/10 split: treasury / operator / reserve |
+| [`agent-wallet-factory`](./solana-programs/programs/agent-wallet-factory) | `AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in` | Deterministic PDA wallet per agent seed |
 
-> 📍 Devnet deploy transactions and Explorer links will be added after
-> final pre-submission deploy (ETA: day 9 of sprint).
+> ✅ **Deployed to Solana devnet 2026-04-21.** All 6 programs live — full deploy log with transaction signatures and Explorer links in [`docs/devnet-deployments.md`](./docs/devnet-deployments.md). Smoke-tested end-to-end: `dpo2u-cli attest` successfully submitted a ZK proof through `compliance_registry` → `dpo2u_compliance_verifier` CPI, generating attestation PDA `71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c` ([tx](https://explorer.solana.com/tx/66J8DEZNbZr3u6zxeoM5PZESDHa8mDy6UkpeYUiwLrNjAvsQMwfMcG2NyBUe2ZETUoTWJBHMGy5ctZhVdXYR9z2g?cluster=devnet)).
 
 ---
 
