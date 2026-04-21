@@ -1,0 +1,20 @@
+[package]
+name = "fee-distributor"
+version = "0.1.0"
+description = "DPO2U Fee Distributor — splits incoming deposits 70/20/10 (treasury/operator/reserve)."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "fee_distributor"
+
+[features]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"

@@ -1,0 +1,8 @@
+[package]
+name = "dpo2u-zk-lib"
+version = "0.1.0"
+edition = "2021"
+description = "DPO2U compliance_threshold circuit — shared library (public values struct)"
+
+[dependencies]
+alloy-sol-types = { workspace = true }

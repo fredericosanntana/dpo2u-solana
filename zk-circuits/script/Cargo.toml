@@ -1,0 +1,28 @@
+[package]
+version = "0.1.0"
+name = "compliance-threshold-script"
+edition = "2021"
+default-run = "prove"
+
+[[bin]]
+name = "prove"
+path = "src/bin/main.rs"
+
+[[bin]]
+name = "vkey"
+path = "src/bin/vkey.rs"
+
+[dependencies]
+sp1-sdk = { version = "6.0.1", features = ["blocking", "native-gnark"] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+serde = { version = "1.0.200", default-features = false, features = ["derive"] }
+clap = { version = "4.0", features = ["derive", "env"] }
+tracing = "0.1.40"
+hex = "0.4.3"
+sha2 = "0.10"
+alloy-sol-types = { workspace = true }
+dpo2u-zk-lib = { path = "../lib" }
+dotenv = "0.15.0"
+
+[build-dependencies]
+sp1-build = { version = "6.0.1" }

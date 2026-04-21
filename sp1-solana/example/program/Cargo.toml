@@ -1,0 +1,19 @@
+[package]
+name = "dpo2u-compliance-verifier"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+borsh.workspace = true
+solana-program.workspace = true
+sp1-solana.workspace = true
+sha2.workspace = true

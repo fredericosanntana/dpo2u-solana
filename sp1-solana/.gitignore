@@ -1,0 +1,12 @@
+# Build output
+target/
+
+# Node modules
+**/*/node_modules
+
+# Test fixtures
+**/*/tests/fixtures
+
+test_serialized_fixture.bin
+
+.DS_Store

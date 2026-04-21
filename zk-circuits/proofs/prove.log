@@ -1,0 +1,21 @@
+generating Groth16 proof (slow; ~5-15min first run)...
+Setting environment variables took 578.561µs
+Reading R1CS took 42.800462114s
+Reading proving key took 39.903106182s
+Reading witness file took 82.351189ms
+Deserializing JSON data took 117.060358ms
+Generating witness took 1.118287084s
+[90m13:26:36[0m DBG constraint system solver done [36mnbConstraints=[0m15972262 [36mtook=[0m17579.575707
+[90m13:27:57[0m DBG prover done [36macceleration=[0mnone [36mbackend=[0mgroth16 [36mcurve=[0mbn254 [36mnbConstraints=[0m15972262 [36mtook=[0m81144.621789
+Generating proof took 1m38.749092079s
+[90m13:27:57[0m [33mWRN[0m [1mignoring uninitialized slice[0m [36mslice name=[0mVars [36mslice type=[0m[]frontend.Variable
+[90m13:27:57[0m [33mWRN[0m [1mignoring uninitialized slice[0m [36mslice name=[0mVars [36mslice type=[0m[]frontend.Variable
+[90m13:27:57[0m [33mWRN[0m [1mignoring uninitialized slice[0m [36mslice name=[0mVars [36mslice type=[0m[]frontend.Variable
+[90m13:27:57[0m DBG verifier done [36mbackend=[0mgroth16 [36mcurve=[0mbn254 [36mtook=[0m1.768592
+-- compliance_threshold PROOF --
+  threshold:       70
+  commitment:      0x0913644c8b396ebcee2b280e10247556a2f65c4a8e02242e5d041895cbddb043
+  meets_threshold: true
+  vkey:            0x00a79ec59ae56e59d55164056cb52b261ac1bafd368d93deb43f153e5d93b414
+  proof_bytes:     356 bytes
+  -> proofs/proof.bin, proofs/public_values.bin, proofs/vkey.hex

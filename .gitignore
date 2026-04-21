@@ -1,0 +1,25 @@
+# Build artifacts
+**/target/
+**/node_modules/
+**/.anchor/
+**/dist/
+
+# SP1 circuit compilation cache
+**/elf-compilation/
+
+# Keypairs — do NOT commit
+**/*-keypair.json
+!**/Keypair.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Local env
+.env
+.env.local

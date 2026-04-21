@@ -1,0 +1,10 @@
+[package]
+version = "0.1.0"
+name = "compliance-threshold-program"
+edition = "2021"
+description = "DPO2U compliance_threshold circuit — zkVM program (RISC-V target)"
+
+[dependencies]
+alloy-sol-types = { workspace = true }
+sp1-zkvm = { version = "6.0.1" }
+dpo2u-zk-lib = { path = "../lib" }

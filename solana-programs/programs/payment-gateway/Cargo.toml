@@ -1,0 +1,20 @@
+[package]
+name = "payment-gateway"
+version = "0.1.0"
+description = "DPO2U Payment Gateway — x402-style settlement for per-API-call charging."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "payment_gateway"
+
+[features]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"

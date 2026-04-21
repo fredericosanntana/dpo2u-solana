@@ -1,0 +1,20 @@
+[package]
+name = "agent-registry"
+version = "0.1.0"
+description = "DPO2U Agent Registry — on-chain DID records for autonomous compliance agents."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "agent_registry"
+
+[features]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"

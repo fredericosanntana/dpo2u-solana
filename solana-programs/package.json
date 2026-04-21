@@ -1,0 +1,27 @@
+{
+  "name": "@dpo2u/solana-programs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DPO2U 5 Anchor programs — scaffolded in Sprint 3, deployed in Sprint 4.",
+  "type": "module",
+  "scripts": {
+    "build": "anchor build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ledger": "anchor test",
+    "clean": "anchor clean && rm -rf target .anchor"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/web3.js": "^1.98.0",
+    "litesvm": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

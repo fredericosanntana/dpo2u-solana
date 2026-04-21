@@ -1,0 +1,32 @@
+[workspace]
+members = [
+    "verifier",
+    "example/program",
+]
+resolver = "2"
+
+[workspace.dependencies]
+
+# workspace
+sp1-solana = { path = "verifier" }
+dpo2u-compliance-verifier = { path = "example/program" }
+
+# solana
+solana-program = { version = "=2.1.6" }
+solana-program-test = { version = "=2.1.6" }
+solana-sdk = { version = "=2.1.6" }
+borsh = "1.5.1"
+
+# light protocol groth16 verifier
+groth16-solana = "0.2.0"
+
+# misc
+num-bigint = "0.4.6"
+num-traits = "0.2.19"
+tokio = "1.40.0"
+sha2 = "0.10.8"
+
+# sp1
+sp1-sdk = "5.0.3"
+sp1-zkvm = "5.0.0"
+sp1-build = "5.0.0"
