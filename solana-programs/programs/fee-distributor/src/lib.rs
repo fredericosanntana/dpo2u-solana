@@ -5,8 +5,17 @@
 //!   20% → operator vault  (agent owner, if set — else routes to treasury)
 //!   10% → compliance-reserve vault (funds future audits / legal buffer)
 //!
-//! Sprint 3 scaffolding stores split-config on-chain + emits events on
-//! distribute(). Sprint 4 wires CPI into SPL Token transfer.
+//! Scaffolded: `distribute` computes the split with checked arithmetic and
+//! emits `FeeDistributed` — the caller (payment-gateway or MCP orchestrator)
+//! is responsible for moving SPL tokens to the three vault ATAs that match
+//! the emitted amounts.
+//!
+//! # Roadmap (post-hackathon v2)
+//! - Wire `distribute` to perform 3 inline `anchor_spl::token::transfer` CPIs
+//!   signed by a PDA-owned source account. Accounts needed on `Distribute`:
+//!   source_ata, treasury_ata, operator_ata, reserve_ata, mint, token_program.
+//! - PDA signer seeds: `[b"fee_source", &nonce]` — deterministic per tx.
+//! - Atomicity guarantee: all 3 transfers succeed or the whole ix reverts.
 
 use anchor_lang::prelude::*;
 

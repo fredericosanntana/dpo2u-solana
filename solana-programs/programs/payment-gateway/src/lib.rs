@@ -1,10 +1,16 @@
 //! DPO2U Payment Gateway
 //!
-//! Creates invoices and records settled ones. Actual SPL Token transfer is
-//! handled by the caller (MCP server) prior to `settle_invoice`; the program
-//! verifies the transfer signature via transaction introspection (Sprint 4
-//! will add SPL Token CPI direct, for now we trust the caller so Sprint 3
-//! scaffold stays simple).
+//! Creates invoices and records settled ones. Intentionally scaffolded:
+//! `settle_invoice` only records the settlement timestamp and emits an event;
+//! actual SPL Token movement is performed by the caller (MCP server) prior to
+//! the call. The program validates amount + idempotency via PDA uniqueness.
+//!
+//! # Roadmap (post-hackathon v2)
+//! - Replace the trust-the-caller pattern with direct `anchor_spl::token::transfer`
+//!   CPI — requires: payer_token_account, payee_token_account, mint, token_program
+//!   accounts added to `SettleInvoice`. Invariant check: `mint == invoice.mint`.
+//! - Optional: add `fee_distributor` CPI chain on settlement so the 70/20/10
+//!   split happens atomically with payment.
 //!
 //! Invoice PDA seeds: [b"invoice", payer, tool_name_bytes, nonce_le_bytes]
 //! enabling idempotent settlement per (payer, tool, nonce).
