@@ -1,18 +1,19 @@
 [package]
-name = "example-script"
-authors = ["Bhargav Annem, Yuwen Zhang"]
+name = "dpo2u-driver"
+description = "Loads a committed SP1 v6 DPO2U proof and submits it to the on-chain verifier via solana-program-test."
 version = "0.1.0"
 edition = "2021"
 publish = false
 
+[[bin]]
+name = "dpo2u-driver"
+path = "src/main.rs"
+
 [dependencies]
-fibonacci-verifier-contract.workspace = true
+dpo2u-compliance-verifier.workspace = true
 solana-program-test.workspace = true
 solana-sdk.workspace = true
+borsh.workspace = true
 tokio.workspace = true
 
 clap = { version = "4.0", features = ["derive"] }
-sp1-sdk.workspace = true
-
-[build-dependencies]
-sp1-build.workspace = true
