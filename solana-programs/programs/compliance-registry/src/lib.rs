@@ -22,6 +22,7 @@ pub mod compliance_registry {
         commitment: [u8; 32],
         storage_uri: String,
         schema_id: Pubkey,
+        predicates_bitmap: u32,
         expires_at: Option<i64>,
     ) -> Result<()> {
         require!(storage_uri.len() <= 128, ComplianceErr::StorageUriTooLong);
@@ -33,6 +34,7 @@ pub mod compliance_registry {
         att.schema_id = schema_id;
         att.commitment = commitment;
         att.storage_uri = storage_uri;
+        att.predicates_bitmap = predicates_bitmap;
         att.issued_at = clock.unix_timestamp;
         att.expires_at = expires_at;
         att.revoked_at = None;
@@ -44,6 +46,7 @@ pub mod compliance_registry {
             subject: att.subject,
             issuer: att.issuer,
             commitment: att.commitment,
+            predicates_bitmap: att.predicates_bitmap,
             issued_at: att.issued_at,
         });
         Ok(())
@@ -81,6 +84,7 @@ pub struct Attestation {
     pub commitment: [u8; 32],
     #[max_len(128)]
     pub storage_uri: String,
+    pub predicates_bitmap: u32,
     pub issued_at: i64,
     pub expires_at: Option<i64>,
     pub revoked_at: Option<i64>,
@@ -122,6 +126,7 @@ pub struct AttestationCreated {
     pub subject: Pubkey,
     pub issuer: Pubkey,
     pub commitment: [u8; 32],
+    pub predicates_bitmap: u32,
     pub issued_at: i64,
 }
 

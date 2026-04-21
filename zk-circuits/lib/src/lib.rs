@@ -1,14 +1,5 @@
-//! DPO2U compliance_threshold circuit — library crate.
-//!
-//! Exposes the public values structure shared between `program/` (the zkVM
-//! RISC-V binary) and `script/` (the prover CLI + verifier).
-//!
-//! Statement proven (zero-knowledge):
-//!   "There exists a private `score ∈ [0, 100]` such that `score >= threshold`
-//!    for a given (public) `threshold` and a (public) `subject_commitment`."
-//!
-//! The verifier sees `threshold` + `subject_commitment` + `meets_threshold`,
-//! never the `score` itself.
+//! DPO2U Zero-Knowledge Compliance Validation for Autonomous Agent Repositories
+//! Library crate for SP1.
 
 use alloy_sol_types::sol;
 
@@ -17,16 +8,25 @@ sol! {
     /// Solana (via sp1-solana verifier) and EVM chains can decode natively.
     #[derive(Debug)]
     struct PublicValuesStruct {
-        uint32 threshold;
-        bytes32 subject_commitment;
-        bool meets_threshold;
+        bytes32 commit_hash;
+        bytes32 agent_pubkey;
+        uint32 predicates_bitmap; // Bitmask of verified predicates
     }
 }
 
-/// Constant-time-ish score check inside the circuit. Sprint 4c will add
-/// range constraints (0 <= score <= 100) and bind the commitment to a
-/// pre-image preimage oracle proving the score was measured by a trusted
-/// DPO tool (not arbitrary).
-pub fn check_compliance_threshold(score: u32, threshold: u32) -> bool {
-    score >= threshold
-}
+/// Bit indices for compliance predicates (v0.1)
+pub const GDPR_PII_DATA_FLOW: u32 = 1 << 0;
+pub const GDPR_ART22_HUMAN_OVERSIGHT: u32 = 1 << 1;
+pub const GDPR_ART25_PRIVACY_BY_DESIGN: u32 = 1 << 2;
+pub const GDPR_PURPOSE_LIMITATION: u32 = 1 << 3;
+
+pub const AI_ACT_RISK_TIER_CLASSIFICATION: u32 = 1 << 4;
+pub const AI_ACT_SYSTEM_LOGGING: u32 = 1 << 5;
+pub const AI_ACT_TRANSPARENCY_NOTICE: u32 = 1 << 6;
+pub const AI_ACT_HUMAN_OVERSIGHT: u32 = 1 << 7;
+
+pub const SUPPLY_NO_SECRETS: u32 = 1 << 8;
+pub const SUPPLY_SBOM_PRESENT: u32 = 1 << 9;
+pub const SUPPLY_DEP_INTEGRITY: u32 = 1 << 10;
+pub const SUPPLY_PINNED_DEPS: u32 = 1 << 11;
+pub const SUPPLY_LICENSE_COMPAT: u32 = 1 << 12;
