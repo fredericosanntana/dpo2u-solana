@@ -228,4 +228,55 @@ export class DPO2UClient {
   static commitmentFromSubject(subject: string): Uint8Array {
     return createHash('sha256').update(subject).digest();
   }
+
+  /**
+   * Submits `revoke_attestation` — the on-chain half of LGPD Art. 18 erasure.
+   *
+   * Marks the attestation as revoked (seals `revoked_at` + `revocation_reason`)
+   * but leaves the commitment hash intact. The commitment alone is irreversibly
+   * hashed PII — operationally deletable via off-chain payload erasure, which
+   * is done separately by the caller (see `StorageBackend.delete`).
+   *
+   * Only the original issuer can revoke (program enforces `require_keys_eq!`).
+   */
+  async revokeAttestation(args: {
+    attestation: PublicKey;
+    reason: string;
+  }): Promise<{ signature: string; explorerUrl: string }> {
+    if (args.reason.length > 64) {
+      throw new Error(`reason must be <= 64 bytes, got ${args.reason.length}`);
+    }
+
+    const data = this.coder.instruction.encode('revoke_attestation', {
+      reason: args.reason,
+    });
+
+    const ix = new TransactionInstruction({
+      programId: PROGRAM_IDS.compliance_registry,
+      keys: [
+        { pubkey: this.signer.publicKey, isSigner: true, isWritable: false },
+        { pubkey: args.attestation, isSigner: false, isWritable: true },
+      ],
+      data,
+    });
+
+    const tx = new Transaction().add(ix);
+    tx.feePayer = this.signer.publicKey;
+    const { blockhash } = await this.connection.getLatestBlockhash('confirmed');
+    tx.recentBlockhash = blockhash;
+
+    const signature = await sendAndConfirmTransaction(this.connection, tx, [this.signer], {
+      commitment: 'confirmed',
+    });
+
+    return {
+      signature,
+      explorerUrl: `https://explorer.solana.com/tx/${signature}${EXPLORER_CLUSTER[this.cluster]}`,
+    };
+  }
+
+  /** Expose the underlying connection — used by storage backends that need an RPC. */
+  getConnection(): Connection {
+    return this.connection;
+  }
 }

@@ -51,6 +51,7 @@ not a blocker for the global pool.
 - [ ] 2-minute demo video (YouTube unlisted OK)
 - [ ] Pitch deck (5-8 slides, Google Slides view-only)
 - [x] Devnet deployment — 6 program IDs with clickable Explorer links ([log](./devnet-deployments.md), deployed 2026-04-21)
+- [x] LGPD Art. 18 right-to-erasure flow — pluggable storage (mock / ipfs / Shadow Drive v1) + `dpo2u-cli erase` + 3 e2e tests (2026-04-21)
 - [ ] CI badge green on latest commit
 - [ ] TEAM.md with chairman + AI-agent attribution + Superteam BR ack
 - [ ] LICENSE + clear project description

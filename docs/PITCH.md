@@ -83,6 +83,10 @@ fixtures, green CI.
 - **Ecosystem fit:** Arcium (privacy), Light Protocol (ZK), SP1 (zkVM)
 - **Moat:** LGPD-native primitives (`did:br:cnpj:...`, threshold policies,
   DPO workflows) — not retrofitted from GDPR. First stack to ship this.
+- **Right to erasure:** Only Solana stack that honors **LGPD Art. 18**.
+  Past compliance provable forever via on-chain commitment hash; personal
+  data deletable on demand via Shadow Drive v1 off-chain payload. IPFS,
+  Arweave, and Shadow Drive v2 are all immutable → fail the test.
 - **Unlock:** Cross-border compliance via proof portability — same ZK
   proof validates a Brazilian + European audit without revealing internals.
 
@@ -98,7 +102,9 @@ Claude Code agents — implementation velocity under review.
 **Shipped for this submission:**
 - ✅ SP1 v6 patch (upstream PR-ready)
 - ✅ 5 Anchor programs + Groth16 verifier, deployed on devnet
-- ✅ 19 integration tests
+- ✅ SPL Token CPI atomic payments + 70/20/10 fee split
+- ✅ LGPD Art. 18 erasure flow — pluggable storage backend (mock / IPFS / Shadow Drive v1)
+- ✅ 25 integration tests
 - ✅ Committed fixture proof, 60-second reproduction
 
 **Next 90 days:**

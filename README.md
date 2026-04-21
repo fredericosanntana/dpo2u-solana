@@ -99,7 +99,8 @@ transaction reverts — no attestation is written.
 | [`sp1-solana/example/program/`](./sp1-solana/example/program) | `dpo2u-compliance-verifier` — on-chain program wrapping the verifier |
 | [`sp1-solana/example/script/`](./sp1-solana/example/script) | `dpo2u-driver` — Rust CLI for local reproducibility |
 | [`solana-programs/programs/`](./solana-programs/programs) | 5 Anchor programs (see below) |
-| [`solana-programs/tests/`](./solana-programs/tests) | LiteSVM + solana-bankrun test suites (19 tests) |
+| [`solana-programs/tests/`](./solana-programs/tests) | LiteSVM + solana-bankrun test suites (25 tests) |
+| [`packages/client-sdk/src/storage/`](./packages/client-sdk/src/storage) | Pluggable storage backends (mock / ipfs / Shadow Drive v1) |
 
 ### Anchor programs
 
@@ -113,6 +114,62 @@ transaction reverts — no attestation is written.
 | [`agent-wallet-factory`](./solana-programs/programs/agent-wallet-factory) | `AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in` | Deterministic PDA wallet per agent seed |
 
 > ✅ **Deployed to Solana devnet 2026-04-21.** All 6 programs live — full deploy log with transaction signatures and Explorer links in [`docs/devnet-deployments.md`](./docs/devnet-deployments.md). Smoke-tested end-to-end: `dpo2u-cli attest` successfully submitted a ZK proof through `compliance_registry` → `dpo2u_compliance_verifier` CPI, generating attestation PDA `71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c` ([tx](https://explorer.solana.com/tx/66J8DEZNbZr3u6zxeoM5PZESDHa8mDy6UkpeYUiwLrNjAvsQMwfMcG2NyBUe2ZETUoTWJBHMGy5ctZhVdXYR9z2g?cluster=devnet)).
+
+---
+
+## 🇧🇷 LGPD Art. 18 — right to erasure (only on Solana)
+
+Blockchain compliance stacks usually handwave past the "right to be forgotten." LGPD Art. 18 (and GDPR Art. 17) gives the data subject a legal right to demand deletion of their personal data. If PII is stored on-chain or on an immutable off-chain store (IPFS, Arweave, Shadow Drive v2), there is no answer. DPO2U's answer: **past compliance provable forever, personal data deletable on demand.**
+
+### How
+
+| Layer | What's there | Deletable? |
+|---|---|---|
+| **On-chain** Attestation PDA | `commitment: [u8; 32]` — irreversibly hashed PII. Not recoverable without the payload. | No. Doesn't need to be — it is not PII without the payload. |
+| **Off-chain** payload at `storage_uri` | DPIA document, consent record, audit evidence — may contain PII | **Yes, via Shadow Drive v1** (the only Solana-native mutable storage). |
+
+### Storage backend matrix
+
+| Backend | Deletable? | LGPD Art. 18 | Solana-native | Cost model |
+|---|---|---|---|---|
+| IPFS (public gateway) | ❌ content-addressed | Fails | ❌ | Grátis |
+| Shadow Drive **v1** | ✅ | **Cumpre** | ✅ | SHDW rent (continuous) |
+| Shadow Drive v2 | ❌ pay-once immutable | Fails | ✅ | SHDW/SOL one-shot |
+| Arweave | ❌ permanent | Fails | ❌ | AR one-shot |
+| `mock` (in-memory) | ✅ | test-only | n/a | free |
+
+### Demo — end-to-end erasure flow
+
+```bash
+# 1. Attest with uploaded PII payload
+dpo2u-cli attest --cluster devnet \
+  --upload ./consent-record.json --backend mock \
+  --proof zk-circuits/proofs/proof.bin \
+  --public-values zk-circuits/proofs/public_values.bin
+# → storage_uri = mock://abc123/consent-record.json
+
+# 2. Data subject exercises Art. 18 on 2026-05-15
+dpo2u-cli erase --cluster devnet \
+  --subject <pubkey> --commitment <hex> \
+  --reason "LGPD_ART_18_REQUEST_2026-05-15" \
+  --backend mock
+# ✓ payload deleted  : mock://abc123/consent-record.json (backend=mock)
+# ✓ on-chain revoke  : sig <tx>
+# ✓ revoked_at       : 2026-05-15T12:00:00Z
+# ✓ reason on-chain  : LGPD_ART_18_REQUEST_2026-05-15
+
+# 3. Re-fetch — PII gone, on-chain commitment preserved
+dpo2u-cli fetch --cluster devnet --subject <pk> --commitment <hex>
+# revokedAt        : 1747310400
+# revocationReason : "LGPD_ART_18_REQUEST_2026-05-15"
+# commitment       : 0x... (survives — is not PII without the payload)
+```
+
+### For production
+
+Mainnet deploy uses `--backend shdw --cluster mainnet-beta --shdw-storage-account <pk>`. Shadow Drive does not support devnet; for the hackathon demo, we use the mock backend to exercise the full lifecycle. Architecture is pluggable and ship-ready.
+
+Test coverage: 3 e2e specs in [`solana-programs/tests/erasure.test.ts`](./solana-programs/tests/erasure.test.ts) covering happy path (upload + attest + erase + re-fetch invariants), unauthorized revoke, and double-revoke rejection.
 
 ---
 
