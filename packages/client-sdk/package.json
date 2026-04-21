@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
   "files": [
@@ -24,7 +25,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.1"
   },
   "engines": {
     "node": ">=20.0.0"

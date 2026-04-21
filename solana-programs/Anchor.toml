@@ -22,8 +22,12 @@ payment_gateway = "CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn"
 [registry]
 url = "https://api.apr.dev"
 
+# Default provider points to devnet for hackathon submission.
+# For local testing: `anchor test` reads the [test.validator] block below
+# and spins up solana-test-validator on port 18899.
+# To target localnet RPC directly: `anchor deploy --provider.cluster localnet`
 [provider]
-cluster = "http://127.0.0.1:18899"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [workspace]
