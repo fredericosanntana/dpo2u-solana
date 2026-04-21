@@ -475,6 +475,7 @@ name = "compliance-registry"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "borsh 1.6.1",
 ]
 
 [[package]]

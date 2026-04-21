@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "anchor build",
+    "pretest": "mkdir -p tests/fixtures && cp -f ../sp1-solana/target/deploy/dpo2u_compliance_verifier.so tests/fixtures/",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ledger": "anchor test",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
+    "solana-bankrun": "^0.4.0",
     "typescript": "^5.3.3",
     "vitest": "^1.1.1"
   },
