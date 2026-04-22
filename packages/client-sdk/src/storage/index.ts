@@ -4,15 +4,31 @@
  * See `./types.ts` for the StorageBackend interface and the LGPD rationale.
  */
 
-export { StorageBackend, NotImplementedError, PayloadNotFoundError } from './types.js';
+export { NotImplementedError, PayloadNotFoundError } from './types.js';
+export type { StorageBackend } from './types.js';
 export { MockBackend } from './mock.js';
 export { IpfsBackend } from './ipfs.js';
-export { ShdwDriveBackend, ShdwBackendConfig } from './shdw.js';
+export { ShdwDriveBackend } from './shdw.js';
+export type { ShdwBackendConfig } from './shdw.js';
+export {
+  EncryptedStorageBackend,
+  EncryptedBackendError,
+  keyFromHex,
+  withEncryption,
+} from './encrypted.js';
+export type { EncryptionMode, EncryptedStorageBackendOptions } from './encrypted.js';
+export {
+  KekVault,
+  KekVaultError,
+  defaultKekVaultPath,
+} from './kek-vault.js';
+export type { KekVaultOptions } from './kek-vault.js';
 
 import { MockBackend } from './mock.js';
 import { IpfsBackend } from './ipfs.js';
-import { ShdwDriveBackend, ShdwBackendConfig } from './shdw.js';
-import { StorageBackend } from './types.js';
+import { ShdwDriveBackend } from './shdw.js';
+import type { ShdwBackendConfig } from './shdw.js';
+import type { StorageBackend } from './types.js';
 
 export type BackendKind = 'mock' | 'ipfs' | 'shdw';
 

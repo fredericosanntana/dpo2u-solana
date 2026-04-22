@@ -12,3 +12,22 @@ export type {
   ClusterName,
   DPO2UClientOptions,
 } from './client.js';
+
+export { DPO2UConsentClient, CONSENT_MANAGER_PROGRAM_ID } from './consent.js';
+export type {
+  ConsentRecord,
+  DPO2UConsentClientOptions,
+  RecordConsentArgs,
+  RecordVerifiedConsentArgs,
+} from './consent.js';
+
+export { MCPClient, MCPClientError } from './mcp.js';
+export type {
+  MCPClientOptions,
+  OnChainTxResult,
+  SubmitConsentRecordResult,
+  SubmitConsentRevokeResult,
+  FetchConsentResult,
+  SubmitAttestationResult,
+  FetchAttestationResult,
+} from './mcp.js';

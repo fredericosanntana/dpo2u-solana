@@ -113,12 +113,26 @@ export class DPO2UClient {
   }
 
   static defaultIdlPath(): string {
-    // When running from packages/client-sdk/dist/, the repo's IDL is at
-    // ../../solana-programs/target/idl/compliance_registry.json.
-    // At runtime, __dirname from ESM:
+    // Two lookup modes: (1) bundled IDL in the published npm package
+    // (`dist/idl/compliance_registry.json` — copied during build); (2)
+    // monorepo fallback pointing at the Anchor build output. First hit wins.
     const here = path.dirname(fileURLToPath(import.meta.url));
-    // dist/client.js → dist → client-sdk → packages → repo root
-    return path.resolve(here, '../../../solana-programs/target/idl/compliance_registry.json');
+    const candidates = [
+      path.resolve(here, './idl/compliance_registry.json'), // npm-install path
+      path.resolve(here, '../idl/compliance_registry.json'), // src/ invocation via tsx
+      path.resolve(here, '../../../solana-programs/target/idl/compliance_registry.json'), // monorepo dev
+    ];
+    // Return the first existing path; downstream readFileSync gives a clear
+    // error if none exist, so we don't need to pre-check here.
+    for (const p of candidates) {
+      try {
+        // Lazy require to avoid adding fs to top-level imports order.
+        if (readFileSync(p, 'utf-8').length > 0) return p;
+      } catch {
+        /* try next */
+      }
+    }
+    return candidates[candidates.length - 1];
   }
 
   /**

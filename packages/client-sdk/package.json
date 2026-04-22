@@ -1,7 +1,7 @@
 {
   "name": "@dpo2u/client-sdk",
-  "version": "0.1.0",
-  "description": "TypeScript client for dpo2u-solana — build/send verified-attestation transactions from Node.",
+  "version": "0.2.0",
+  "description": "TypeScript client for dpo2u-solana — on-chain compliance primitives (LGPD/GDPR/DPDP), AES-GCM encrypted storage, and MCP REST client for full audit/docs/generation toolkit in one package. Build on Solana.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,15 +9,54 @@
     "dpo2u-cli": "./dist/bin/dpo2u-cli.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && pnpm copy-idls",
+    "copy-idls": "mkdir -p dist/idl && cp ../../solana-programs/target/idl/compliance_registry.json dist/idl/ && cp ../../solana-programs/target/idl/consent_manager.json dist/idl/ 2>/dev/null || echo 'consent_manager.json not yet built'",
     "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm test && pnpm build"
   },
   "files": [
     "dist/",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "keywords": [
+    "solana",
+    "anchor",
+    "lgpd",
+    "gdpr",
+    "dpdp",
+    "micar",
+    "pdpa",
+    "adgm",
+    "compliance",
+    "consent-manager",
+    "privacy",
+    "zk-proof",
+    "sp1",
+    "groth16",
+    "dpo",
+    "shadow-drive",
+    "aes-gcm",
+    "encryption",
+    "mcp",
+    "rest-api",
+    "model-context-protocol"
+  ],
+  "author": "DPO2U <hello@dpo2u.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/fredericosanntana/dpo2u-solana#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fredericosanntana/dpo2u-solana.git",
+    "directory": "packages/client-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/fredericosanntana/dpo2u-solana/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
     "@shadow-drive/sdk": "^6.0.0",

@@ -15,7 +15,14 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 
 import { DPO2UClient, type ClusterName } from '../client.js';
-import { createStorageBackend, type BackendKind } from '../storage/index.js';
+import { DPO2UConsentClient } from '../consent.js';
+import {
+  createStorageBackend,
+  type BackendKind,
+  EncryptedStorageBackend,
+  keyFromHex,
+} from '../storage/index.js';
+import type { StorageBackend } from '../storage/types.js';
 
 const program = new Command();
 program
@@ -35,8 +42,12 @@ async function buildBackend(opts: {
   url?: string;
   signer: Keypair;
   shdwStorageAccount?: string;
-}) {
+  /** Optional hex-encoded 32-byte AES-256-GCM key. If set, the returned
+   *  backend encrypts on upload and decrypts on fetch automatically. */
+  encryptKey?: string;
+}): Promise<StorageBackend> {
   const kind = opts.backend as BackendKind;
+  let inner: StorageBackend;
   if (kind === 'shdw') {
     if (!opts.shdwStorageAccount) {
       throw new Error('backend=shdw requires --shdw-storage-account <pubkey>');
@@ -48,14 +59,20 @@ async function buildBackend(opts: {
       opts.url ?? 'https://api.mainnet-beta.solana.com',
       'confirmed',
     );
-    return createStorageBackend('shdw', {
+    inner = await createStorageBackend('shdw', {
       connection,
       wallet: opts.signer,
       storageAccount: new PublicKey(opts.shdwStorageAccount),
       cluster: opts.cluster,
     });
+  } else {
+    inner = await createStorageBackend(kind);
   }
-  return createStorageBackend(kind);
+  if (opts.encryptKey) {
+    const key = keyFromHex(opts.encryptKey);
+    return new EncryptedStorageBackend(inner, key);
+  }
+  return inner;
 }
 
 program
@@ -72,6 +89,7 @@ program
   .option('--upload <file>', 'upload file via --backend before attesting; sets storage_uri to returned URL')
   .option('--backend <kind>', 'storage backend for --upload: mock | ipfs | shdw', 'mock')
   .option('--shdw-storage-account <pubkey>', 'Shadow Drive v1 storage account (required if --backend shdw)')
+  .option('--encrypt-key <hex>', 'optional hex-encoded 32-byte AES-256-GCM key; encrypts payload before upload (envelope format). Keep the key — required to fetch later.')
   .action(async (opts) => {
     const signer = loadKeypair(opts.keypair);
     const subject = opts.subject ? new PublicKey(opts.subject) : signer.publicKey;
@@ -93,11 +111,13 @@ program
         url: opts.url,
         signer,
         shdwStorageAccount: opts.shdwStorageAccount,
+        encryptKey: opts.encryptKey,
       });
       const payload = readFileSync(opts.upload);
       const name = path.basename(opts.upload);
       storageUri = await backend.upload(new Uint8Array(payload), name);
-      console.log(`✓ payload uploaded : ${storageUri} (backend=${backend.kind})`);
+      const encLabel = opts.encryptKey ? ' encrypted=aes-256-gcm' : '';
+      console.log(`✓ payload uploaded : ${storageUri} (backend=${backend.kind}${encLabel})`);
     }
 
     // Commitment is always derived from the proof's public values to guarantee
@@ -260,6 +280,164 @@ program
     }
     console.log(`✓ revoked_at       : ${new Date(Number(after.revokedAt) * 1000).toISOString()}`);
     console.log(`✓ reason on-chain  : ${after.revocationReason}`);
+  });
+
+// ─── consent subcommand (DPDP India — on-chain Consent Manager) ───────────
+
+const consentCmd = program
+  .command('consent')
+  .description('DPDP India Consent Manager — record / revoke / query on-chain consent (Frente 1)');
+
+consentCmd
+  .command('record')
+  .description('Record a consent event (fiduciary path) — signer is the data fiduciary')
+  .option('-c, --cluster <name>', 'cluster: localnet | devnet | mainnet-beta', 'devnet')
+  .option('-u, --url <rpc>', 'override RPC URL')
+  .option('-k, --keypair <path>', 'path to fiduciary keypair JSON', '~/.config/solana/id.json')
+  .requiredOption('--user <pubkey>', 'user (data principal) Solana pubkey')
+  .requiredOption('--purpose-code <u16>', 'numeric purpose code (0-65535)')
+  .requiredOption('--purpose-text <string>', 'human-readable purpose — hashed (sha256) to purpose_hash')
+  .option('--storage-uri <uri>', 'off-chain evidence URI (max 128 bytes) — set this OR --upload, not both', '')
+  .option('--upload <file>', 'upload file via --backend before recording; sets storage_uri to returned URL')
+  .option('--backend <kind>', 'storage backend for --upload: mock | ipfs | shdw', 'mock')
+  .option('--shdw-storage-account <pubkey>', 'Shadow Drive v1 storage account (required if --backend shdw)')
+  .option('--encrypt-key <hex>', 'optional hex-encoded 32-byte AES-256-GCM key; encrypts payload before upload. Keep the key — required to fetch later.')
+  .option('--expires-at <unixSec>', 'unix timestamp when consent expires (optional)')
+  .action(async (opts) => {
+    const signer = loadKeypair(opts.keypair);
+    const user = new PublicKey(opts.user);
+    const purposeCode = Number.parseInt(opts.purposeCode, 10);
+    if (!Number.isInteger(purposeCode) || purposeCode < 0 || purposeCode > 65535) {
+      throw new Error('purpose-code must be an integer in [0, 65535]');
+    }
+    if (opts.upload && opts.storageUri) {
+      throw new Error('pass --upload OR --storage-uri, not both');
+    }
+    const expiresAt = opts.expiresAt ? BigInt(opts.expiresAt) : null;
+
+    const client = new DPO2UConsentClient({
+      cluster: opts.cluster as ClusterName,
+      rpcUrl: opts.url,
+      signer,
+    });
+
+    let storageUri = opts.storageUri;
+    if (opts.upload) {
+      const backend = await buildBackend({
+        backend: opts.backend,
+        cluster: opts.cluster,
+        url: opts.url,
+        signer,
+        shdwStorageAccount: opts.shdwStorageAccount,
+        encryptKey: opts.encryptKey,
+      });
+      const payload = readFileSync(opts.upload);
+      const name = path.basename(opts.upload);
+      storageUri = await backend.upload(new Uint8Array(payload), name);
+      const encLabel = opts.encryptKey ? ' encrypted=aes-256-gcm' : '';
+      console.log(`✓ payload uploaded : ${storageUri} (backend=${backend.kind}${encLabel})`);
+    }
+
+    const purposeHash = DPO2UConsentClient.purposeHashFromText(opts.purposeText);
+    console.log(`data fiduciary : ${signer.publicKey.toBase58()}`);
+    console.log(`user           : ${user.toBase58()}`);
+    console.log(`purpose_code   : ${purposeCode}`);
+    console.log(`purpose_text   : "${opts.purposeText}"`);
+    console.log(`purpose_hash   : 0x${Buffer.from(purposeHash).toString('hex')}`);
+    console.log(`storage_uri    : ${storageUri || '(empty)'}`);
+    console.log(`expires_at     : ${expiresAt ?? 'never'}`);
+    console.log('submitting tx...');
+
+    const res = await client.recordConsent({
+      user,
+      purposeCode,
+      purposeText: opts.purposeText,
+      storageUri,
+      expiresAt,
+    });
+
+    console.log();
+    console.log(`✓ signature      : ${res.signature}`);
+    console.log(`✓ consent PDA    : ${res.consentPda.toBase58()}`);
+    console.log(`✓ Explorer       : ${res.explorerUrl}`);
+  });
+
+consentCmd
+  .command('revoke')
+  .description('Revoke a consent (DPDP §6(4) — only the user may revoke)')
+  .option('-c, --cluster <name>', 'cluster', 'devnet')
+  .option('-u, --url <rpc>', 'override RPC URL')
+  .option('-k, --keypair <path>', 'path to user keypair JSON', '~/.config/solana/id.json')
+  .requiredOption('--consent-pda <pubkey>', 'consent PDA to revoke')
+  .requiredOption('--reason <string>', 'revocation reason (<=64 bytes)')
+  .action(async (opts) => {
+    const signer = loadKeypair(opts.keypair);
+    const consent = new PublicKey(opts.consentPda);
+    if (opts.reason.length > 64) {
+      throw new Error(`reason must be <= 64 bytes (got ${opts.reason.length})`);
+    }
+
+    const client = new DPO2UConsentClient({
+      cluster: opts.cluster as ClusterName,
+      rpcUrl: opts.url,
+      signer,
+    });
+
+    console.log(`user (signer) : ${signer.publicKey.toBase58()}`);
+    console.log(`consent PDA   : ${consent.toBase58()}`);
+    console.log(`reason        : ${opts.reason}`);
+    console.log('submitting revoke tx...');
+
+    const res = await client.revokeConsent({ consent, reason: opts.reason });
+    console.log();
+    console.log(`✓ signature      : ${res.signature}`);
+    console.log(`✓ Explorer       : ${res.explorerUrl}`);
+  });
+
+consentCmd
+  .command('query')
+  .description('Fetch a consent PDA by (user, fiduciary, purpose) and pretty-print')
+  .option('-c, --cluster <name>', 'cluster', 'devnet')
+  .option('-u, --url <rpc>', 'override RPC URL')
+  .option('-k, --keypair <path>', 'keypair (used only for connection)', '~/.config/solana/id.json')
+  .requiredOption('--user <pubkey>', 'user Solana pubkey')
+  .requiredOption('--fiduciary <pubkey>', 'data fiduciary Solana pubkey')
+  .requiredOption('--purpose-text <string>', 'purpose text (will be hashed)')
+  .action(async (opts) => {
+    const signer = loadKeypair(opts.keypair);
+    const user = new PublicKey(opts.user);
+    const fiduciary = new PublicKey(opts.fiduciary);
+    const purposeHash = DPO2UConsentClient.purposeHashFromText(opts.purposeText);
+
+    const client = new DPO2UConsentClient({
+      cluster: opts.cluster as ClusterName,
+      rpcUrl: opts.url,
+      signer,
+    });
+
+    const rec = await client.fetchConsent(user, fiduciary, purposeHash);
+    if (!rec) {
+      console.log('no consent found for this (user, fiduciary, purpose_hash)');
+      process.exit(1);
+    }
+    console.log(JSON.stringify(
+      {
+        user: rec.user.toBase58(),
+        dataFiduciary: rec.dataFiduciary.toBase58(),
+        purposeCode: rec.purposeCode,
+        purposeHash: `0x${Buffer.from(rec.purposeHash).toString('hex')}`,
+        storageUri: rec.storageUri,
+        issuedAt: rec.issuedAt.toString(),
+        expiresAt: rec.expiresAt?.toString() ?? null,
+        revokedAt: rec.revokedAt?.toString() ?? null,
+        revocationReason: rec.revocationReason,
+        version: rec.version,
+        verified: rec.verified,
+        threshold: rec.threshold,
+      },
+      null,
+      2,
+    ));
   });
 
 program.parseAsync(process.argv).catch((e) => {

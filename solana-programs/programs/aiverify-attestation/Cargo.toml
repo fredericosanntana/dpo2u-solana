@@ -1,0 +1,20 @@
+[package]
+name = "aiverify-attestation"
+version = "0.1.0"
+description = "DPO2U AI Verify (Singapore) model attestation — stores test report hash + model hash + vk_root on-chain."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "aiverify_attestation"
+
+[features]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"

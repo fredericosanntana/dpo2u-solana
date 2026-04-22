@@ -63,13 +63,15 @@ pub mod fee_distributor {
         require_keys_eq!(ctx.accounts.operator_ata.owner, cfg_operator, FeeErr::VaultOwnerMismatch);
         require_keys_eq!(ctx.accounts.reserve_ata.owner, cfg_reserve, FeeErr::VaultOwnerMismatch);
 
-        let treasury_share = amount
-            .checked_mul(TREASURY_BPS as u64)
-            .and_then(|x| x.checked_div(TOTAL_BPS as u64))
+        let treasury_share = (amount as u128)
+            .checked_mul(TREASURY_BPS as u128)
+            .and_then(|x| x.checked_div(TOTAL_BPS as u128))
+            .map(|x| x as u64)
             .ok_or(FeeErr::MathOverflow)?;
-        let operator_share = amount
-            .checked_mul(OPERATOR_BPS as u64)
-            .and_then(|x| x.checked_div(TOTAL_BPS as u64))
+        let operator_share = (amount as u128)
+            .checked_mul(OPERATOR_BPS as u128)
+            .and_then(|x| x.checked_div(TOTAL_BPS as u128))
+            .map(|x| x as u64)
             .ok_or(FeeErr::MathOverflow)?;
         let reserve_share = amount
             .checked_sub(treasury_share)

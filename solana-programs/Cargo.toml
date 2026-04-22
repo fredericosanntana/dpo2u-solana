@@ -2,10 +2,14 @@
 resolver = "2"
 members = [
   "programs/compliance-registry",
+  "programs/compliance-registry-pinocchio",
   "programs/agent-registry",
   "programs/payment-gateway",
   "programs/fee-distributor",
   "programs/agent-wallet-factory",
+  "programs/consent-manager",
+  "programs/art-vault",
+  "programs/aiverify-attestation",
 ]
 
 [profile.release]

@@ -4,11 +4,15 @@
 
 [![CI](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml/badge.svg)](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![npm: @dpo2u/client-sdk](https://img.shields.io/npm/v/@dpo2u/client-sdk.svg?label=npm)](https://www.npmjs.com/package/@dpo2u/client-sdk)
+[![crates: dpo2u-sdk](https://img.shields.io/crates/v/dpo2u-sdk.svg?label=crates.io)](https://crates.io/crates/dpo2u-sdk)
 [![SP1](https://img.shields.io/badge/SP1-v6.1.0-blue)](https://github.com/succinctlabs/sp1)
 [![Solana](https://img.shields.io/badge/Solana-3.1.13-9945FF)](https://solana.com)
 [![Anchor](https://img.shields.io/badge/Anchor-0.31.1-512BD4)](https://www.anchor-lang.com)
 
 > ⚡ **Submission to Colosseum Frontier 2026 — [see team + narrative](./TEAM.md)**
+
+> 🚀 **Dev? START HERE → [ONBOARDING.md](./ONBOARDING.md)** · Hello World em 4 stacks (JS/Rust/REST/MCP) em 5–10 min · [runnable examples/](./examples/) · [send feedback](https://github.com/fredericosanntana/dpo2u-solana/issues/new?template=devs-feedback.md)
 
 An auditor needs to verify a company's LGPD/GDPR compliance score meets a
 policy threshold — without learning the score itself. `dpo2u-solana` closes

@@ -66,6 +66,11 @@ pub mod payment_gateway {
             inv.mint,
             PaymentErr::MintMismatch
         );
+        require_keys_eq!(
+            ctx.accounts.payee_token_account.owner,
+            inv.payee,
+            PaymentErr::UnauthorizedDestination
+        );
 
         let cpi_ctx = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -175,4 +180,6 @@ pub enum PaymentErr {
     Unauthorized,
     #[msg("mint or token account mint does not match invoice.mint")]
     MintMismatch,
+    #[msg("payee token account does not belong to invoice payee")]
+    UnauthorizedDestination,
 }

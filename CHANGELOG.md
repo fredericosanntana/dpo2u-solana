@@ -6,6 +6,22 @@ All notable changes to `dpo2u-solana`.
 
 Submission prep for Colosseum Frontier 2026 (deadline ~2026-05-11).
 
+### Added — 2026-04-22 crypto gap closure
+
+- **AES-256-GCM envelope storage backend** — new `EncryptedStorageBackend` at `packages/client-sdk/src/storage/encrypted.ts` wrapping any `StorageBackend` (mock/ipfs/shdw). Adds confidentiality-at-rest: payloads are encrypted client-side **before** upload; public gateways (Shadow Drive) see only ciphertext. Wire format: `[magic("DPO2U\x01") | nonce(12) | tag(16) | ciphertext]`. CLI flag `--encrypt-key <hex32>` added to both `attest` and `consent record` subcommands. CLI: `dpo2u-cli consent record` now also supports `--upload <file>`/`--backend`/`--shdw-storage-account` so the fiduciary can encrypt+upload+anchor in one call. 18 roundtrip + tamper-detection tests.
+- **OpenFHE/TenSEAL validated live** — `dpo2u-openfhe` sidecar (port 3004) confirmed running in real crypto mode: `{mode:tenseal, scheme:CKKS, security_level:128, is_real_crypto:true, tenseal_available:true}`. End-to-end test: `encrypt(91.5) + encrypt(78.0)` → `homomorphic/add` → `decrypt` = **169.5** (CKKS batch slot 0). MCP server env already set `OPENFHE_USE_MOCK=false` — no config change needed. 7 FHE tools (`encrypted_reporting`, `private_benchmark`, `zk_compliance_proof`, `fhe_executive_dashboard`, `homomorphic_analytics`, `secure_data_sharing`, `automated_remediation`) run against real FHE pipeline.
+
+### Added — 2026-04-22 cross-jurisdiction expansion (Frentes 1–4)
+
+Based on Manus AI research (`00-INBOX/DPO2U Technical Deep-Dive & Implementation Roadmap 2026.md` + `Executive Summary_ Global Crypto and AI Regulatory Landscape 2026.md`). Four regulatory surfaces added pre-hackathon:
+
+- **Frente 1 — India DPDP Consent Manager**. New program `consent-manager` (`D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB`) with `record_consent` / `record_verified_consent` (CPI SP1) / `revoke_consent`. PDA seeds `[b"consent", user, data_fiduciary, purpose_hash]`. Reuses compliance-registry's SP1 verifier ID — zero new crypto. 9 scaffold tests. TypeScript SDK: `DPO2UConsentClient` exported from `@dpo2u/client-sdk`. CLI subcommand: `dpo2u-cli consent record|revoke|query`. 8 SDK tests.
+- **Frente 2 — MiCAR ART Vault (EU)**. New program `art-vault` (`C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna`) automating four MiCAR safeguards: Proof of Reserve (Art. 36), Liquidity Vault (Art. 39), Capital Buffer 3% (Art. 35), Velocity Limiter + Circuit Breaker (Art. 23). Instructions: `init_vault`, `update_reserve`, `mint_art`, `redeem_art`, `trip_circuit_breaker`. Oracle stubbed (reserve_amount is caller-asserted; Pyth wiring on roadmap per plan downgrade). 12 scaffold tests.
+- **Frente 3 — AI Verify attestation (Singapore)**. New program `aiverify-attestation` (`DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm`) — single-purpose `attest_model` instruction storing `{model_hash, test_report_hash, vk_root, framework_code, operator, attested_at}` in PDA `[b"aiverify", model_hash]`. Global uniqueness per model_hash by design. 6 scaffold tests.
+- **Frente 4 — Cross-jurisdiction MCP layer**. KB JSONs for 6 jurisdictions (LGPD/BR, GDPR/EU, DPDP/IN, MICAR/EU, PDPA/SG, UAE) under `dpo2u-mcp/src/kb/jurisdictions/`. Zod schema + loader + alias resolver (BR→LGPD, EU→GDPR, INDIA→DPDP, …). New MCP tools: `compare_jurisdictions`, `generate_adgm_foundation_charter`, `generate_consent_manager_plan`, `audit_micar_art`, `generate_aiverify_plugin_template`. Extended `check_compliance` with `jurisdiction` enum (DPDP/MICAR/PDPA/UAE return KB snapshot + pointer to compare_jurisdictions). 60+ new MCP tests.
+
+Test totals: solana-programs **42/42 scaffold tests**, client-sdk **11/11 tests**, dpo2u-mcp **77/77 tests** (17 jurisdictions + 10 consent-plan + 12 audit-micar + 7 aiverify + 31 prior).
+
 ### Added
 - **Gap #1 — `create_verified_attestation`** instruction in
   `compliance-registry` that CPIs into `dpo2u-compliance-verifier`,

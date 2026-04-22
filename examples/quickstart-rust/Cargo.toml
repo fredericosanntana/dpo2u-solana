@@ -1,0 +1,9 @@
+[package]
+name = "dpo2u-quickstart"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dpo2u-sdk = { version = "0.2", features = ["mcp-client"] }
+tokio = { version = "1", features = ["rt", "macros"] }
+solana-program = "2.0"

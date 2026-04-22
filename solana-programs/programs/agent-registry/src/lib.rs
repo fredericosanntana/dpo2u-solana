@@ -16,6 +16,9 @@ pub const PERM_TREASURY: u16 = 4;
 pub const PERM_DEPLOY: u16 = 8;
 pub const PERM_GOVERNANCE: u16 = 16;
 
+use anchor_lang::solana_program::pubkey;
+pub const ADMIN_PUBKEY: Pubkey = pubkey!("DPo2uAdM1n111111111111111111111111111111111");
+
 #[program]
 pub mod agent_registry {
     use super::*;
@@ -25,7 +28,7 @@ pub mod agent_registry {
         name: String,
         did_commitment: [u8; 32],
         did_uri: String,
-        permissions: u16,
+        _permissions: u16,
     ) -> Result<()> {
         require!(name.len() <= 32, AgentErr::NameTooLong);
         require!(did_uri.len() <= 128, AgentErr::UriTooLong);
@@ -36,7 +39,7 @@ pub mod agent_registry {
         agent.name = name;
         agent.did_commitment = did_commitment;
         agent.did_uri = did_uri;
-        agent.permissions = permissions;
+        agent.permissions = PERM_READ; // Always default to basic permissions
         agent.created_at = clock.unix_timestamp;
         agent.updated_at = clock.unix_timestamp;
         agent.bump = ctx.bumps.agent;
@@ -44,15 +47,14 @@ pub mod agent_registry {
         emit!(AgentRegistered {
             authority: agent.authority,
             name: agent.name.clone(),
-            permissions,
+            permissions: agent.permissions,
         });
         Ok(())
     }
 
-    pub fn update_permissions(ctx: Context<UpdateAgent>, new_permissions: u16) -> Result<()> {
+    pub fn update_permissions(ctx: Context<AdminUpdateAgent>, new_permissions: u16) -> Result<()> {
         let clock = Clock::get()?;
         let agent = &mut ctx.accounts.agent;
-        require_keys_eq!(agent.authority, ctx.accounts.authority.key(), AgentErr::Unauthorized);
         agent.permissions = new_permissions;
         agent.updated_at = clock.unix_timestamp;
         Ok(())
@@ -105,6 +107,14 @@ pub struct RegisterAgent<'info> {
 }
 
 #[derive(Accounts)]
+pub struct AdminUpdateAgent<'info> {
+    #[account(mut, address = ADMIN_PUBKEY @ AgentErr::UnauthorizedAdmin)]
+    pub admin: Signer<'info>,
+    #[account(mut, seeds = [b"agent", agent.authority.as_ref(), agent.name.as_bytes()], bump = agent.bump)]
+    pub agent: Account<'info, Agent>,
+}
+
+#[derive(Accounts)]
 pub struct UpdateAgent<'info> {
     pub authority: Signer<'info>,
     #[account(mut, seeds = [b"agent", agent.authority.as_ref(), agent.name.as_bytes()], bump = agent.bump)]
@@ -132,4 +142,6 @@ pub enum AgentErr {
     UriTooLong,
     #[msg("only the registered authority can modify")]
     Unauthorized,
+    #[msg("only the global admin can update permissions")]
+    UnauthorizedAdmin,
 }
