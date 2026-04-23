@@ -12,18 +12,22 @@ review. É o stack que vai pro Colosseum Frontier (11/Mai) — privacy-preservin
 LGPD/GDPR/DPDP/MiCAR compliance attestation on Solana com SP1 Groth16 proofs.
 
 **Repo**: https://github.com/fredericosanntana/solana (branch `demo-day-prep`)
-**MCP live**: https://mcp.dpo2u.com (healthy, OAuth PKCE operational)
+**MCP live**: https://mcp.dpo2u.com (healthy, OAuth PKCE operational; Solana-only backend —
+MidnightDriver placeholder foi removido, Midnight fica como v2 roadmap fora do código)
 
 ## Por onde começar
 
-Manda ver nos dois arquivos primeiro:
+Manda ver nos três arquivos primeiro:
 
 - `docs/REVIEW.md` — arquitetura, program IDs devnet com links Explorer,
-  o que revisar primeiro, pontos que merecem olhar crítico, questões de
-  scope v1 vs v2.
-- `docs/TEST-RESULTS.md` — evidência dos testes que rodei agora há pouco
-  (69/69 client-sdk, anchor cargo check clean, mcp-server 111/122 com
-  9 falhas ambientais explicadas em detalhe).
+  o que revisar primeiro, pontos que merecem olhar crítico, **seção nova
+  "Canonical compliance pipeline"** (8 stages normativos expostos via tool
+  MCP `describe_pipeline`), questões de scope v1 vs v2.
+- `docs/TEST-RESULTS.md` — evidência: 69/69 client-sdk, 0 warnings anchor,
+  6/6 sp1 verifier, 119 pass / 7 skip / 0 fail no mcp-server, 22/22 no
+  compliance-engine.
+- `DPO2U/packages/mcp-server/docs/PIPELINE.md` — spec normativa v1.0 do
+  pipeline canônico (source of truth: `src/pipeline.ts`).
 
 Depois, se tiver energia, os 5 arquivos core (em ordem):
 

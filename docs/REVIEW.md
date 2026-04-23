@@ -15,8 +15,10 @@ patched SP1 v6 verifier and committed to a PDA in `compliance-registry`. Public 
 hash + pass/fail bit; private inputs never leave the prover.
 
 Eight programs are live on devnet, end-to-end smoke test passes, and the full OAuth + MCP tool
-surface — including the new `erase_attestation_payload` composer tool for LGPD Art. 18 — is
-reachable at `mcp.dpo2u.com`.
+surface — including the new `erase_attestation_payload` composer tool for LGPD Art. 18 and the
+`describe_pipeline` tool that returns the canonical protocol ordering — is reachable at
+`mcp.dpo2u.com`. The MidnightDriver placeholder was removed; Midnight is a v2 roadmap item, not
+an artifact of the shipping code.
 
 ## Architecture at a glance
 
@@ -106,6 +108,31 @@ reachable at `mcp.dpo2u.com`.
 - **`scripts/unblock-audit.sh`** is a host-side disk cleaner (caches only). Lives in the repo for
   ops continuity; not part of the hackathon artifact.
 
+## Canonical compliance pipeline
+
+The DPO2U protocol declares eight stages in normative order:
+
+```
+1. DISCOVER    → map_data_flow
+2. AUDIT       → audit_infrastructure, check_compliance, calculate_privacy_score, audit_micar_art
+3. ASSESS      → assess_risk, simulate_breach, compare_jurisdictions
+4. REMEDIATE   → automated_remediation, generate_retention_policy, register_retention_policy_onchain
+5. DOCUMENT    → generate_dpia_stored, generate_audit_stored, encrypted_reporting (→ IPFS CID)
+6. PROVE       → zk_compliance_attest (SP1 v6 Groth16, 356B proof + 32B commitment)
+7. REGISTER    → submit_verified_compliance_attestation (CPI to SP1 verifier, writes PDA)
+8. ERASE *(on-demand)* → erase_attestation_payload, submit_consent_revoke
+```
+
+Source of truth: `DPO2U/packages/mcp-server/src/pipeline.ts` + `docs/PIPELINE.md`. Exposed at
+runtime through the MCP tool `describe_pipeline` — a client that calls it first, with or without
+a stage filter, gets the graph directly from the server and doesn't have to infer workflow from
+tool names. Stages 1–7 are a linear lifecycle; stage 8 is event-driven and runs on-demand when a
+data subject invokes the right to erasure.
+
+The pipeline is **declarative in v1** (the server does not yet refuse out-of-order calls). Adding
+a `prerequisites` field per tool schema and an `run_compliance_e2e` orchestrator is tracked as
+open question below.
+
 ## Open questions (scope boundary v1 vs v2)
 
 - **Governance multisig (Squads)**: `ADMIN_PUBKEY` is currently a single pubkey pointing at the
@@ -126,6 +153,15 @@ reachable at `mcp.dpo2u.com`.
   the optimization work.
 - **Cloak bridge** (`apps/cloak-bridge`, v0.1.0-alpha): analyzer primitives + Cloak types only.
   CLI + examples land in v0.2. Not part of the hackathon artifact.
+- **Pipeline enforcement** (v2): currently `describe_pipeline` declares the canonical order, but
+  the MCP server does not refuse out-of-order calls. Adding a `prerequisites` field per tool
+  schema + an `run_compliance_e2e(subject, scope, docs[])` orchestrator that walks the pipeline
+  end-to-end ships post-Colosseum. Both require reconciling the `consumes`/`produces` vocabulary
+  between tools whose shapes are heterogeneous today.
+- **Midnight integration** (v2 roadmap): the MidnightDriver placeholder was removed from the
+  shipping code. Midnight is a strategic direction for a v2 chain backend, not a current
+  artifact. The `ComplianceChainClient` interface is kept chain-agnostic so an alternative
+  backend can be added without touching callers.
 
 ## How to run the smoke test
 

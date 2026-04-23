@@ -10,7 +10,8 @@
 | `packages/client-sdk` (vitest) | **✅ 69/69 pass** | mcp · storage/encrypted · client · consent · kek-vault |
 | `solana-programs` (`cargo check --all --no-default-features`) | **✅ 0 warnings / 0 errors** | 86 lint warnings from anchor 0.31.1 macro were silenced via `#![allow(deprecated, unexpected_cfgs)]` with an inline pointer at the post-Colosseum anchor-lang 0.32+ upgrade |
 | `sp1-solana/verifier` (`cargo test --release`) | **✅ 6/6 pass** | 1 unit + 4 v6 regression + 1 doc-test. Orphan fibonacci tests removed in a recent commit |
-| `mcp-server` (vitest, full) | **✅ 123 pass / 7 skipped / 0 fail** (130 total) | 7 skips are the e2e suite that needs `solana-test-validator` on :8899; safe to run with or without localnet |
+| `mcp-server` (vitest, full) | **✅ 119 pass / 7 skipped / 0 fail** (126 total) | MidnightDriver removal dropped ~16 driver+e2e tests; new `describe_pipeline` suite added 12. Net: −16+12 = same-ish count. 7 skips are the full-flow e2e suite that needs `solana-test-validator` on :8899 |
+| `compliance-engine` (vitest, chain contract) | **✅ 22/22 pass** | 16 contract assertions now run against SolanaDriver only (MidnightDriver row removed in Sprint 4a) |
 
 ## Detail
 
