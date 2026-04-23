@@ -14,8 +14,9 @@ A data controller proves a compliance predicate (e.g. "score ≥ threshold", "re
 patched SP1 v6 verifier and committed to a PDA in `compliance-registry`. Public state is a commitment
 hash + pass/fail bit; private inputs never leave the prover.
 
-Six programs are live on devnet, end-to-end smoke test passes, and the full OAuth + MCP tool surface
-is reachable at `mcp.dpo2u.com`.
+Eight programs are live on devnet, end-to-end smoke test passes, and the full OAuth + MCP tool
+surface — including the new `erase_attestation_payload` composer tool for LGPD Art. 18 — is
+reachable at `mcp.dpo2u.com`.
 
 ## Architecture at a glance
 
@@ -83,8 +84,21 @@ is reachable at `mcp.dpo2u.com`.
   for CU benchmarking vs the Anchor version. Not in the happy-path demo. Will be deprecated in v2.
 - **`agent-registry.register_agent`** takes a `_permissions: u16` argument and always forces
   `PERM_READ`. Governance upgrade must go through `update_permissions`, which is gated by a hardcoded
-  `ADMIN_PUBKEY` (`agent-registry/src/lib.rs:20`). Placeholder was replaced by the devnet deployer
-  in the latest commit; **rotate to a multisig before any mainnet deploy**.
+  `ADMIN_PUBKEY` (`agent-registry/src/lib.rs:22`). Placeholder was replaced by the devnet deployer
+  in a recent commit; **rotate to a multisig before any mainnet deploy**.
+
+- **LGPD Art. 18 MCP tool**: `erase_attestation_payload` (new, `mcp-server/src/tools/onchain/erase-attestation-payload.ts`)
+  composes `compliance-registry.revoke_attestation` with per-backend off-chain erasure guidance:
+  IPFS returns a KEK-rotation path (CID is content-addressed, cannot be unpublished; blob is
+  AES-256-GCM ciphertext so key rotation = effective erasure); Shadow Drive returns a delete-account
+  path; `mock` returns a local-delete confirmation for CI. Response includes
+  `lgpd.{article, commitmentPreserved, piiRecoverable}` so callers can assert semantics
+  programmatically. Covered by an 8-case unit suite.
+
+- **Anchor 0.31.1 macro lint noise**: each program's `lib.rs` carries
+  `#![allow(deprecated, unexpected_cfgs)]` with an inline note pointing at the post-Colosseum
+  anchor-lang 0.32+ upgrade. Build output is clean (0 warnings); the suppressions only silence
+  macro-generated lint noise that has no runtime impact.
 - **`art-vault.pyth_price`** is an `AccountInfo` without an address constraint
   (`art-vault/src/lib.rs:404`). Safe because the authority is a `Signer`, the Pyth SDK validates
   the account owner internally, and staleness/confidence/sign checks are enforced. Open question:
@@ -94,14 +108,24 @@ is reachable at `mcp.dpo2u.com`.
 
 ## Open questions (scope boundary v1 vs v2)
 
-- **Governance**: ADMIN_PUBKEY is a single pubkey. v1 scope or move to Squads multisig now?
-- **SP1 prover in CI**: end-to-end tests use `SP1_USE_FIXTURE_PROOF=true` to skip prove. Live prove
-  is gated by `LIVE_PROVE=1`. How deep does TheGarage want the live-prove variant in CI?
-- **LGPD Art. 18 erasure** (merged 2026-04-22): storage backends pluggable (`mock`, `ipfs`, `shdw`);
-  on-chain erasure emits a tombstone. **MCP tool surface for erase/attest** is not exposed yet —
-  reachable only via direct program call. Ship MCP tool in v1 or v2?
-- **Cloak bridge** (`apps/cloak-bridge`, v0.1.0-alpha): analyzer primitives + Cloak types. CLI +
-  examples land in v0.2. Out of hackathon scope, not blocking the submission.
+- **Governance multisig (Squads)**: `ADMIN_PUBKEY` is currently a single pubkey pointing at the
+  devnet deployer. Keeping single-sig for v1 is a conscious call — the treasury isn't live on
+  mainnet yet, so a multisig without liquid TVL would be ceremonial. Squads setup happens when
+  mainnet treasury lands.
+- **SP1 prover in CI**: end-to-end tests default to `SP1_USE_FIXTURE_PROOF=true` (uses the
+  committed `proof.bin` fixture); live prove is gated by `LIVE_PROVE=1` for nightly opt-in.
+  Rationale: a real prove is ~25 min per run — too heavy for every PR. Nightly catches VK drift;
+  the fixture suite catches logic regressions. If you want a different ratio, flag it.
+- **Trusted issuer vs ZK-verified dual-path**: `create_attestation` (legacy, no ZK) and
+  `create_verified_attestation` (ZK-backed) are both exposed deliberately. The legacy path covers
+  non-privacy use cases where a public DPIA or audit report is being anchored — ZK overhead buys
+  nothing there. The `verified` flag distinguishes them on-chain. Keeping dual is a design
+  decision, not tech debt.
+- **`compliance-registry-pinocchio`** (489 LOC, raw Solana): kept for CU benchmarking against the
+  Anchor variant. Roadmap: collapse to Anchor-only post-Colosseum once the benchmark feeds into
+  the optimization work.
+- **Cloak bridge** (`apps/cloak-bridge`, v0.1.0-alpha): analyzer primitives + Cloak types only.
+  CLI + examples land in v0.2. Not part of the hackathon artifact.
 
 ## How to run the smoke test
 
