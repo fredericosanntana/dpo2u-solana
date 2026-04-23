@@ -17,7 +17,8 @@ pub const PERM_DEPLOY: u16 = 8;
 pub const PERM_GOVERNANCE: u16 = 16;
 
 use anchor_lang::solana_program::pubkey;
-pub const ADMIN_PUBKEY: Pubkey = pubkey!("DPo2uAdM1n111111111111111111111111111111111");
+// Devnet governance authority — rotate to a multisig before any mainnet deploy.
+pub const ADMIN_PUBKEY: Pubkey = pubkey!("HjpGXPWQF1PiqjdWtNNEbAxqNamXKGpJspRZm9Jv5LZj");
 
 #[program]
 pub mod agent_registry {
