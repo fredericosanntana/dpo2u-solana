@@ -1,3 +1,8 @@
+// anchor-lang 0.31.1 #[program] macro expands to deprecated AccountInfo::realloc
+// and emits unknown cfg conditions (custom-heap, solana, etc.); bump to 0.32+
+// scheduled for post-Colosseum.
+#![allow(deprecated, unexpected_cfgs)]
+
 //! DPO2U Consent Manager — India DPDP Rules 2025 (§6 + Capítulo 2).
 //!
 //! Registers per-user consent events as PDAs keyed by (user, data_fiduciary,

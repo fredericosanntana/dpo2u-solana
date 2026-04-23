@@ -1,3 +1,8 @@
+// anchor-lang 0.31.1 #[program] macro expands to deprecated AccountInfo::realloc
+// and emits unknown cfg conditions (custom-heap, solana, etc.); bump to 0.32+
+// scheduled for post-Colosseum.
+#![allow(deprecated, unexpected_cfgs)]
+
 //! DPO2U Payment Gateway
 //!
 //! Creates invoices and settles them atomically via SPL Token CPI.

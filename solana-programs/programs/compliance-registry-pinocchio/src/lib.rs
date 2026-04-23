@@ -1,3 +1,7 @@
+// Legacy raw-Solana port kept for CU benchmarking vs the Anchor variant.
+// Deprecation path: collapse to Anchor-only post-Colosseum (see REVIEW.md).
+#![allow(dead_code, unused_imports, unexpected_cfgs)]
+
 //! DPO2U Compliance Registry — Pinocchio port of the Anchor 0.31.1 program.
 //!
 //! Paridade funcional com `programs/compliance-registry/src/lib.rs`:
