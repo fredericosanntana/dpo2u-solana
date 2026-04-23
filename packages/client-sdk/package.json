@@ -1,7 +1,7 @@
 {
   "name": "@dpo2u/client-sdk",
-  "version": "0.2.0",
-  "description": "TypeScript client for dpo2u-solana — on-chain compliance primitives (LGPD/GDPR/DPDP), AES-GCM encrypted storage, and MCP REST client for full audit/docs/generation toolkit in one package. Build on Solana.",
+  "version": "0.3.0",
+  "description": "TypeScript client for dpo2u-solana — on-chain compliance primitives (LGPD/GDPR/DPDP), AES-GCM encrypted storage, MCP REST client for audit/docs toolkit, and OAuth login via `dpo2u-cli login`. Build on Solana.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

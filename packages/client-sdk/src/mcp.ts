@@ -42,6 +42,10 @@ export interface MCPClientOptions {
   endpoint?: string;
   /** JWT API key (x-api-key header). Required for authenticated endpoints. */
   apiKey?: string;
+  /** OAuth Bearer token (takes precedence over apiKey if both provided). */
+  oauthToken?: string;
+  /** If true, auto-load a saved OAuth token from ~/.dpo2u/oauth.json when no apiKey/oauthToken is provided. Default: true. */
+  autoLoadOAuth?: boolean;
   /** Override default fetch (useful for testing / non-global-fetch runtimes). */
   fetchImpl?: typeof fetch;
   /** Per-call timeout in ms. Default: 120_000 (some tools chain LLM calls). */
@@ -130,12 +134,36 @@ const DEFAULT_TIMEOUT_MS = 120_000;
 export class MCPClient {
   private readonly endpoint: string;
   private readonly apiKey?: string;
+  private readonly oauthToken?: string;
   private readonly fetchImpl: typeof fetch;
   private readonly timeoutMs: number;
 
   constructor(opts: MCPClientOptions = {}) {
     this.endpoint = (opts.endpoint ?? DEFAULT_ENDPOINT).replace(/\/$/, '');
+
+    // Auth resolution order:
+    //   1. Explicit oauthToken
+    //   2. Explicit apiKey
+    //   3. Auto-load from ~/.dpo2u/oauth.json (if autoLoadOAuth !== false)
+    this.oauthToken = opts.oauthToken;
     this.apiKey = opts.apiKey;
+
+    if (!this.oauthToken && !this.apiKey && opts.autoLoadOAuth !== false) {
+      // Only auto-load in Node runtimes (browser can't read ~/.dpo2u)
+      const isNode = typeof process !== 'undefined' && !!(process as any).versions?.node;
+      if (isNode) {
+        try {
+          // Lazy import avoids bundling Node built-ins in browser builds
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { loadSavedToken } = require('./oauth.js');
+          const saved = loadSavedToken();
+          if (saved?.access_token) {
+            this.oauthToken = saved.access_token;
+          }
+        } catch { /* no saved token — auth headers simply omitted */ }
+      }
+    }
+
     this.fetchImpl = opts.fetchImpl ?? (globalThis.fetch as typeof fetch);
     this.timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     if (!this.fetchImpl) {
@@ -147,7 +175,9 @@ export class MCPClient {
   async call<T = unknown>(toolName: string, args: Record<string, unknown>): Promise<T> {
     const url = `${this.endpoint}/tools/${toolName}`;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (this.apiKey) headers['x-api-key'] = this.apiKey;
+    // Bearer takes precedence over x-api-key if both set
+    if (this.oauthToken) headers['Authorization'] = `Bearer ${this.oauthToken}`;
+    else if (this.apiKey) headers['x-api-key'] = this.apiKey;
 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), this.timeoutMs);

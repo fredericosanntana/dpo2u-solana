@@ -31,3 +31,12 @@ export type {
   SubmitAttestationResult,
   FetchAttestationResult,
 } from './mcp.js';
+
+export {
+  login as oauthLogin,
+  loadSavedToken,
+  saveToken,
+  defaultTokenPath,
+  OAuthError,
+} from './oauth.js';
+export type { LoginOptions, SavedToken } from './oauth.js';

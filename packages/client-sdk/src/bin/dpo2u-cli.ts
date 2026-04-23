@@ -23,6 +23,8 @@ import {
   keyFromHex,
 } from '../storage/index.js';
 import type { StorageBackend } from '../storage/types.js';
+import { login as oauthLogin, loadSavedToken, defaultTokenPath } from '../oauth.js';
+import { unlinkSync, existsSync } from 'node:fs';
 
 const program = new Command();
 program
@@ -438,6 +440,72 @@ consentCmd
       null,
       2,
     ));
+  });
+
+// ─── auth subcommands (login / logout / whoami) ────────────────────────────
+
+program
+  .command('login')
+  .description('OAuth login via browser — grants access to MCP audit/docs/submit tools (KYC via email allowlist)')
+  .option('--endpoint <url>', 'MCP server URL', 'https://mcp.dpo2u.com')
+  .option('--port <n>', 'loopback port (default: random)')
+  .action(async (opts) => {
+    const port = opts.port ? Number.parseInt(opts.port, 10) : undefined;
+    console.log(`DPO2U Login — endpoint: ${opts.endpoint}`);
+    console.log('Opening browser for authentication...\n');
+    try {
+      const token = await oauthLogin({
+        endpoint: opts.endpoint,
+        port,
+        onAuthUrl: (url) => {
+          console.log('If the browser did not open, visit:');
+          console.log(`  ${url}\n`);
+        },
+      });
+      const expiresIn = Math.round((token.expires_at - Date.now()) / 1000 / 60);
+      console.log('✓ authorized');
+      console.log(`  token saved: ${defaultTokenPath()}`);
+      console.log(`  expires in:  ${expiresIn} min`);
+      console.log(`  client_id:   ${token.client_id}`);
+      console.log(`  endpoint:    ${token.endpoint}`);
+      console.log();
+      console.log('Now MCPClient (SDK) and this CLI will auto-load this token.');
+    } catch (err: any) {
+      console.error('✗ login failed:', err.message ?? err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('logout')
+  .description('Delete the local OAuth token')
+  .action(() => {
+    const path = defaultTokenPath();
+    if (existsSync(path)) {
+      unlinkSync(path);
+      console.log(`✓ removed ${path}`);
+    } else {
+      console.log(`no token at ${path}`);
+    }
+  });
+
+program
+  .command('whoami')
+  .description('Show current OAuth token info (if logged in)')
+  .action(() => {
+    const saved = loadSavedToken();
+    if (!saved) {
+      console.log('not logged in. Run: dpo2u-cli login');
+      process.exit(1);
+    }
+    const expiresIn = Math.round((saved.expires_at - Date.now()) / 1000 / 60);
+    console.log(JSON.stringify({
+      endpoint: saved.endpoint,
+      client_id: saved.client_id,
+      expires_in_minutes: expiresIn,
+      scope: saved.scope,
+      path: defaultTokenPath(),
+    }, null, 2));
   });
 
 program.parseAsync(process.argv).catch((e) => {

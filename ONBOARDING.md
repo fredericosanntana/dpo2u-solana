@@ -25,10 +25,52 @@ A partir da v0.2 (2026-04-22), **os SDKs também encapsulam o MCP REST** (`MCPCl
 
 - **Wallet Solana** com saldo devnet (devnet é grátis): `solana airdrop 2 --url devnet`
   - Se der rate limit, use https://faucet.solana.com (captcha, grátis)
-- **API key MCP** — peça a sua no feedback form abaixo (ou veja seu token em `mcp.dpo2u.com`)
 - **Node 18+** (Track A) OU **Rust 1.75+** (Track B) — os demais só precisam de `curl`
 
 Todos os programas rodam em **devnet**: `compliance-registry`, `consent-manager`, `art-vault`, `aiverify-attestation`, etc. Program IDs em https://github.com/fredericosanntana/dpo2u-solana/blob/demo-day-prep/solana-programs/Anchor.toml.
+
+---
+
+## Autenticação — o que precisa de quê
+
+**Matriz rápida:**
+
+| O que você faz | Precisa de credencial? | Qual? |
+|---|---|---|
+| Usar `DPO2UClient` / `DPO2UConsentClient` direto (SDK nativo on-chain) | ❌ não | sua própria wallet Solana |
+| Ler `fetch_*` tools (qualquer caminho) | ✅ sim | OAuth ou API key |
+| Escrever `submit_*` (server assina pelo dev) | ✅ sim | OAuth ou API key |
+| Gerar docs (`generate_dpia`, `check_compliance`, ...) | ✅ sim | OAuth ou API key |
+| Endpoints meta (`/health`, `/openapi.json`, `/docs`) | ❌ não | — |
+
+**Fluxo OAuth (recomendado — KYC via email + OTP):**
+
+```bash
+# 1. Peça seu email pra ser adicionado à allowlist (abra issue GitHub com label "request-access")
+#    Chairman adiciona seu email ao /data/oauth-allowed-emails.txt (hot-reload, sem restart)
+
+# 2. Login no terminal — abre browser, recebe OTP por email, autoriza
+npx dpo2u-cli login
+# ✓ token salvo em ~/.dpo2u/oauth.json (expira em 1h, refresh_token embutido)
+
+# 3. SDK auto-carrega o token — zero config adicional
+node -e "import('@dpo2u/client-sdk').then(async ({MCPClient}) => { const mcp = new MCPClient(); console.log(await mcp.compareJurisdictions({targetMarkets:['BR','EU']})); })"
+
+# Outros comandos:
+npx dpo2u-cli whoami   # mostra token info
+npx dpo2u-cli logout   # remove token local
+```
+
+**Alternativa API key (pra CI/headless):**
+
+```bash
+export DPO2U_API_KEY="sua-jwt-key"  # gerada manualmente, escopo pro/enterprise
+# SDK usa automaticamente se presente
+```
+
+OAuth tem precedência sobre API key se ambos configurados. Header enviado:
+- OAuth → `Authorization: Bearer <token>`
+- API key → `x-api-key: <jwt>`
 
 ---
 
