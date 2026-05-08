@@ -534,6 +534,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ccpa-optout-registry"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.6.1",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -578,6 +586,7 @@ dependencies = [
  "pinocchio-log",
  "pinocchio-pubkey",
  "pinocchio-system",
+ "sha2 0.10.9",
 ]
 
 [[package]]
@@ -898,6 +907,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "hiroshima-ai-process-attestation"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.6.1",
 ]
 
 [[package]]
@@ -1249,6 +1266,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pipa-korea-zk-identity"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.6.1",
+]
+
+[[package]]
+name = "pipeda-consent-extension"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.6.1",
+]
+
+[[package]]
 name = "polyval"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1258,6 +1291,14 @@ dependencies = [
  "cpufeatures 0.2.17",
  "opaque-debug",
  "universal-hash",
+]
+
+[[package]]
+name = "popia-info-officer-registry"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.6.1",
 ]
 
 [[package]]

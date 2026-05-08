@@ -10,6 +10,11 @@ members = [
   "programs/consent-manager",
   "programs/art-vault",
   "programs/aiverify-attestation",
+  "programs/popia-info-officer-registry",
+  "programs/ccpa-optout-registry",
+  "programs/pipeda-consent-extension",
+  "programs/pipa-korea-zk-identity",
+  "programs/hiroshima-ai-process-attestation",
 ]
 
 [profile.release]

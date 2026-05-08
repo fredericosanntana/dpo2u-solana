@@ -20,3 +20,7 @@ pinocchio-system = "0.4"
 pinocchio-pubkey = "0.3"
 pinocchio-log = "0.4"
 borsh = { version = "1.5", default-features = false, features = ["derive"] }
+# Composed Stack — Fase 2: SHA-256 for AttestationLeaf hash (no_std for BPF).
+# Used in submit_verified_compressed / revoke_compressed to derive deterministic
+# leaf hashes matching what Photon Indexer reconstructs from tx logs.
+sha2 = { version = "0.10", default-features = false }

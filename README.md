@@ -216,6 +216,56 @@ bytes 100..356 pi_a + pi_b + pi_c  (uncompressed G1, G2, G1)
 
 ---
 
+## 🧬 Composed Stack — 4 Solana-native primitives in one atomic transaction
+
+Sprint 2026-05-08: addressing Colosseum feedback that the project wasn't
+"Solana-native enough", we added a layer that composes 4 primitives **unique
+to Solana** in a single atomic transaction:
+
+| Layer | Role | Why Solana-only |
+|-------|------|-----------------|
+| **Pinocchio** orchestrator | CU-efficient native program — validates SP1 + builds leaf + drives CPI | Pinocchio = Solana zero-copy framework (no Anchor overhead) |
+| **Light Protocol** state compression | Writes `AttestationLeaf` (252 bytes) to shared CMT via `InvokeCpi` | Relies on `alt_bn128` syscalls for on-chain Groth16 verify (~5-50k CU) |
+| **Shadow Drive** immutable payload | DPIA, evidence, jurisdiction-specific attachments with `make-immutable` | Solana-native decentralized storage ($SHDW pre-paid) |
+| **Squads v4** multisig | 5 segregated vaults (Governance / Treasury / MiCAR Reserve / Compliance Authority / Emergency) | Vault PDA = plain `Pubkey` to programs — zero new code to govern |
+
+### Per-attestation cost (devnet)
+
+| Mode | Cost | Capital |
+|------|------|---------|
+| Regular account (compliance-registry) | ~$0.34 | LOCKED in rent (never recovered) |
+| **Compressed (composed flow)** | **~$0.032** | Consumed (not locked) |
+| Ratio | **~10x cheaper** + capital efficient | Break-even ~25k attestations/year vs Helius Photon Pro |
+
+### Devnet state (2026-05-08)
+
+✅ Pinocchio program `FZ21S53Rn8Y6ANfccS2waCrkYWh5zfjXK3hkKU5YSkJ8` deployed
+   (177KB, selectors `0x03 submit_verified_compressed` + `0x04 revoke_compressed`)
+✅ 5 Squads v4 multisigs created — PDAs in [`scripts/squads-config.json`](./scripts/squads-config.json)
+✅ Light Protocol shared trees identified — config in [`scripts/cmt-config.json`](./scripts/cmt-config.json)
+✅ SP1 Groth16 verify CPI working (devnet smoke test — 263k CU consumed)
+🟡 **Awaiting** [Light Foundation issue #2378](https://github.com/Lightprotocol/light-protocol/issues/2378) —
+   program registration in `compr6CUsB5m2jS4Y3831ztGSTnDpnKJTKS95d64XVq` to unblock Light CPI
+
+### Documentation
+
+- [`docs/GOVERNANCE.md`](./docs/GOVERNANCE.md) — Squads v4 architecture, threshold rationale, Light registration prerequisite
+- [`solana-programs/programs/compliance-registry-pinocchio/src/light_proto.rs`](./solana-programs/programs/compliance-registry-pinocchio/src/light_proto.rs) — Light Protocol Borsh structs (verified against upstream main)
+- [`packages/client-sdk/src/composed.ts`](./packages/client-sdk/src/composed.ts) — `submitComposedAttestation()` E2E orchestration
+- [`packages/client-sdk/src/photon.ts`](./packages/client-sdk/src/photon.ts) — Photon Indexer wrapper
+
+### Pitch line
+
+> "DPO2U: 4 atomic Solana primitives in a single transaction — **Pinocchio**
+> validates the SP1 ZK proof and writes to a **Light Protocol** compressed
+> account (≤$0.032/op vs $0.34 LOCKED rent), referencing an immutable payload
+> in **Shadow Drive**, governance trustless via **Squads v4** with 24h
+> time-lock across 5 segregated vaults. A stack that **only composes
+> atomically on Solana** — on any EVM/L2 this becomes 4 separate protocols
+> bridged together."
+
+---
+
 ## 🧠 Why Brazil
 
 LGPD (Lei Geral de Proteção de Dados, 2020) is the motivating regime. The

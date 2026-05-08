@@ -11,6 +11,11 @@
 **/*-keypair.json
 !**/Keypair.toml
 
+# Squads multisig demo keypairs (Composed Stack — devnet only, never commit)
+scripts/member-*.json
+scripts/members.json
+!scripts/members.example.json
+
 # IDE
 .vscode/
 .idea/

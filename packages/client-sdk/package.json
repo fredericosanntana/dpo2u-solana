@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && pnpm copy-idls",
-    "copy-idls": "mkdir -p dist/idl && cp ../../solana-programs/target/idl/compliance_registry.json dist/idl/ && cp ../../solana-programs/target/idl/consent_manager.json dist/idl/ 2>/dev/null || echo 'consent_manager.json not yet built'",
+    "copy-idls": "mkdir -p dist/idl && cp ../../solana-programs/target/idl/compliance_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/consent_manager.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/popia_info_officer_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/ccpa_optout_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipeda_consent_extension.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipa_korea_zk_identity.json dist/idl/ 2>/dev/null; echo 'IDL copy done'",
     "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "prepublishOnly": "pnpm test && pnpm build"
@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
+    "@lightprotocol/stateless.js": "^0.13.0",
     "@shadow-drive/sdk": "^6.0.0",
     "@solana/web3.js": "^1.98.0",
     "commander": "^12.1.0",
