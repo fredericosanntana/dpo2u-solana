@@ -278,6 +278,51 @@ pub mod art_vault {
         });
         Ok(())
     }
+
+    /// Transfer the vault's `authority` field to a new Pubkey (e.g., Squads
+    /// MiCAR Reserve vault PDA).
+    ///
+    /// Composed Stack Fase 1.c — completes the Squads v4 governance migration
+    /// by handing over MiCAR reserve authority to a multisig-controlled PDA.
+    ///
+    /// FORWARD-ONLY MIGRATION (KNOWN LIMITATION):
+    ///   The vault PDA seed pattern is `[b"art_vault", authority.key().as_ref()]`,
+    ///   meaning the *operations* (update_reserve, mint_art, redeem_art,
+    ///   trip_circuit_breaker) verify the signer's key against the seed —
+    ///   the seed is the ORIGINAL creator's key, not the stored authority field.
+    ///   After `transfer_authority` updates `vault.authority`, those operations
+    ///   are blocked because the new authority's signer cannot satisfy the
+    ///   seed constraint.
+    ///
+    ///   This is acceptable for an audit/governance scenario where the goal
+    ///   is to FREEZE the vault under multisig oversight and resume operations
+    ///   only via a v2 program upgrade with refactored seeds (decoupled from
+    ///   authority). Sprint G follow-up: redesign with `[b"art_vault", vault_id]`
+    ///   seed pattern.
+    ///
+    /// Use case: hand over MiCAR Reserve vault to Squads vault[2] PDA,
+    /// then upgrade program (via Squads Governance multisig) to enable
+    /// resumed ops under multisig signing.
+    pub fn transfer_authority(
+        ctx: Context<TransferAuthority>,
+        new_authority: Pubkey,
+    ) -> Result<()> {
+        let v = &mut ctx.accounts.vault;
+        require_keys_eq!(v.authority, ctx.accounts.authority.key(), VaultErr::Unauthorized);
+        // Defensive: refuse zero pubkey (would brick the vault permanently).
+        require!(new_authority != Pubkey::default(), VaultErr::InvalidNewAuthority);
+
+        let previous_authority = v.authority;
+        v.authority = new_authority;
+
+        emit!(AuthorityTransferred {
+            vault: ctx.accounts.vault.key(),
+            previous_authority,
+            new_authority,
+            transferred_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Helpers --
@@ -445,6 +490,16 @@ pub struct TripCircuit<'info> {
     pub vault: Account<'info, ArtVault>,
 }
 
+/// One-shot migration: takes the vault account directly (no PDA derivation
+/// from signer). Verifies signer == vault.authority in the handler body.
+/// See `transfer_authority` doc for the forward-only migration semantics.
+#[derive(Accounts)]
+pub struct TransferAuthority<'info> {
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub vault: Account<'info, ArtVault>,
+}
+
 // -- Events --
 
 #[event]
@@ -507,6 +562,14 @@ pub struct CircuitBreakerTripped {
     pub tripped_at: i64,
 }
 
+#[event]
+pub struct AuthorityTransferred {
+    pub vault: Pubkey,
+    pub previous_authority: Pubkey,
+    pub new_authority: Pubkey,
+    pub transferred_at: i64,
+}
+
 // -- Errors --
 
 #[error_code]
@@ -539,6 +602,8 @@ pub enum VaultErr {
     PythPriceInvalid,
     #[msg("Pyth confidence interval too wide relative to price (max_confidence_bps exceeded)")]
     PythConfidenceTooWide,
+    #[msg("new authority cannot be the zero pubkey (would brick the vault)")]
+    InvalidNewAuthority,
 }
 
 // -- Inline Rust unit tests --
