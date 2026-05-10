@@ -15,6 +15,11 @@ art_vault = "C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna"
 consent_manager = "D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB"
 fee_distributor = "88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x"
 payment_gateway = "4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q"
+popia_info_officer_registry = "ASqTAMhhki7btr3WL768v2yUPKWuGfMEGWnP7TxALmmb"
+ccpa_optout_registry = "5xVQq4KKsAST14RGvxP2aSNZhp681tRENM9TFwVfUpgk"
+pipeda_consent_extension = "G98d5DAEC17xWfojMCdsYrAdAXP8E7QC2g2KrrnLrMPT"
+pipa_korea_zk_identity = "41JLtHb54P8LMLeSccZM1XR6xr4gxcDbVrNRZVg2hPhR"
+hiroshima_ai_process_attestation = "4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx"
 
 [programs.localnet]
 # Re-added 2026-04-22 after anchor build generated all .so artifacts.
@@ -28,6 +33,11 @@ compliance_registry_pinocchio = "FZ21S53Rn8Y6ANfccS2waCrkYWh5zfjXK3hkKU5YSkJ8"
 consent_manager = "D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB"
 fee_distributor = "88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x"
 payment_gateway = "4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q"
+popia_info_officer_registry = "ASqTAMhhki7btr3WL768v2yUPKWuGfMEGWnP7TxALmmb"
+ccpa_optout_registry = "5xVQq4KKsAST14RGvxP2aSNZhp681tRENM9TFwVfUpgk"
+pipeda_consent_extension = "G98d5DAEC17xWfojMCdsYrAdAXP8E7QC2g2KrrnLrMPT"
+pipa_korea_zk_identity = "41JLtHb54P8LMLeSccZM1XR6xr4gxcDbVrNRZVg2hPhR"
+hiroshima_ai_process_attestation = "4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx"
 
 [registry]
 url = "https://api.apr.dev"
