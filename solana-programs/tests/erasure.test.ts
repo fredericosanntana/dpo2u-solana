@@ -33,7 +33,13 @@ import { BorshCoder } from '@coral-xyz/anchor';
 
 import idl from '../target/idl/compliance_registry.json' assert { type: 'json' };
 import { PROGRAM_IDS, deriveAttestationPda } from './helpers.js';
-import { MockBackend, PayloadNotFoundError } from '../../packages/client-sdk/src/storage/index.js';
+// Import from leaf modules instead of the storage barrel. The barrel
+// re-exports ShdwDriveBackend, which pulls in @shadow-drive/sdk — a dep
+// not installed in solana-programs/node_modules. Vite parses the import
+// graph eagerly, so even though this test only uses MockBackend,
+// importing from index.js would fail to resolve @shadow-drive/sdk.
+import { MockBackend } from '../../packages/client-sdk/src/storage/mock.js';
+import { PayloadNotFoundError } from '../../packages/client-sdk/src/storage/types.js';
 
 const VERIFIER_PROGRAM_ID = new PublicKey('5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW');
 const REPO_ROOT = path.resolve(__dirname, '../../');
