@@ -131,9 +131,36 @@ jobs:
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
       - name: Install Anchor CLI
         run: cargo install --git https://github.com/coral-xyz/anchor --tag v0.31.1 anchor-cli --locked
-      - name: Build Anchor programs (generates IDL + .so)
+      - name: Build Anchor programs (generates IDL + .so) — skip Pinocchio-native
         working-directory: solana-programs
-        run: anchor build
+        # `anchor build` (no flags) attempts to emit IDL for every program in
+        # Anchor.toml, including compliance-registry-pinocchio which is a
+        # native Pinocchio program with no Anchor macros — that program fails
+        # IDL generation. Loop the 13 Anchor-based programs explicitly; the
+        # Pinocchio program is built separately via cargo build-sbf below.
+        run: |
+          set -e
+          for prog in \
+            agent-registry \
+            agent-wallet-factory \
+            aiverify-attestation \
+            art-vault \
+            ccpa-optout-registry \
+            compliance-registry \
+            consent-manager \
+            fee-distributor \
+            hiroshima-ai-process-attestation \
+            payment-gateway \
+            pipa-korea-zk-identity \
+            pipeda-consent-extension \
+            popia-info-officer-registry; do
+            echo "::group::anchor build -p $prog"
+            anchor build -p "$prog"
+            echo "::endgroup::"
+          done
+      - name: Build Pinocchio-native compliance-registry (cargo build-sbf)
+        working-directory: solana-programs/programs/compliance-registry-pinocchio
+        run: cargo build-sbf
       - name: Build dpo2u-compliance-verifier (SBF)
         working-directory: sp1-solana
         run: cargo build-sbf --manifest-path example/program/Cargo.toml
@@ -166,9 +193,28 @@ jobs:
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
       - name: Install Anchor CLI
         run: cargo install --git https://github.com/coral-xyz/anchor --tag v0.31.1 anchor-cli --locked
-      - name: Build Anchor (for IDL)
+      - name: Build Anchor (for IDL) — skip Pinocchio-native
         working-directory: solana-programs
-        run: anchor build
+        # See note in anchor-integration-tests job — Pinocchio program fails
+        # IDL gen, and client-sdk only consumes Anchor IDLs, so skip it here.
+        run: |
+          set -e
+          for prog in \
+            agent-registry \
+            agent-wallet-factory \
+            aiverify-attestation \
+            art-vault \
+            ccpa-optout-registry \
+            compliance-registry \
+            consent-manager \
+            fee-distributor \
+            hiroshima-ai-process-attestation \
+            payment-gateway \
+            pipa-korea-zk-identity \
+            pipeda-consent-extension \
+            popia-info-officer-registry; do
+            anchor build -p "$prog"
+          done
       - name: Install client-sdk deps
         working-directory: packages/client-sdk
         run: pnpm install --frozen-lockfile
