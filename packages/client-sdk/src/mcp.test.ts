@@ -208,6 +208,175 @@ describe('MCPClient — audit/docs typed methods', () => {
     expect(out.matrix[0].code).toBe('LGPD');
   });
 
+  it('compareJurisdictions accepts EMEA codes (POPIA, NDPA, PDPL)', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({
+        success: true,
+        result: {
+          matrix: [
+            { code: 'POPIA', name: 'POPIA', country: 'ZA', cryptoMaturity: 'High', aiRegulation: 'Nascent', dataProtection: 'Strong', bestUseCase: 'SADC gateway', keyInsight: 'k' },
+            { code: 'NDPA',  name: 'NDPA',  country: 'NG', cryptoMaturity: 'High', aiRegulation: 'Emerging', dataProtection: 'Strong', bestUseCase: 'WAfrica fintech', keyInsight: 'k' },
+            { code: 'UAE',   name: 'UAE',   country: 'AE', cryptoMaturity: 'Very High', aiRegulation: 'Pro-innovation', dataProtection: 'Strong', bestUseCase: 'ADGM foundation', keyInsight: 'k' },
+          ],
+          recommendation: 'EMEA stack',
+          focus: 'all',
+          metadata: { generatedAt: 1, jurisdictionsCovered: 3 },
+        },
+      });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    const out = await c.compareJurisdictions({ targetMarkets: ['POPIA', 'NDPA', 'PDPL'] });
+    expect(capturedBody.targetMarkets).toEqual(['POPIA', 'NDPA', 'PDPL']);
+    expect(out.matrix.map((m) => m.code).sort()).toEqual(['NDPA', 'POPIA', 'UAE']);
+  });
+
+  it('checkCompliance accepts POPIA jurisdiction', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({ success: true, result: {} });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    await c.checkCompliance({
+      company: 'Acme ZA',
+      auditScope: 'full',
+      framework: 'GDPR',
+      jurisdiction: 'POPIA',
+      hasDPO: true,
+    });
+    expect(capturedBody.jurisdiction).toBe('POPIA');
+  });
+
+  it('checkCompliance accepts NDPA jurisdiction', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({ success: true, result: {} });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    await c.checkCompliance({
+      company: 'Acme NG',
+      auditScope: 'full',
+      framework: 'GDPR',
+      jurisdiction: 'NDPA',
+      hasDPO: true,
+    });
+    expect(capturedBody.jurisdiction).toBe('NDPA');
+  });
+
+  it('compareJurisdictions accepts Americas codes (CCPA, PIPEDA, LAW25)', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({
+        success: true,
+        result: {
+          matrix: [
+            { code: 'CCPA',   name: 'CCPA',   country: 'US', cryptoMaturity: 'High', aiRegulation: 'Strong (state)', dataProtection: 'Strong', bestUseCase: 'US enterprise', keyInsight: 'k' },
+            { code: 'PIPEDA', name: 'PIPEDA', country: 'CA', cryptoMaturity: 'Medium-High', aiRegulation: 'Voluntary', dataProtection: 'Strong (EU-adequate)', bestUseCase: 'NA bridge', keyInsight: 'k' },
+            { code: 'LAW25',  name: 'LAW25',  country: 'CA', cryptoMaturity: 'Medium-High', aiRegulation: 'Strong', dataProtection: 'Very Strong', bestUseCase: 'GDPR-equivalent NA', keyInsight: 'k' },
+          ],
+          recommendation: 'Americas stack',
+          focus: 'all',
+          metadata: { generatedAt: 1, jurisdictionsCovered: 3 },
+        },
+      });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    const out = await c.compareJurisdictions({ targetMarkets: ['CCPA', 'PIPEDA', 'LAW25'] });
+    expect(capturedBody.targetMarkets).toEqual(['CCPA', 'PIPEDA', 'LAW25']);
+    expect(out.matrix.map((m) => m.code).sort()).toEqual(['CCPA', 'LAW25', 'PIPEDA']);
+  });
+
+  it('checkCompliance accepts CCPA jurisdiction', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({ success: true, result: {} });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    await c.checkCompliance({
+      company: 'Acme US',
+      auditScope: 'full',
+      framework: 'GDPR',
+      jurisdiction: 'CCPA',
+      hasDPO: true,
+    });
+    expect(capturedBody.jurisdiction).toBe('CCPA');
+  });
+
+  it('checkCompliance accepts PIPEDA jurisdiction', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({ success: true, result: {} });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    await c.checkCompliance({
+      company: 'Acme Canada',
+      auditScope: 'full',
+      framework: 'GDPR',
+      jurisdiction: 'PIPEDA',
+      hasDPO: true,
+    });
+    expect(capturedBody.jurisdiction).toBe('PIPEDA');
+  });
+
+  it('checkCompliance accepts LAW25 jurisdiction (Quebec)', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({ success: true, result: {} });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    await c.checkCompliance({
+      company: 'Acme Quebec',
+      auditScope: 'full',
+      framework: 'GDPR',
+      jurisdiction: 'LAW25',
+      hasDPO: true,
+    });
+    expect(capturedBody.jurisdiction).toBe('LAW25');
+  });
+
+  it('checkCompliance accepts APAC codes (PIPA Korea, PDP Indonesia)', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({ success: true, result: {} });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    for (const j of ['PIPA', 'PDP'] as const) {
+      await c.checkCompliance({
+        company: `Acme ${j}`,
+        auditScope: 'full',
+        framework: 'GDPR',
+        jurisdiction: j,
+        hasDPO: true,
+      });
+      expect(capturedBody.jurisdiction).toBe(j);
+    }
+  });
+
+  it('checkCompliance accepts PDPL jurisdiction (resolves server-side to UAE)', async () => {
+    let capturedBody: any = null;
+    const fetchMock = makeFetchMock((_u, init) => {
+      capturedBody = JSON.parse((init?.body as string) ?? '{}');
+      return jsonResponse({ success: true, result: {} });
+    });
+    const c = new MCPClient({ fetchImpl: fetchMock });
+    await c.checkCompliance({
+      company: 'Acme UAE',
+      auditScope: 'full',
+      framework: 'GDPR',
+      jurisdiction: 'PDPL',
+      hasDPO: true,
+    });
+    expect(capturedBody.jurisdiction).toBe('PDPL');
+  });
+
   it('checkCompliance passes booleans', async () => {
     let capturedBody: any = null;
     const fetchMock = makeFetchMock((_u, init) => {

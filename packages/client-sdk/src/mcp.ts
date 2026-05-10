@@ -300,7 +300,7 @@ export class MCPClient {
     company: string;
     auditScope: string;
     framework: 'LGPD' | 'GDPR' | 'Ambos';
-    jurisdiction?: 'LGPD' | 'GDPR' | 'DPDP' | 'MICAR' | 'PDPA' | 'UAE';
+    jurisdiction?: 'LGPD' | 'GDPR' | 'DPDP' | 'MICAR' | 'PDPA' | 'UAE' | 'PDPL' | 'POPIA' | 'NDPA' | 'CCPA' | 'PIPEDA' | 'LAW25' | 'PIPA' | 'PDP';
     cnpj?: string;
     hasDPO?: boolean;
     hasPrivacyPolicy?: boolean;

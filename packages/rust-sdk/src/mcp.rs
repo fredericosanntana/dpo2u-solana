@@ -355,6 +355,33 @@ mod tests {
     }
 
     #[test]
+    fn jurisdiction_row_parses_emea_codes() {
+        for (code, country, use_case) in [
+            ("POPIA", "ZA", "SADC gateway"),
+            ("NDPA", "NG", "West Africa fintech"),
+            ("CCPA", "US", "US enterprise market"),
+            ("PIPEDA", "CA", "EU-adequate Americas bridge"),
+            ("LAW25", "CA", "First North American GDPR-equivalent"),
+            ("PIPA", "KR", "Northeast Asia gateway"),
+            ("PDP", "ID", "SE Asia largest economy"),
+        ] {
+            let json = serde_json::json!({
+                "code": code,
+                "name": code,
+                "country": country,
+                "cryptoMaturity": "High",
+                "aiRegulation": "Emerging",
+                "dataProtection": "Strong",
+                "bestUseCase": use_case,
+                "keyInsight": "EMEA expansion",
+            });
+            let r: JurisdictionRow = serde_json::from_value(json).unwrap();
+            assert_eq!(r.code, code);
+            assert_eq!(r.country, country);
+        }
+    }
+
+    #[test]
     fn fetch_consent_result_handles_null_record() {
         let json = serde_json::json!({
             "found": false,
