@@ -28,3 +28,13 @@ scripts/members.json
 # Local env
 .env
 .env.local
+
+# Runtime logs
+logs/
+
+# Demo video binaries — host on YouTube unlisted, link in README
+scripts/demo/*.mp4
+scripts/demo/cards/
+
+# Knightshield demo subject (sample data, regenerate via scripts/scan-knightshield-multi.ts)
+scripts/knightshield-demo-subject.json
