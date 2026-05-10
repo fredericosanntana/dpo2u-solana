@@ -27,7 +27,8 @@ Score stays private. Proof is public. Everything is enforceable.
 
 ## 🎬 Demo
 
-> 📺 _Demo video link will land here after recording (ETA: day 10 of sprint)._
+> 📺 **3-minute screencast — DPO2U Composed Stack live on Solana devnet.**
+> YouTube unlisted link landed in the `[Final hand-off]` commit at submission time. Until then, judges can reproduce the proof flow locally in ~60s using the commands below — no SP1 install, no validator setup. Voiceover narration (5 chunks, 114s total) ships in [`docs/DEMO.md`](./docs/DEMO.md).
 
 **60-second reproducibility — no SP1 install, no validator setup:**
 
