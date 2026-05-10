@@ -8,7 +8,9 @@ for Superteam BR regional track.
 
 - Terminal capture: [`asciinema`](https://asciinema.org) → upload public unlisted
 - Voice-over: OmniVoice TTS (local, DPO2U Chairman's voice) — already set up
-  at `DPO2U/03-Ferramentas/Scripts/chairman_voice.py`
+  at `DPO2U/03-Ferramentas/Scripts/social/chairman_voice.py`. EN voice tag:
+  `design:male,American accent,middle-aged,low pitch`. Use `--text` (not
+  `--file` — file mode triggers LLM expansion that breaks duration).
 - Final mix: ffmpeg overlay of asciinema-agg output + voiceover audio
 - Hosting: YouTube unlisted (embeddable in README)
 
@@ -88,7 +90,7 @@ tweet if we can get permission.
 ## Production checklist
 
 - [ ] Record asciinema casts for each block (retake if any typo)
-- [ ] Record voiceover in 4 chunks matching scene boundaries
+- [x] Record voiceover in 5 chunks matching scene boundaries (2026-05-05; 114.54s total in `DPO2U/07-Content/hyperframes-dpo2u/colosseum-demo/narration/`)
 - [ ] Draft architecture animation (Excalidraw or Motion Canvas)
 - [ ] Mix audio + visuals in ffmpeg or Descript
 - [ ] Burn-in captions (for silent-watch on Twitter/LinkedIn)
