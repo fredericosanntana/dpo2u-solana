@@ -1,6 +1,8 @@
 # dpo2u-solana
 
-**First LGPD-native zero-knowledge compliance attestation stack on Solana.**
+### The HTTPS of compliance — for Web2 and Web3.
+
+**A protocol that seals two regimes in one transaction: privacy and AI governance. 17 jurisdictions. 70+ countries. 14 Anchor programs on Solana devnet.**
 
 [![CI](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml/badge.svg)](https://github.com/fredericosanntana/dpo2u-solana/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -10,25 +12,40 @@
 [![Solana](https://img.shields.io/badge/Solana-3.1.13-9945FF)](https://solana.com)
 [![Anchor](https://img.shields.io/badge/Anchor-0.31.1-512BD4)](https://www.anchor-lang.com)
 
-> ⚡ **Submission to Colosseum Frontier 2026 — [see team + narrative](./TEAM.md)**
+> ⚡ **Submission to Colosseum Frontier 2026 — [see team + narrative](./TEAM.md)** · Also targeting the **[Cloak](https://cloak.ag) side track** ([see Cloak Bridge](#-cloak-bridge--compliance--audit-tooling-for-solanas-shielded-pools))
 
-> 🚀 **Dev? START HERE → [ONBOARDING.md](./ONBOARDING.md)** · Hello World em 4 stacks (JS/Rust/REST/MCP) em 5–10 min · [runnable examples/](./examples/) · [send feedback](https://github.com/fredericosanntana/dpo2u-solana/issues/new?template=devs-feedback.md)
+> 🚀 **Dev? START HERE → [ONBOARDING.md](./ONBOARDING.md)** · Hello World in 4 stacks (JS/Rust/REST/MCP) in 5–10 min · [runnable examples/](./examples/) · [send feedback](https://github.com/fredericosanntana/dpo2u-solana/issues/new?template=devs-feedback.md)
 
-An auditor needs to verify a company's LGPD/GDPR compliance score meets a
-policy threshold — without learning the score itself. `dpo2u-solana` closes
-this contradiction: the company generates a zero-knowledge proof of
-`score ≥ threshold`, the Solana on-chain verifier runs the Groth16 pairing
-check in ~156k compute units (~$0.0002), and only then does the compliance
-registry record the attestation PDA.
+### Compliance lost its seal. We are putting it back on-chain.
 
-Score stays private. Proof is public. Everything is enforceable.
+Compliance was born as a wax seal. For a thousand years an act became binding the moment hot wax met paper — demonstrable, infalsifiable, verifiable by anyone who could look. We digitized everything and lost the seal. Today compliance is theater: PDFs no one reads, spreadsheets no one accesses. When proof is demanded, the regulated entity is forced to hand sensitive data to a third party. **Meta paid €1.2 billion in EU privacy fines in 2023.** They had a compliance program, a named DPO, and a PDF. The PDF prevented nothing — because compliance based on documents is compliance based on faith.
+
+**DPO2U inverts it: the score stays private, the proof goes on-chain.**
+
+A regulated entity computes its compliance score off-chain across **17 privacy jurisdictions and 70+ countries**, plus **6 AI-governance frameworks** (EU AI Act, Korea AI Basic Act, Hiroshima ICOC, UNESCO RAM, Japan AISI, CAIDP Universal Guidelines). It generates an SP1 v6 Groth16 zero-knowledge proof that `score ≥ threshold`. The proof is 356 bytes. It ships to Solana. The on-chain verifier runs the BN254 pairing check in **~156k compute units (~$0.0002)** via the `alt_bn128` precompile, and only then does the registry write an attestation PDA.
+
+**Score stays private. Proof is public. Event is enforceable.**
+
+DPO2U is an MCP that turns law into code. Rules become circuits. Evidence becomes on-chain attestations. Audits become real-time cryptographic verification — callable by any wallet, smart contract, or AI agent. The only protocol that seals both privacy and AI-governance regimes at once, enabling **institutional regulated real-world assets** on Solana.
+
+---
+
+## 🎯 For judges — 60-second path
+
+| Path | What to do | What you'll see |
+|---|---|---|
+| **Live demo video** | Open <https://dpo2u.com/downloads/demo/dpo2u-demo-2026.mp4> | 90s Composed Stack screencast |
+| **Live MCP server** | `curl https://mcp.dpo2u.com/health` | `{"status":"healthy"}` — 66 endpoints across 17 jurisdictions |
+| **Live attestation PDA** | [`71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c`](https://explorer.solana.com/address/71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c?cluster=devnet) on Solana Explorer | A real verified attestation written by [this tx](https://explorer.solana.com/tx/66J8DEZNbZr3u6zxeoM5PZESDHa8mDy6UkpeYUiwLrNjAvsQMwfMcG2NyBUe2ZETUoTWJBHMGy5ctZhVdXYR9z2g?cluster=devnet) |
+| **Reproduce locally (60s)** | `git clone … && cd dpo2u-solana/sp1-solana && cargo run --release -p dpo2u-driver -- --verbose` | Pairing check passes on the Solana runtime — no SP1 install required |
+| **Landing + pricing** | <https://dpo2u.com> · <https://dpo2u.com/pricing> | Live |
 
 ---
 
 ## 🎬 Demo
 
-> 📺 **3-minute screencast — DPO2U Composed Stack live on Solana devnet.**
-> YouTube unlisted link landed in the `[Final hand-off]` commit at submission time. Until then, judges can reproduce the proof flow locally in ~60s using the commands below — no SP1 install, no validator setup. Voiceover narration (5 chunks, 114s total) ships in [`docs/DEMO.md`](./docs/DEMO.md).
+> 📺 **90-second screencast — DPO2U Composed Stack live on Solana devnet.**
+> Watch: **<https://dpo2u.com/downloads/demo/dpo2u-demo-2026.mp4>** (8.7 MB, MP4). Long-form pitch: **<https://dpo2u.com/downloads/pitch/dpo2u-pitch-2026.mp4>** (57 MB). Judges can also reproduce the full proof flow locally in ~60s using the commands below — no SP1 install, no validator setup. Voiceover narration (5 chunks, 114s total) and scene-by-scene script in [`docs/DEMO.md`](./docs/DEMO.md).
 
 **60-second reproducibility — no SP1 install, no validator setup:**
 
@@ -122,9 +139,28 @@ transaction reverts — no attestation is written.
 
 ---
 
-## 🇧🇷 LGPD Art. 18 — right to erasure (only on Solana)
+## 🧹 Right to erasure — across 17 jurisdictions, only solvable on Solana
 
-Blockchain compliance stacks usually handwave past the "right to be forgotten." LGPD Art. 18 (and GDPR Art. 17) gives the data subject a legal right to demand deletion of their personal data. If PII is stored on-chain or on an immutable off-chain store (IPFS, Arweave, Shadow Drive v2), there is no answer. DPO2U's answer: **past compliance provable forever, personal data deletable on demand.**
+Blockchain compliance stacks usually handwave past the "right to be forgotten." But the right to erasure is not a Brazilian or European quirk — it is a statutory right in nearly every modern privacy regime:
+
+| Jurisdiction | Provision | Region |
+|---|---|---|
+| Brazil — LGPD | Art. 18, VI | Latin America |
+| EU + UK — GDPR | Art. 17 | EMEA |
+| California — CCPA / CPRA | § 1798.105 | North America |
+| Canada — PIPEDA / Quebec Law 25 | Principle 4.5 / Art. 28 | North America |
+| India — DPDP | § 12 | APAC |
+| Korea — PIPA | Art. 36 | APAC |
+| Japan — APPI | Art. 30 | APAC |
+| Singapore + Malaysia — PDPA | s.16 / s.39 | APAC |
+| Indonesia — UU PDP | Art. 31 | APAC |
+| Vietnam — Decree 13 | Art. 9 | APAC |
+| South Africa — POPIA | § 24 | Africa |
+| Nigeria — NDPA | § 36 | Africa |
+| UAE + ADGM — PDPL | Art. 16 | MEA |
+| Mexico — LFPDPPP | Art. 25 | LatAm |
+
+If PII is stored on-chain or on an immutable off-chain store (IPFS, Arweave, Shadow Drive v2), there is no answer for any of these regulators. DPO2U's answer is the same regardless of jurisdiction: **past compliance provable forever, personal data deletable on demand.**
 
 ### How
 
@@ -135,10 +171,10 @@ Blockchain compliance stacks usually handwave past the "right to be forgotten." 
 
 ### Storage backend matrix
 
-| Backend | Deletable? | LGPD Art. 18 | Solana-native | Cost model |
+| Backend | Deletable? | Erasure-compliant (all 14 regimes above) | Solana-native | Cost model |
 |---|---|---|---|---|
-| IPFS (public gateway) | ❌ content-addressed | Fails | ❌ | Grátis |
-| Shadow Drive **v1** | ✅ | **Cumpre** | ✅ | SHDW rent (continuous) |
+| IPFS (public gateway) | ❌ content-addressed | Fails | ❌ | Free |
+| Shadow Drive **v1** | ✅ | **Complies** | ✅ | SHDW rent (continuous) |
 | Shadow Drive v2 | ❌ pay-once immutable | Fails | ✅ | SHDW/SOL one-shot |
 | Arweave | ❌ permanent | Fails | ❌ | AR one-shot |
 | `mock` (in-memory) | ✅ | test-only | n/a | free |
@@ -210,7 +246,7 @@ bytes 100..356 pi_a + pi_b + pi_c  (uncompressed G1, G2, G1)
 | Constraint | Why Solana wins |
 |---|---|
 | Proof verification cost | BN254 precompile via `alt_bn128_*` syscalls — ~156k CU per pairing |
-| Transaction economics | ~$0.0002 per attestation → LGPD-scale volumes feasible |
+| Transaction economics | ~$0.0002 per attestation → regulator-scale volumes feasible across all 17 jurisdictions and 70+ countries |
 | Groth16 proof size | 356 B fits in one tx, no lookup tables |
 | Finality | Sub-second — compliance events can be referenced same block |
 | Ecosystem | Privacy-adjacent infra (Arcium, Light Protocol) actively growing |
@@ -219,9 +255,9 @@ bytes 100..356 pi_a + pi_b + pi_c  (uncompressed G1, G2, G1)
 
 ## 🧬 Composed Stack — 4 Solana-native primitives in one atomic transaction
 
-Sprint 2026-05-08: addressing Colosseum feedback that the project wasn't
-"Solana-native enough", we added a layer that composes 4 primitives **unique
-to Solana** in a single atomic transaction:
+DPO2U composes four primitives **unique to Solana** in a single atomic
+transaction. The composition does not exist on any EVM chain — it would
+require four separate protocols bridged together. Here it is one tx:
 
 | Layer | Role | Why Solana-only |
 |-------|------|-----------------|
@@ -267,15 +303,146 @@ to Solana** in a single atomic transaction:
 
 ---
 
-## 🧠 Why Brazil
+## 🕶️ Cloak Bridge — compliance & audit tooling for Solana's shielded pools
 
-LGPD (Lei Geral de Proteção de Dados, 2020) is the motivating regime. The
-collision between "the auditor must verify the score" and "but the score
-itself is sensitive business data" is a live problem facing ~50M registered
-CNPJs. The design primitives (threshold policies, DPO workflows, subject
-commitments as `did:br:cnpj:...`) are LGPD-native, not retrofitted. The
-same stack generalizes — but starting from a real regulatory reality
-produces better primitives than starting from a spec.
+**Targeting the [Cloak](https://cloak.ag) side track** at Colosseum Frontier. Code at [`apps/cloak-bridge/`](./apps/cloak-bridge) — published as `@dpo2u/cloak-bridge` v0.1.0-alpha.
+
+### The problem & who it's for
+
+Cloak makes private USDC / USDT / SOL transactions live on Solana mainnet today. The moment an organization adopts Cloak for payroll, B2B settlement, treasury, or cross-border flows, the question shifts from "can we transact privately?" to **"how do we prove compliance over private transactions?"** Every regime we cover gives the data subject confidentiality *and* gives the regulator audit rights — LGPD, GDPR, DPDP, MiCAR (for ART issuers), POPIA, CCPA. Most "private" stacks force a choice: either the auditor sees nothing (regulator cannot enforce) or the protocol exposes the data in the clear (user's privacy collapses).
+
+Cloak's **viewing key** is the design primitive that lets both be true. Cloak Bridge is the tool that turns a viewing key into an **on-chain compliance attestation** — without ever copying the underlying transactions outside the auditor's machine.
+
+**Target user:** finance teams, external auditors, and regulators acting over an organization that already runs on Cloak. The product is **compliance and audit tooling** — direction #4 in Cloak's track brief.
+
+### How the Cloak SDK is used (and why it's central)
+
+The viewing-key capability is the single load-bearing primitive — without it, this product cannot exist. The bridge consumes a `ViewingKeyMaterial` from `@cloak.dev/sdk`, calls `scanTransactions` against a target account over a configurable period, and feeds the decrypted history into the DPO2U analyzer pipeline:
+
+```
+auditor receives Cloak viewing key (scoped: entity + period + amount-visibility)
+        │
+        ▼
+cloak-bridge.scanHistory(viewingKey, periodStart, periodEnd)
+   └─ @cloak.dev/sdk · scanTransactions  ← Cloak SDK call
+        │
+        ▼  decrypted CloakAccountHistory (in-auditor-memory only)
+3 analyzers run over the history:
+  · MiCAR Art. 23  — stablecoin reserve coverage
+  · MiCAR Art. 36  — redemption / velocity caps
+  · LGPD  Art. 16  — retention (stale notes past declared window)
+        │
+        ▼  facts kept off-chain (encrypted at rest); sha256(facts) committed
+SP1 v6  proof of  score ≥ threshold
+        │
+        ▼  CPI through dpo2u-compliance-verifier
+attestation PDA in compliance-registry
+        │
+        ▼
+auditor publishes the attestation reference; raw shielded txs stay private forever
+```
+
+The bridge consumes the **viewing key** capability deeply (not incidentally) — it is the *only* way the analyzers can run, because Cloak transactions are otherwise opaque on-chain. Roadmap items below extend the integration to **selective scoping** (issue narrower keys per analyzer) and **stealth-address attestation receipts** so the auditor's verdict reaches the data subject without revealing the auditor's identity either.
+
+### What ships in this submission (v0.1.0-alpha)
+
+| File | Role | LOC |
+|---|---|---|
+| [`src/cloak/client.ts`](./apps/cloak-bridge/src/cloak/client.ts) | `CloakProvider` interface + `loadCloakSdkProvider()` (dynamic-imports `@cloak.dev/sdk`) + `MockCloakProvider` for unit tests | 107 |
+| [`src/cloak/types.ts`](./apps/cloak-bridge/src/cloak/types.ts) | `ViewingKeyMaterial`, `CloakAccountHistory`, `CloakTx` | 27 |
+| [`src/analyzers/base.ts`](./apps/cloak-bridge/src/analyzers/base.ts) | `Analyzer` interface + `AnalyzerResult` (verdict, 0–100 score, off-chain facts + commitment) | 32 |
+| [`src/analyzers/micar-art23.ts`](./apps/cloak-bridge/src/analyzers/micar-art23.ts) | **MiCAR Art. 23** — reserve coverage analyzer | 60 |
+| [`src/analyzers/micar-art36.ts`](./apps/cloak-bridge/src/analyzers/micar-art36.ts) | **MiCAR Art. 36** — redemption / velocity caps analyzer | 70 |
+| [`src/analyzers/lgpd-retention.ts`](./apps/cloak-bridge/src/analyzers/lgpd-retention.ts) | **LGPD Art. 16** — retention analyzer over Cloak notes | 47 |
+
+### Setup & run
+
+```bash
+# 1. Install the Cloak SDK (peer dep)
+cd apps/cloak-bridge
+pnpm install
+pnpm add @cloak.dev/sdk   # optional — bridge falls back to MockCloakProvider if absent
+
+# 2. Build the bridge
+pnpm build
+
+# 3. Use programmatically (CLI ships in v0.2 — track this in the issues tab)
+node -e "
+  const { LgpdRetentionAnalyzer } = require('@dpo2u/cloak-bridge');
+  const analyzer = new LgpdRetentionAnalyzer();
+  // …feed it a CloakAccountHistory from @cloak.dev/sdk's scanTransactions
+"
+```
+
+The MiCAR + LGPD analyzer set was chosen deliberately: stablecoin issuers using Cloak for treasury sit exactly at the intersection of MiCAR (EU stablecoin regulation, in force) and LGPD/GDPR data-protection requirements. These are the two regimes where shielded-pool auditability is currently most contested — and where the gap in tooling is most expensive.
+
+### Roadmap
+
+- **v0.2** (within 2 weeks of Colosseum) — first-class CLI (`dpo2u-cloak-bridge attest --viewing-key … --analyzer micar-art23 --period last-quarter`), runnable example notebook, integration tests against Cloak devnet/sandbox if one becomes available.
+- **v0.3** — additional analyzers (POPIA § 14 minimization, DPDP § 7 lawful processing), scoped viewing-key issuance (per-analyzer narrower keys), stealth-address attestation receipts to the data subject.
+- **v1.0** — production deploy of the attestation registry on mainnet via Squads v4 governance; partnership with one Cloak-using stablecoin issuer as design partner.
+
+> **Honest status note for Cloak judges**: this is a working scaffold (343 LOC, MIT, no fabricated demos). The analyzer logic is real; the SP1 → CPI path is the same one used by the 19 passing tests in `solana-programs/tests/`. End-to-end against the live Cloak SDK lands in the v0.2 cut, where we will also produce a runnable demo video specifically for this track. Cloak's `@cloak.dev/sdk` reaching public beta unblocks the same window.
+
+---
+
+## ⏱️ Why now
+
+For the decade I worked as an in-house Data Protection Officer, the cryptographic
+primitives needed to make compliance enforceable on-chain did not exist at a price
+point regulators could enforce. In the last twelve months three things changed:
+
+1. **Solana shipped the `alt_bn128_*` syscalls.** On-chain Groth16 pairing
+   verification now costs about two hundredths of a cent per attestation. On EVM
+   the same operation is economically unviable. Compliance-scale attestation
+   volume is feasible here today and nowhere else.
+2. **SP1 reached v6 as a general-purpose zkVM.** Ordinary Rust compiles to a
+   zero-knowledge proof. We no longer hand-author circuits per regulation — one
+   zkVM covers seventeen jurisdictions today and accommodates the next ten with
+   code, not cryptography.
+3. **The regulatory surface tripled.** The EU AI Act took effect; Korea passed
+   an AI Basic Act; India's DPDP began enforcement; Brazil's ANPD intensified
+   LGPD action; the Hiroshima AI Process pulled sixty G7+invited countries into
+   voluntary AI-governance attestation. With AI agents proliferating, compliance
+   events are about to be measured per-decision, not per-quarter.
+
+The cryptographic stack, the regulatory demand, and an operator who has lived
+the problem for fifteen years all converged this year. The window did not exist
+in 2016, in 2020, or in 2023. We do not believe it will still be open in 2027.
+
+---
+
+## 📈 Market & model
+
+Compliance is a **$23B market today, projected to reach $105B by 2034**. A multinational fintech routinely spends six figures a year on redundant compliance work that does not produce an artifact a regulator can verify in real time. DPO2U makes that a single API call.
+
+| Lever | Number |
+|---|---|
+| Per-attestation latency on Solana | **< 2 seconds** finality |
+| Per-attestation cost (regular PDA) | **~$0.0002** (BN254 syscall, ~156k CU) |
+| Per-attestation cost (compressed via Composed Stack) | **~$0.032** (~10× cheaper at scale) |
+| Pricing vs traditional compliance consulting | **50%** of consulting equivalent (3 tiers: Free / Builder $29 / Team $199 — see [dpo2u.com/pricing](https://dpo2u.com/pricing)) |
+| Target gross margin | **~82%** |
+| Capital posture | SAFE round, **$3M post-money** |
+
+The thesis: compliance that scales at the speed of software, not the speed of legal. The only protocol that seals **both** privacy and AI-governance regimes in one atomic transaction — enabling institutional regulated **real-world assets** on Solana.
+
+---
+
+## 🧠 Why Brazil first
+
+LGPD (Lei Geral de Proteção de Dados, 2020) is the motivating regime and the
+beachhead market — ~50M active CNPJs, a flagship Superteam chapter, and a DPO
+profession that already exists statutorily. The design primitives (threshold
+policies, DPO workflows, subject commitments as `did:br:cnpj:...`) are
+LGPD-native, not retrofitted from a generic spec.
+
+The same primitives generalize: the live MCP server at
+[`mcp.dpo2u.com`](https://mcp.dpo2u.com) already serves 17 privacy jurisdictions
+covering 70+ countries plus six AI-governance frameworks
+(see [`dpo2u.com/coverage`](https://dpo2u.com/coverage)). Starting from a
+specific regulatory reality produced better primitives than starting from a
+spec would have. Brazil first — every regulated entity next.
 
 See [TEAM.md](./TEAM.md) for the team + shipping model.
 
@@ -353,5 +520,9 @@ MIT — see [`LICENSE`](./LICENSE). The `sp1-solana/` fork retains the
 original MIT license from Succinct Labs.
 
 ---
+
+> *The question is not whether regulation will reach on-chain. It is who will build the protocol it runs on top of. We are. We are DPO2U — the HTTPS of compliance, for Web2 and Web3.*
+>
+> ***Seal with us.***
 
 *Brasil vai ser o flagship market da Solana. Não é IF, é WHEN.* 🇧🇷
