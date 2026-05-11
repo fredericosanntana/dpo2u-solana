@@ -6,6 +6,61 @@ All notable changes to `dpo2u-solana`.
 
 Submission prep for Colosseum Frontier 2026 (deadline ~2026-05-11).
 
+### 2026-05-11 — install-eval + container redeploy + storage hardening
+
+- **MCP container redeployed** com Sprint E + F endpoints (66 paths / 53 `/tools`). Antes parado em 54 paths (Sprint D era).
+- **`STORAGE_REQUIRE_REAL=1`** flag adicionada em 5 tools com mock-CID fallback silencioso (`generate_retention_policy`, `generate_privacy_policy`, `generate_terms_of_use`, `create_dpo_report`, `generate_security_policy`). Quando set, recusa registrar on-chain se IPFS upload falha — fim do risco de "compliance theatre" em prod.
+- **npm audit limpo**: 5 vulns (axios, fast-uri, hono, ip-address) → **0**. Tests permanecem 303/310 verdes.
+- **STATUS.md** criado como source of truth para números públicos (jurisdictions, tools, programs, tests).
+- **`/version` endpoint** adicionado — expõe git commit, build date, tool count, uptime. Build step em `scripts/generate-version.mjs`.
+- **Anchor build trap documentado**: `anchor build` (sem flags) trava no `compliance-registry-pinocchio` (sem Anchor IDL by design). Workaround: loop per-prog em CI.
+- **Eval docs**: `06-Memory/Strategic/2026-05-11-install-eval-{mcp,solana}.md` + `2026-05-11-roast-dpo2u-solana.md`.
+
+### 2026-05-06 — Sprint F (CAIDP UN Global Dialogue alignment)
+
+- **AI gov frameworks**: 4 → **6** — adicionado CAIDP Universal Guidelines (12 UGs, 7 red lines, 10 AI Index) e UNESCO RAM (14 principles, 6 dimensions).
+- **MCP tools**: 59 → **63** (`+audit_ai_red_lines`, `+generate_ai_hria`, `+report_ai_incident`, `+caidp_ai_index_score`).
+- **MCP tests**: 270 → **302 verdes** (+32).
+- **`hiroshima_ai_process_attestation` upgrade devnet** Tx `3SbRnas9Nau6kb8Fq2AoEP17G6stmpFT2Cxg1jtkENpHUnfGszocnsRpfBMb9TcjSyTNSbrRM6EkmNPgAqisSZQh`, data 261→308KB.
+- **Hiroshima attestation types**: 5 → 8 (`+RED_LINE_NEGATIVE`, `+HRIA`, `+INCIDENT`); instructions 5 → 8.
+- **Novos accounts**: `RapporteurConfig` (singleton 82B) + `TerminationOrder` (per-system 247B, irreversible).
+- **Solana tests**: 104 → **113 verdes** (+9).
+
+### 2026-05-04 — Sprint E (APPI Japan + AI Governance Vertical)
+
+- **Privacy jurisdictions**: 13 → **14** — APPI (Act 57/2003 + amend 2022 + My Number Act).
+- **AI Governance vertical NOVO** — `kb/ai-governance/`. 4 frameworks iniciais: Japan + Hiroshima ICOC + EU-AIA stub + Korea stub.
+- **MCP tools**: 54 → **58**.
+- **Solana programs**: 13 → **14** — `hiroshima_ai_process_attestation` deployed `4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx`.
+- **Tests**: mcp-server 224 → **252 verdes**; solana-programs 95 → **104**.
+- **PROGRAM_IDS const**: 13 → 14 keys.
+
+### 2026-05-05 — Sprint E next-steps batch v2
+
+- **`multi_jurisdiction_compliance_check`** — fan-out check_compliance N jurisdições. 10/10 tests verdes.
+- **APPI + PIPA `ai` field cleanup** (pointer cross-link).
+- **Landing site live**: dpo2u.com atualizado com "Fifteen jurisdictions" + APPI badge.
+- **Dogfood MCP completo**: 28/29 tools success.
+
+### 2026-05-01 — Sprint D fase 2 (4 jurisdiction programs devnet)
+
+- **POPIA Information Officer Registry** (`ASqTAMhh…mb`) — §55 South Africa.
+- **CCPA Opt-out Registry** (`5xVQq4KK…gk`) — §1798.135 California, hash-based PDA.
+- **PIPEDA Consent Extension** (`G98d5DAE…PT`) — Schedule 1 Canada.
+- **PIPA Korea ZK Identity** (`41JLtHb5…hR`) — Art. 24, SP1 v6.
+- **4 TS SDK clients + 4 MCP tools** correspondentes (+25 testes).
+- **Tests**: mcp-server 199 → **219**; client-sdk 78 → **93**.
+- **OpenAPI**: 50 → **54 endpoints**.
+
+### 2026-04-23 → 2026-04-30 — Dogfood rounds + scaffold hardening
+
+- **Sprint D fase 1**: 4 programs deployed devnet (~6.1 SOL gasto).
+- **Sprint D fase 3**: 4 scaffold bankrun tests (39 tests, suite 56→95).
+- **Dogfood Round 3 + 7 fixes** (R3-1..R3-7).
+- **Round 4 fixes**: `countries` array support, erasure E2E (LGPD Art. 18), privacy policy regen.
+- **Pre-alpha-mass-invite (3 fixes)**: MICAR/ART scoring funcional, rate limit alpha-signup (5/h/IP), `scoreScope` semântico.
+- **LGPD score**: 42 → **87/100**.
+
 ### Added — 2026-04-22 crypto gap closure
 
 - **AES-256-GCM envelope storage backend** — new `EncryptedStorageBackend` at `packages/client-sdk/src/storage/encrypted.ts` wrapping any `StorageBackend` (mock/ipfs/shdw). Adds confidentiality-at-rest: payloads are encrypted client-side **before** upload; public gateways (Shadow Drive) see only ciphertext. Wire format: `[magic("DPO2U\x01") | nonce(12) | tag(16) | ciphertext]`. CLI flag `--encrypt-key <hex32>` added to both `attest` and `consent record` subcommands. CLI: `dpo2u-cli consent record` now also supports `--upload <file>`/`--backend`/`--shdw-storage-account` so the fiduciary can encrypt+upload+anchor in one call. 18 roundtrip + tamper-detection tests.
