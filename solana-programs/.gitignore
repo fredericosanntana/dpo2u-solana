@@ -1,0 +1,2 @@
+# Test fixtures — populated by `pretest` script from sibling sp1-solana build.
+tests/fixtures/*.so

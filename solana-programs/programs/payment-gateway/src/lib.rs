@@ -1,17 +1,23 @@
+// anchor-lang 0.31.1 #[program] macro expands to deprecated AccountInfo::realloc
+// and emits unknown cfg conditions (custom-heap, solana, etc.); bump to 0.32+
+// scheduled for post-Colosseum.
+#![allow(deprecated, unexpected_cfgs)]
+
 //! DPO2U Payment Gateway
 //!
-//! Creates invoices and records settled ones. Actual SPL Token transfer is
-//! handled by the caller (MCP server) prior to `settle_invoice`; the program
-//! verifies the transfer signature via transaction introspection (Sprint 4
-//! will add SPL Token CPI direct, for now we trust the caller so Sprint 3
-//! scaffold stays simple).
+//! Creates invoices and settles them atomically via SPL Token CPI.
+//! `settle_invoice` moves `settled_amount` tokens from `payer_token_account` to
+//! `payee_token_account` via `anchor_spl::token::transfer_checked` (signed by
+//! payer) and records `settled_at`. Mint invariant enforced: both ATAs must
+//! hold the same mint declared on `invoice.mint`.
 //!
 //! Invoice PDA seeds: [b"invoice", payer, tool_name_bytes, nonce_le_bytes]
 //! enabling idempotent settlement per (payer, tool, nonce).
 
 use anchor_lang::prelude::*;
+use anchor_spl::token::{self, Mint, Token, TokenAccount, TransferChecked};
 
-declare_id!("CbAYe2hsBZmrB4GB8VcLZDchUuDonoG15Cg6n9cnE7Cn");
+declare_id!("4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q");
 
 #[program]
 pub mod payment_gateway {
@@ -50,19 +56,52 @@ pub mod payment_gateway {
 
     pub fn settle_invoice(ctx: Context<SettleInvoice>, settled_amount: u64) -> Result<()> {
         let clock = Clock::get()?;
-        let inv = &mut ctx.accounts.invoice;
+        let inv = &ctx.accounts.invoice;
         require!(inv.settled_at.is_none(), PaymentErr::AlreadySettled);
         require!(settled_amount >= inv.amount, PaymentErr::InsufficientPayment);
         require_keys_eq!(inv.payer, ctx.accounts.payer.key(), PaymentErr::Unauthorized);
+        require_keys_eq!(ctx.accounts.mint.key(), inv.mint, PaymentErr::MintMismatch);
+        require_keys_eq!(
+            ctx.accounts.payer_token_account.mint,
+            inv.mint,
+            PaymentErr::MintMismatch
+        );
+        require_keys_eq!(
+            ctx.accounts.payee_token_account.mint,
+            inv.mint,
+            PaymentErr::MintMismatch
+        );
+        require_keys_eq!(
+            ctx.accounts.payee_token_account.owner,
+            inv.payee,
+            PaymentErr::UnauthorizedDestination
+        );
 
+        let cpi_ctx = CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            TransferChecked {
+                from: ctx.accounts.payer_token_account.to_account_info(),
+                mint: ctx.accounts.mint.to_account_info(),
+                to: ctx.accounts.payee_token_account.to_account_info(),
+                authority: ctx.accounts.payer.to_account_info(),
+            },
+        );
+        token::transfer_checked(cpi_ctx, settled_amount, ctx.accounts.mint.decimals)?;
+
+        let tool_name = inv.tool_name.clone();
+        let nonce = inv.nonce;
+        let payer_key = inv.payer;
+        let payee_key = inv.payee;
+
+        let inv = &mut ctx.accounts.invoice;
         inv.settled_at = Some(clock.unix_timestamp);
 
         emit!(PaymentSettled {
-            payer: inv.payer,
-            payee: inv.payee,
+            payer: payer_key,
+            payee: payee_key,
             amount: settled_amount,
-            tool_name: inv.tool_name.clone(),
-            nonce: inv.nonce,
+            tool_name,
+            nonce,
             settled_at: clock.unix_timestamp,
         });
         Ok(())
@@ -107,6 +146,12 @@ pub struct SettleInvoice<'info> {
     pub payer: Signer<'info>,
     #[account(mut, seeds = [b"invoice", invoice.payer.as_ref(), invoice.tool_name.as_bytes(), &invoice.nonce.to_le_bytes()], bump = invoice.bump)]
     pub invoice: Account<'info, Invoice>,
+    #[account(mut)]
+    pub payer_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub payee_token_account: Account<'info, TokenAccount>,
+    pub mint: Account<'info, Mint>,
+    pub token_program: Program<'info, Token>,
 }
 
 #[event]
@@ -138,4 +183,8 @@ pub enum PaymentErr {
     InsufficientPayment,
     #[msg("only the invoice payer can settle")]
     Unauthorized,
+    #[msg("mint or token account mint does not match invoice.mint")]
+    MintMismatch,
+    #[msg("payee token account does not belong to invoice payee")]
+    UnauthorizedDestination,
 }

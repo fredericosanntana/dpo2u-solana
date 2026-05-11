@@ -1,0 +1,26 @@
+[package]
+name = "compliance-registry-pinocchio"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "compliance_registry_pinocchio"
+
+[features]
+no-entrypoint = []
+# `idl-build` is a no-op for Pinocchio (no Anchor IDL). Defined only so that
+# `anchor build` at the workspace level doesn't fail when iterating over
+# programs — Anchor's `--idl-build-all` looks for this feature on each member.
+idl-build = []
+
+[dependencies]
+pinocchio = "0.9"
+pinocchio-system = "0.4"
+pinocchio-pubkey = "0.3"
+pinocchio-log = "0.4"
+borsh = { version = "1.5", default-features = false, features = ["derive"] }
+# Composed Stack — Fase 2: SHA-256 for AttestationLeaf hash (no_std for BPF).
+# Used in submit_verified_compressed / revoke_compressed to derive deterministic
+# leaf hashes matching what Photon Indexer reconstructs from tx logs.
+sha2 = { version = "0.10", default-features = false }

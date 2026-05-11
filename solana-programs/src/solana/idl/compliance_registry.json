@@ -1,0 +1,524 @@
+{
+  "address": "5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW",
+  "metadata": {
+    "name": "compliance_registry",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "DPO2U Compliance attestation registry — anchors DPIA/audit commitments."
+  },
+  "instructions": [
+    {
+      "name": "create_attestation",
+      "docs": [
+        "Legacy path — attestation with caller-asserted commitment.",
+        "Kept for backwards compatibility with Sprint 3 clients.",
+        "New integrations SHOULD use `create_verified_attestation`."
+      ],
+      "discriminator": [
+        49,
+        24,
+        67,
+        80,
+        12,
+        249,
+        96,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "issuer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "subject"
+        },
+        {
+          "name": "attestation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "subject"
+              },
+              {
+                "kind": "arg",
+                "path": "commitment"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "commitment",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "storage_uri",
+          "type": "string"
+        },
+        {
+          "name": "schema_id",
+          "type": "pubkey"
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "option": "i64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "create_verified_attestation",
+      "docs": [
+        "Verified path — CPI to `dpo2u-compliance-verifier` first, then attest.",
+        "",
+        "The `commitment` seed MUST match `subject_commitment` extracted from the",
+        "proof's public values. This binds the PDA address to the exact proof —",
+        "you cannot create an attestation with the same (subject, commitment)",
+        "keyed to a different proof."
+      ],
+      "discriminator": [
+        86,
+        95,
+        88,
+        56,
+        42,
+        225,
+        35,
+        29
+      ],
+      "accounts": [
+        {
+          "name": "issuer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "subject"
+        },
+        {
+          "name": "attestation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "subject"
+              },
+              {
+                "kind": "arg",
+                "path": "commitment"
+              }
+            ]
+          }
+        },
+        {
+          "name": "verifier_program",
+          "address": "5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "commitment",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "proof",
+          "type": "bytes"
+        },
+        {
+          "name": "public_inputs",
+          "type": "bytes"
+        },
+        {
+          "name": "storage_uri",
+          "type": "string"
+        },
+        {
+          "name": "schema_id",
+          "type": "pubkey"
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "option": "i64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "revoke_attestation",
+      "discriminator": [
+        12,
+        156,
+        103,
+        161,
+        194,
+        246,
+        211,
+        179
+      ],
+      "accounts": [
+        {
+          "name": "issuer",
+          "signer": true
+        },
+        {
+          "name": "attestation",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "reason",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Attestation",
+      "discriminator": [
+        152,
+        125,
+        183,
+        86,
+        36,
+        146,
+        121,
+        73
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AttestationCreated",
+      "discriminator": [
+        217,
+        170,
+        19,
+        203,
+        128,
+        51,
+        29,
+        163
+      ]
+    },
+    {
+      "name": "AttestationRevoked",
+      "discriminator": [
+        47,
+        106,
+        65,
+        238,
+        200,
+        127,
+        163,
+        50
+      ]
+    },
+    {
+      "name": "VerifiedAttestationCreated",
+      "discriminator": [
+        185,
+        255,
+        109,
+        193,
+        93,
+        96,
+        51,
+        170
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "StorageUriTooLong",
+      "msg": "storage_uri exceeds 128 bytes"
+    },
+    {
+      "code": 6001,
+      "name": "ReasonTooLong",
+      "msg": "revocation reason exceeds 64 bytes"
+    },
+    {
+      "code": 6002,
+      "name": "AlreadyRevoked",
+      "msg": "attestation already revoked"
+    },
+    {
+      "code": 6003,
+      "name": "Unauthorized",
+      "msg": "only the original issuer can revoke"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidProofSize",
+      "msg": "proof bytes must be exactly 356 (SP1 v6 Groth16 layout)"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidPublicValuesSize",
+      "msg": "public_inputs must be 96 bytes (ABI-encoded PublicValuesStruct)"
+    },
+    {
+      "code": 6006,
+      "name": "MalformedPublicValues",
+      "msg": "could not parse PublicValuesStruct from public_inputs bytes"
+    },
+    {
+      "code": 6007,
+      "name": "CommitmentMismatch",
+      "msg": "commitment argument does not match subject_commitment inside proof"
+    },
+    {
+      "code": 6008,
+      "name": "ThresholdNotMet",
+      "msg": "proof's meets_threshold flag is false — subject does not meet policy"
+    },
+    {
+      "code": 6009,
+      "name": "ProofSerializationFailed",
+      "msg": "failed to Borsh-serialize SP1Groth16Proof for CPI"
+    },
+    {
+      "code": 6010,
+      "name": "VerificationFailed",
+      "msg": "CPI to dpo2u-compliance-verifier failed — proof did not verify"
+    }
+  ],
+  "types": [
+    {
+      "name": "Attestation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "subject",
+            "type": "pubkey"
+          },
+          {
+            "name": "issuer",
+            "type": "pubkey"
+          },
+          {
+            "name": "schema_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "storage_uri",
+            "type": "string"
+          },
+          {
+            "name": "issued_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "revoked_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "revocation_reason",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "verified",
+            "docs": [
+              "True when created via `create_verified_attestation` (ZK-verified)."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "threshold",
+            "docs": [
+              "Threshold from the proof's public values (0 when not verified)."
+            ],
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AttestationCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "subject",
+            "type": "pubkey"
+          },
+          {
+            "name": "issuer",
+            "type": "pubkey"
+          },
+          {
+            "name": "commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "issued_at",
+            "type": "i64"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AttestationRevoked",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "subject",
+            "type": "pubkey"
+          },
+          {
+            "name": "commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          },
+          {
+            "name": "revoked_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VerifiedAttestationCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "subject",
+            "type": "pubkey"
+          },
+          {
+            "name": "issuer",
+            "type": "pubkey"
+          },
+          {
+            "name": "commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "threshold",
+            "type": "u32"
+          },
+          {
+            "name": "verifier_program",
+            "type": "pubkey"
+          },
+          {
+            "name": "issued_at",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}

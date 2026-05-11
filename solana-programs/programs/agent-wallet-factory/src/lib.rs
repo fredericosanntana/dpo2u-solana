@@ -1,3 +1,8 @@
+// anchor-lang 0.31.1 #[program] macro expands to deprecated AccountInfo::realloc
+// and emits unknown cfg conditions (custom-heap, solana, etc.); bump to 0.32+
+// scheduled for post-Colosseum.
+#![allow(deprecated, unexpected_cfgs)]
+
 //! DPO2U Agent Wallet Factory
 //!
 //! Creates a PDA-owned "wallet" account for each agent deterministically derived
@@ -10,7 +15,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("BsJ6xWhvEhvJTsGNSiXHgJidysM92fLkAY38D48WAV1f");
+declare_id!("AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in");
 
 #[program]
 pub mod agent_wallet_factory {

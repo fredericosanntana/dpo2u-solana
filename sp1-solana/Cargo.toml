@@ -2,6 +2,7 @@
 members = [
     "verifier",
     "example/program",
+    "example/script",
 ]
 resolver = "2"
 

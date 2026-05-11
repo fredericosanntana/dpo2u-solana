@@ -1,0 +1,76 @@
+{
+  "name": "@dpo2u/client-sdk",
+  "version": "0.3.0",
+  "description": "TypeScript client for dpo2u-solana — on-chain compliance primitives (LGPD/GDPR/DPDP), AES-GCM encrypted storage, MCP REST client for audit/docs toolkit, and OAuth login via `dpo2u-cli login`. Build on Solana.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "dpo2u-cli": "./dist/bin/dpo2u-cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && pnpm copy-idls",
+    "copy-idls": "mkdir -p dist/idl && cp ../../solana-programs/target/idl/compliance_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/consent_manager.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/popia_info_officer_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/ccpa_optout_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipeda_consent_extension.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipa_korea_zk_identity.json dist/idl/ 2>/dev/null; echo 'IDL copy done'",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm test && pnpm build"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "solana",
+    "anchor",
+    "lgpd",
+    "gdpr",
+    "dpdp",
+    "micar",
+    "pdpa",
+    "adgm",
+    "compliance",
+    "consent-manager",
+    "privacy",
+    "zk-proof",
+    "sp1",
+    "groth16",
+    "dpo",
+    "shadow-drive",
+    "aes-gcm",
+    "encryption",
+    "mcp",
+    "rest-api",
+    "model-context-protocol"
+  ],
+  "author": "DPO2U <hello@dpo2u.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/fredericosanntana/dpo2u-solana#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fredericosanntana/dpo2u-solana.git",
+    "directory": "packages/client-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/fredericosanntana/dpo2u-solana/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@lightprotocol/stateless.js": "^0.13.0",
+    "@shadow-drive/sdk": "^6.0.0",
+    "@solana/web3.js": "^1.98.0",
+    "commander": "^12.1.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

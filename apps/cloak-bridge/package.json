@@ -1,0 +1,55 @@
+{
+  "name": "@dpo2u/cloak-bridge",
+  "version": "0.1.0-alpha",
+  "description": "Scaffold (alpha): MiCAR/LGPD analyzers that will consume a Cloak Protocol viewing key and emit DPO2U compliance attestations (SP1 v6 Groth16) into compliance-registry. Current alpha ships the analyzer primitives and Cloak client types; CLI + examples land in v0.2.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "keywords": [
+    "solana",
+    "cloak",
+    "dpo2u",
+    "micar",
+    "lgpd",
+    "privacy",
+    "compliance",
+    "zk-proof",
+    "sp1",
+    "viewing-key",
+    "shielded-pool",
+    "auditor"
+  ],
+  "author": "DPO2U <hello@dpo2u.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@dpo2u/client-sdk": "file:../../packages/client-sdk",
+    "@solana/web3.js": "^1.98.0",
+    "commander": "^12.1.0"
+  },
+  "peerDependencies": {
+    "@cloak.dev/sdk": "*"
+  },
+  "peerDependenciesMeta": {
+    "@cloak.dev/sdk": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "tsx": "^4.19.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

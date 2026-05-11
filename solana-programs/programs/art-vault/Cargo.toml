@@ -1,0 +1,24 @@
+[package]
+name = "art-vault"
+version = "0.1.0"
+description = "DPO2U MiCAR ART vault — on-chain safeguards for Asset-Referenced Tokens (PoR, liquidity vault, capital buffer 3%, velocity limiter)."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "art_vault"
+
+[features]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"
+# Pyth Network SDK — full-integration mode reads price + confidence + timestamp
+# from a Pyth price account. Uses the legacy SDK (v1 pull + push), which works
+# with both Solana mainnet-beta price feeds and pythtest-conformance devnet feeds.
+pyth-sdk-solana = "0.10"

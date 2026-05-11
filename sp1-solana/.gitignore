@@ -4,8 +4,12 @@ target/
 # Node modules
 **/*/node_modules
 
-# Test fixtures
-**/*/tests/fixtures
+# Test fixtures from upstream fibonacci example (binary blobs) — keep ignored
+example/program/tests/fixtures/
+example/script/tests/fixtures/
+
+# DPO2U regression fixtures ARE tracked (small, ~500 B total, needed by CI)
+# Leave sp1-solana/verifier/tests/fixtures/ un-ignored on purpose.
 
 test_serialized_fixture.bin
 

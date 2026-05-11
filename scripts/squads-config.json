@@ -1,0 +1,64 @@
+{
+  "cluster": "devnet",
+  "creator": "HjpGXPWQF1PiqjdWtNNEbAxqNamXKGpJspRZm9Jv5LZj",
+  "members": [
+    "CiBNTAkJMQ8TFsSGnhJ15yD49KAdS7vzqCnqiFdYXhat",
+    "HMcQeGqrDDaLY7uAj587nJiBJ9ce54bXRc1MbjkJujWL",
+    "2AK3ivn5jXcV6PGV3eQFGrBkP4Vie8uk6UPL4Qyau6Ce",
+    "GckaMdfiu8xNdQjEhGpBV3sCruGCmMNue24coDXdjSZS",
+    "GCos5UwWNHvBVBzsfbx7wMfB5aLu1bnGXuF972V2hFNU"
+  ],
+  "createdAt": "2026-05-08T21:00:28.098Z",
+  "multisigs": [
+    {
+      "role": "Governance",
+      "description": "Upgrade authority dos 14 programas DPO2U",
+      "threshold": "3-of-5",
+      "timeLockSeconds": 86400,
+      "multisigPda": "BMet4bdb7nevhMztXXkHHhKXH4FQX7iwN5xJnA7NVrA7",
+      "vaultPda": "Dmus9sfdK3AerRodZpThgVe6sn15Rdc7p4DEAb2BP5GL",
+      "createKey": "9v9Ug2JZnKiNEQwfgtR33DVDX4MTCpHP1Uik5C5aHSGY",
+      "txSig": "2aopqXi5B5mjAGiqrnHAvNgYQpdd4vKy1NPmZCghoyhRf9YkYcyFA9HsNvQZfmwV9M71aCWPUZxov9Gt31ynXcWJ"
+    },
+    {
+      "role": "Treasury",
+      "description": "Fees do payment-gateway + infra",
+      "threshold": "2-of-5",
+      "timeLockSeconds": 0,
+      "multisigPda": "9r9A4PrroU3mrqf817YTYtQw3mKm4cbXtk4hJKArS9wD",
+      "vaultPda": "9CgU19wh7F9AckNLZshcUE3TUX6bRhCRR421F332ESe3",
+      "createKey": "F4Dkkm9za8p5z4HzPPxysSTt3nXWBtW8AoUjjcs7FAY",
+      "txSig": "5L3sYS1GsmJjuJfL5PGpSjRzGuDLK6fAZ37kYWok8wAmtySdSf32qWEpHtETnU26R81e51vt7ShcYXkco9aHrFpV"
+    },
+    {
+      "role": "MiCAR Reserve",
+      "description": "Authority do art-vault reserve (MiCAR Art. 36)",
+      "threshold": "2-of-5",
+      "timeLockSeconds": 172800,
+      "multisigPda": "ENdADWYsDJGnaCZYABLajaPqMaRmHP8guHjiEFAMFRYQ",
+      "vaultPda": "vajRNE7GQJrrPL57BBK8EjQbQHyCCZupDxmVDRgUpJH",
+      "createKey": "A4QRfc88X5a5BWx5vwESX1dzrPHBoncX559K7d4Sygk7",
+      "txSig": "4Ntpo6UCvN4UHD73dLn4iCN9DiVe9dvBamSxWMuDRVGQiRQGUFEH5BhDLhRwjQRiTzPaN9TR1af6dmdA1c1HitHK"
+    },
+    {
+      "role": "Compliance Authority",
+      "description": "Revoke compressed attestation leaves",
+      "threshold": "2-of-5",
+      "timeLockSeconds": 86400,
+      "multisigPda": "9QatcwhuTZXRQamUV9kRAfumc2DNUWB63VhSpBYCTYaz",
+      "vaultPda": "EXy2AQo53vEtQW1k3pjfQHQtxM3rDoU6PQdr9ARg4UiU",
+      "createKey": "ZARYAhmFXvwfrnJzEFA94RdmGA3JG2E5bbGuaD59epp",
+      "txSig": "HfFjSzGLNW1Bvvz8CoHtmSZkDWNh5utJxdvtUmm4uvSAoxcQi3mgd3RFhBHeX8Csdmj2gZ1qwd4xewM3sHdJc8R"
+    },
+    {
+      "role": "Emergency",
+      "description": "Circuit breaker art-vault (halt rápido)",
+      "threshold": "2-of-5",
+      "timeLockSeconds": 0,
+      "multisigPda": "5jEkkVeKpJrwbxrydF6N4d8dfN2XQLhY5BRWv66QdnHR",
+      "vaultPda": "FmdxrMtbAo3tStYziy6rYEjVeeUWBkc82QCR9Co7ofRM",
+      "createKey": "77N3uSGC2nVDECHKsRnMVoAJMA37LwpWr7m71uM72mVM",
+      "txSig": "3Wkx4XtJuZZMg8wA9hQ6uUi9s5MYGaR3YmbhDXCZLpQeGDEkdW2K9TRXXkCkpZC4VgNokvmftekue184daafeHD5"
+    }
+  ]
+}

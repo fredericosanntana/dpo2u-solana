@@ -1,0 +1,21 @@
+[package]
+name = "pipa-korea-zk-identity"
+version = "0.1.0"
+description = "DPO2U PIPA Korea ZK Identity — i-PIN replacement primitive aligned to PIPA Art. 24 (RRN ban) — anchors ZK proof of identity attribute without storing identifiers."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "pipa_korea_zk_identity"
+
+[features]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"
+borsh = "1.5.1"

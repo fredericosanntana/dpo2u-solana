@@ -1,35 +1,25 @@
-//! DPO2U compliance_threshold circuit — zkVM program.
-//!
-//! Runs inside SP1's RISC-V zkVM. Reads the private score, reads public
-//! threshold + subject_commitment, asserts `score >= threshold` and commits
-//! public values. Verifier sees only threshold + commitment + boolean result.
-//!
-//! Sprint 4b: proof-of-concept. Sprint 4c adds range checks + commitment
-//! pre-image binding.
-
 #![no_main]
 
 sp1_zkvm::entrypoint!(main);
 
 use alloy_sol_types::SolType;
-use dpo2u_zk_lib::{check_compliance_threshold, PublicValuesStruct};
+use dpo2u_zk_lib::PublicValuesStruct;
 
 pub fn main() {
-    // Private input: the score (never revealed).
-    let score: u32 = sp1_zkvm::io::read::<u32>();
+    // Private input: The raw evaluation evidence that produces the bitmap.
+    // In v0.1, the inspector passes the verified bitmap directly as a private input.
+    // (In future iterations, the VM will parse the raw SBOM itself off-chain).
+    let predicates_bitmap: u32 = sp1_zkvm::io::read::<u32>();
 
-    // Public inputs: threshold (policy config) + subject_commitment (hash of
-    // the subject identifier — CNPJ or DID). Both get committed to the public
-    // values so the verifier can reconstruct without seeing the score.
-    let threshold: u32 = sp1_zkvm::io::read::<u32>();
-    let subject_commitment: [u8; 32] = sp1_zkvm::io::read::<[u8; 32]>();
+    // Public inputs: Repository Commit Hash and Agent Pubkey
+    let commit_hash: [u8; 32] = sp1_zkvm::io::read::<[u8; 32]>();
+    let agent_pubkey: [u8; 32] = sp1_zkvm::io::read::<[u8; 32]>();
 
-    let meets_threshold = check_compliance_threshold(score, threshold);
-
+    // Commit the public values
     let bytes = PublicValuesStruct::abi_encode(&PublicValuesStruct {
-        threshold,
-        subject_commitment: subject_commitment.into(),
-        meets_threshold,
+        commit_hash: commit_hash.into(),
+        agent_pubkey: agent_pubkey.into(),
+        predicates_bitmap,
     });
 
     sp1_zkvm::io::commit_slice(&bytes);

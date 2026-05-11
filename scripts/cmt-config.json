@@ -1,0 +1,27 @@
+{
+  "cluster": "devnet",
+  "createdAt": "2026-05-08T21:02:00.000Z",
+  "config": {
+    "mode": "shared-public-trees",
+    "comment": "Light Protocol v0.13.1 uses SHARED public state trees on devnet — no need to allocate own CMT. These pubkeys come from defaultTestStateTreeAccounts() in @lightprotocol/stateless.js. Pre-mainnet, this is the right path; production-grade DPO2U mainnet may want dedicated trees (~1 SOL one-time alloc).",
+    "maxDepth": 26,
+    "maxBufferSize": 2400,
+    "canopyDepth": 10
+  },
+  "trees": {
+    "stateTree": "smt1NamzXdq4AMqS2fS2F1i5KTYPZRhoHgWx38d8WsT",
+    "nullifierQueue": "nfq1NvQDJ2GEgnS8zt9prAe8rjjpAW1zFkrvZoBR148",
+    "addressTree": "amt1Ayt45jfbdw5YSo7iz6WZxUmnZsQTYXy82hVwyC2",
+    "addressQueue": "aq1S9z4reTSQAdgWHGD2zDaS39sjGrAxbR31vxJ2F4F"
+  },
+  "lightSystemProgram": "SySTEM1eSU2p4BGQfQpimFEWWSC1XDFeun3Nqzz3rT7",
+  "noopProgram": "noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV",
+  "accountCompressionProgram": "compr6CUsB5m2jS4Y3831ztGSTnDpnKJTKS95d64XVq",
+  "status": "shared-public-tree-mode",
+  "notes": [
+    "Shared trees são populadas por outros DApps Solana — DPO2U leaves serão indexed pelo Photon junto com leaves de outros programas.",
+    "Pra DPO2U distinguir suas leaves: DPO2U_LEAF_DISCRIMINATOR = 'DPO2ULF1' (8 bytes ASCII) gravado em leaf.discriminator.",
+    "Photon getCompressedAccount(leafHash) retorna apenas a leaf específica — multi-tenancy não compromete privacy.",
+    "Pre-mainnet decision: avaliar custo de tree dedicada (~1 SOL alloc + ongoing Forester fees) vs shared (free, mas dependência de Light Foundation operating publicly)."
+  ]
+}

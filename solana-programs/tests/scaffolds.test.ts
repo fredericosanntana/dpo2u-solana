@@ -101,8 +101,8 @@ describe('Sprint 3 — account size budgets (PDA must fit in 10KB)', () => {
   const MAX_PDA_BYTES = 10_240;
 
   const budgets: Record<string, number> = {
-    // Attestation: subject(32)+issuer(32)+schema(32)+commitment(32)+storage_uri(4+128)+issued_at(8)+expires_at(9)+revoked_at(9)+revocation_reason(5+64)+version(1)+bump(1) + discriminator(8)
-    attestation: 8 + 32 + 32 + 32 + 32 + (4 + 128) + 8 + 9 + 9 + (5 + 64) + 1 + 1,
+    // Attestation: subject(32)+issuer(32)+schema(32)+commitment(32)+storage_uri(4+128)+issued_at(8)+expires_at(9)+revoked_at(9)+revocation_reason(5+64)+version(1)+bump(1)+verified(1)+threshold(4) + discriminator(8)
+    attestation: 8 + 32 + 32 + 32 + 32 + (4 + 128) + 8 + 9 + 9 + (5 + 64) + 1 + 1 + 1 + 4,
     // Agent: authority(32)+name(4+32)+did_commitment(32)+did_uri(4+128)+permissions(2)+created_at(8)+updated_at(8)+bump(1) + disc(8)
     agent: 8 + 32 + (4 + 32) + 32 + (4 + 128) + 2 + 8 + 8 + 1,
     // Invoice: payer(32)+payee(32)+amount(8)+mint(32)+tool_name(4+64)+nonce(8)+created(8)+settled(9)+bump(1) + disc(8)

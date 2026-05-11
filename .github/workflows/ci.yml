@@ -99,3 +99,128 @@ jobs:
       - name: cargo check (lib crate only — program needs SP1 toolchain, script needs 32GB)
         working-directory: zk-circuits/lib
         run: cargo check --verbose
+
+  anchor-integration-tests:
+    name: Anchor programs + verified-attestation CPI tests (solana-bankrun)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.local/share/solana
+            solana-programs/target
+            sp1-solana/target
+          key: ${{ runner.os }}-anchor-int-${{ hashFiles('solana-programs/**/Cargo.lock', 'sp1-solana/**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-anchor-int-
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: solana-programs/pnpm-lock.yaml
+      - name: Install Rust
+        run: rustup default 1.95.0
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v3.1.13/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Anchor CLI
+        run: cargo install --git https://github.com/coral-xyz/anchor --tag v0.31.1 anchor-cli --locked
+      - name: Build Anchor programs (generates IDL + .so) — skip Pinocchio-native
+        working-directory: solana-programs
+        # `anchor build` (no flags) attempts to emit IDL for every program in
+        # Anchor.toml, including compliance-registry-pinocchio which is a
+        # native Pinocchio program with no Anchor macros — that program fails
+        # IDL generation. Loop the 13 Anchor-based programs explicitly; the
+        # Pinocchio program is built separately via cargo build-sbf below.
+        run: |
+          set -e
+          for prog in \
+            agent-registry \
+            agent-wallet-factory \
+            aiverify-attestation \
+            art-vault \
+            ccpa-optout-registry \
+            compliance-registry \
+            consent-manager \
+            fee-distributor \
+            hiroshima-ai-process-attestation \
+            payment-gateway \
+            pipa-korea-zk-identity \
+            pipeda-consent-extension \
+            popia-info-officer-registry; do
+            echo "::group::anchor build -p $prog"
+            anchor build -p "$prog"
+            echo "::endgroup::"
+          done
+      - name: Build Pinocchio-native compliance-registry (cargo build-sbf)
+        working-directory: solana-programs/programs/compliance-registry-pinocchio
+        run: cargo build-sbf
+      - name: Build dpo2u-compliance-verifier (SBF)
+        working-directory: sp1-solana
+        run: cargo build-sbf --manifest-path example/program/Cargo.toml
+      - name: Install Node deps
+        working-directory: solana-programs
+        run: pnpm install --frozen-lockfile
+      - name: Run integration tests (19 tests — scaffolds + verified-attestation)
+        working-directory: solana-programs
+        run: pnpm test
+
+  client-sdk-build:
+    name: '@dpo2u/client-sdk TypeScript build + tests'
+    runs-on: ubuntu-latest
+    needs: anchor-integration-tests  # client-sdk consumes the generated IDL
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: packages/client-sdk/pnpm-lock.yaml
+      - name: Install Rust
+        run: rustup default 1.95.0
+      - name: Install Solana CLI (for anchor build to produce IDL)
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v3.1.13/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Anchor CLI
+        run: cargo install --git https://github.com/coral-xyz/anchor --tag v0.31.1 anchor-cli --locked
+      - name: Build Anchor (for IDL) — skip Pinocchio-native
+        working-directory: solana-programs
+        # See note in anchor-integration-tests job — Pinocchio program fails
+        # IDL gen, and client-sdk only consumes Anchor IDLs, so skip it here.
+        run: |
+          set -e
+          for prog in \
+            agent-registry \
+            agent-wallet-factory \
+            aiverify-attestation \
+            art-vault \
+            ccpa-optout-registry \
+            compliance-registry \
+            consent-manager \
+            fee-distributor \
+            hiroshima-ai-process-attestation \
+            payment-gateway \
+            pipa-korea-zk-identity \
+            pipeda-consent-extension \
+            popia-info-officer-registry; do
+            anchor build -p "$prog"
+          done
+      - name: Install client-sdk deps
+        working-directory: packages/client-sdk
+        run: pnpm install --frozen-lockfile
+      - name: Build client-sdk
+        working-directory: packages/client-sdk
+        run: pnpm build
+      - name: Run client-sdk tests
+        working-directory: packages/client-sdk
+        run: pnpm test
