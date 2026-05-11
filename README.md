@@ -32,11 +32,14 @@ DPO2U is an MCP that turns law into code. Rules become circuits. Evidence become
 
 ## 🎯 For judges — 60-second path
 
+> **🎥 Pitch video (Chairman, 3 min): <https://youtu.be/8xPwG-8grl0>** — the wax-seal frame, the four-primitive Composed Stack, market sizing, and the "Seal with us" close. Watch this first.
+
 > **Canonical numbers (as of 2026-05-11):** **14** Anchor programs live on Solana devnet · **17** privacy jurisdictions · **70+** countries · **6** AI-governance frameworks · **66** MCP endpoints at `mcp.dpo2u.com` · **113** solana-programs tests + **306** mcp-server tests green on `main`. Older snapshots may quote 6 / 12 programs or 14 / 15 jurisdictions — those reflect earlier batches, superseded by `STATUS.md` in the meta-repo.
 
 | Path | What to do | What you'll see |
 |---|---|---|
-| **Live demo video** | Open <https://dpo2u.com/downloads/demo/dpo2u-demo-2026.mp4> | 90s Composed Stack screencast |
+| **🎥 Pitch video** | Watch <https://youtu.be/8xPwG-8grl0> | 3-min Chairman pitch — wax seal lineage → Solana stack → market → close |
+| **Composed Stack demo** | Open <https://dpo2u.com/downloads/demo/dpo2u-demo-2026.mp4> | 90s screencast of the 4-primitive flow |
 | **Live MCP server** | `curl https://mcp.dpo2u.com/health` | `{"status":"healthy"}` — 66 endpoints across 17 jurisdictions |
 | **Live attestation PDA** | [`71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c`](https://explorer.solana.com/address/71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c?cluster=devnet) on Solana Explorer | A real verified attestation written by [this tx](https://explorer.solana.com/tx/66J8DEZNbZr3u6zxeoM5PZESDHa8mDy6UkpeYUiwLrNjAvsQMwfMcG2NyBUe2ZETUoTWJBHMGy5ctZhVdXYR9z2g?cluster=devnet) |
 | **Reproduce locally (60s)** | `git clone … && cd dpo2u-solana/sp1-solana && cargo run --release -p dpo2u-driver -- --verbose` | Pairing check passes on the Solana runtime — no SP1 install required |
@@ -46,8 +49,10 @@ DPO2U is an MCP that turns law into code. Rules become circuits. Evidence become
 
 ## 🎬 Demo
 
-> 📺 **90-second screencast — DPO2U Composed Stack live on Solana devnet.**
-> Watch: **<https://dpo2u.com/downloads/demo/dpo2u-demo-2026.mp4>** (8.7 MB, MP4). Long-form pitch: **<https://dpo2u.com/downloads/pitch/dpo2u-pitch-2026.mp4>** (57 MB). Judges can also reproduce the full proof flow locally in ~60s using the commands below — no SP1 install, no validator setup. Voiceover narration (5 chunks, 114s total) and scene-by-scene script in [`docs/DEMO.md`](./docs/DEMO.md).
+> 🎥 **Pitch video (Chairman, 3 min) — <https://youtu.be/8xPwG-8grl0>**
+>
+> 📺 **90-second technical screencast — DPO2U Composed Stack live on Solana devnet.**
+> Watch: **<https://dpo2u.com/downloads/demo/dpo2u-demo-2026.mp4>** (8.7 MB, MP4). Long-form pitch (download): **<https://dpo2u.com/downloads/pitch/dpo2u-pitch-2026.mp4>** (57 MB). Judges can also reproduce the full proof flow locally in ~60s using the commands below — no SP1 install, no validator setup. Voiceover narration (5 chunks, 114s total) and scene-by-scene script in [`docs/DEMO.md`](./docs/DEMO.md).
 
 **60-second reproducibility — no SP1 install, no validator setup:**
 
