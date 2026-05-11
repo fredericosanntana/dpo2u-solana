@@ -32,6 +32,8 @@ DPO2U is an MCP that turns law into code. Rules become circuits. Evidence become
 
 ## 🎯 For judges — 60-second path
 
+> **Canonical numbers (as of 2026-05-11):** **14** Anchor programs live on Solana devnet · **17** privacy jurisdictions · **70+** countries · **6** AI-governance frameworks · **66** MCP endpoints at `mcp.dpo2u.com` · **113** solana-programs tests + **306** mcp-server tests green on `main`. Older snapshots may quote 6 / 12 programs or 14 / 15 jurisdictions — those reflect earlier batches, superseded by `STATUS.md` in the meta-repo.
+
 | Path | What to do | What you'll see |
 |---|---|---|
 | **Live demo video** | Open <https://dpo2u.com/downloads/demo/dpo2u-demo-2026.mp4> | 90s Composed Stack screencast |
@@ -74,7 +76,8 @@ For the end-to-end integration — proof → verifier CPI → attestation PDA:
 
 ```bash
 cd solana-programs && pnpm install && pnpm test
-# 19 tests pass: scaffolds + verified-attestation (happy path + 3 rejection modes)
+# 19 tests in this package pass: scaffolds + verified-attestation (happy path + 3 rejection modes)
+# (broader workspace runs 113 solana-programs tests; mcp-server runs 306 tests — see STATUS.md)
 ```
 
 ---
@@ -135,7 +138,7 @@ transaction reverts — no attestation is written.
 | [`fee-distributor`](./solana-programs/programs/fee-distributor) | `88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x` | 70/20/10 split: treasury / operator / reserve |
 | [`agent-wallet-factory`](./solana-programs/programs/agent-wallet-factory) | `AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in` | Deterministic PDA wallet per agent seed |
 
-> ✅ **Deployed to Solana devnet 2026-04-21.** All 6 programs live — full deploy log with transaction signatures and Explorer links in [`docs/devnet-deployments.md`](./docs/devnet-deployments.md). Smoke-tested end-to-end: `dpo2u-cli attest` successfully submitted a ZK proof through `compliance_registry` → `dpo2u_compliance_verifier` CPI, generating attestation PDA `71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c` ([tx](https://explorer.solana.com/tx/66J8DEZNbZr3u6zxeoM5PZESDHa8mDy6UkpeYUiwLrNjAvsQMwfMcG2NyBUe2ZETUoTWJBHMGy5ctZhVdXYR9z2g?cluster=devnet)).
+> ✅ **All 14 programs live on Solana devnet.** First 6 deployed 2026-04-21; 4 jurisdiction-specific (POPIA, CCPA, PIPEDA, PIPA Korea) + Pinocchio Composed-Stack orchestrator + Hiroshima ICOC G7 AI-process attestation rolled out through 2026-05-08. Full deploy log with transaction signatures and Explorer links in [`docs/devnet-deployments.md`](./docs/devnet-deployments.md). Smoke-tested end-to-end: `dpo2u-cli attest` successfully submitted a ZK proof through `compliance_registry` → `dpo2u_compliance_verifier` CPI, generating attestation PDA `71b2EPzrDm4UbcatmPPhHmPAqQfzas38FnvyQp1tJ16c` ([tx](https://explorer.solana.com/tx/66J8DEZNbZr3u6zxeoM5PZESDHa8mDy6UkpeYUiwLrNjAvsQMwfMcG2NyBUe2ZETUoTWJBHMGy5ctZhVdXYR9z2g?cluster=devnet)).
 
 ---
 
@@ -382,7 +385,7 @@ The MiCAR + LGPD analyzer set was chosen deliberately: stablecoin issuers using 
 - **v0.3** — additional analyzers (POPIA § 14 minimization, DPDP § 7 lawful processing), scoped viewing-key issuance (per-analyzer narrower keys), stealth-address attestation receipts to the data subject.
 - **v1.0** — production deploy of the attestation registry on mainnet via Squads v4 governance; partnership with one Cloak-using stablecoin issuer as design partner.
 
-> **Honest status note for Cloak judges**: this is a working scaffold (343 LOC, MIT, no fabricated demos). The analyzer logic is real; the SP1 → CPI path is the same one used by the 19 passing tests in `solana-programs/tests/`. End-to-end against the live Cloak SDK lands in the v0.2 cut, where we will also produce a runnable demo video specifically for this track. Cloak's `@cloak.dev/sdk` reaching public beta unblocks the same window.
+> **Honest status note for Cloak judges**: this is a working scaffold (343 LOC, MIT, no fabricated demos). The analyzer logic is real; the SP1 → CPI path is the same one exercised by the 19 verified-attestation tests in `solana-programs/tests/` (the workspace runs 113 tests total in `solana-programs/` + 306 in the meta-repo's `mcp-server`). End-to-end against the live Cloak SDK lands in the v0.2 cut, where we will also produce a runnable demo video specifically for this track. Cloak's `@cloak.dev/sdk` reaching public beta unblocks the same window.
 
 ---
 
@@ -401,10 +404,11 @@ point regulators could enforce. In the last twelve months three things changed:
    zkVM covers seventeen jurisdictions today and accommodates the next ten with
    code, not cryptography.
 3. **The regulatory surface tripled.** The EU AI Act took effect; Korea passed
-   an AI Basic Act; India's DPDP began enforcement; Brazil's ANPD intensified
-   LGPD action; the Hiroshima AI Process pulled sixty G7+invited countries into
-   voluntary AI-governance attestation. With AI agents proliferating, compliance
-   events are about to be measured per-decision, not per-quarter.
+   an AI Basic Act; India's DPDP entered phased enforcement; Brazil's ANPD
+   intensified LGPD action; the Hiroshima AI Process pulled the G7 and invited
+   countries into voluntary AI-governance attestation. With AI agents
+   proliferating, compliance events are about to be measured per-decision,
+   not per-quarter.
 
 The cryptographic stack, the regulatory demand, and an operator who has lived
 the problem for fifteen years all converged this year. The window did not exist
@@ -478,7 +482,8 @@ cargo build --release --bin prove
 cd solana-programs
 anchor build
 pnpm install
-pnpm test    # 19 tests: 15 scaffolds + 4 verified-attestation (CPI)
+pnpm test    # 19 tests in this package (15 scaffolds + 4 verified-attestation CPI)
+             # workspace total: 113 solana-programs tests + 306 mcp-server tests
 ```
 
 ### Deploy to devnet

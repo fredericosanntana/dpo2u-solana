@@ -55,7 +55,7 @@ cargo run --release -p dpo2u-driver -- --verbose
 # 3) Run the Anchor integration tests (real CPI, real verifier)
 cd ../solana-programs
 pnpm install && pnpm test
-# → 19 tests pass: scaffolds + verified-attestation happy path + 3 rejections
+# → 19 tests pass in this package (workspace total: 113 solana-programs + 306 mcp-server)
 ```
 
 Narration (over the output):

@@ -24,7 +24,7 @@
 > become uneconomic. Compressed accounts via Light Protocol drop that to ~$0.032 per
 > attestation — and unlocks the moat we want for the institutional layer."
 
-**Show**: `coverage` page on dpo2u.com — 14 jurisdiction badges + AI Governance vertical.
+**Show**: `coverage` page on dpo2u.com — 17 jurisdiction badges (70+ countries) + AI Governance vertical (6 frameworks).
 
 ### Beat 2 — The 4-primitive composition (0:45–2:00)
 
