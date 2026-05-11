@@ -8,9 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![npm: @dpo2u/client-sdk](https://img.shields.io/npm/v/@dpo2u/client-sdk.svg?label=npm)](https://www.npmjs.com/package/@dpo2u/client-sdk)
 [![crates: dpo2u-sdk](https://img.shields.io/crates/v/dpo2u-sdk.svg?label=crates.io)](https://crates.io/crates/dpo2u-sdk)
-[![SP1](https://img.shields.io/badge/SP1-v6.1.0-blue)](https://github.com/succinctlabs/sp1)
-[![Solana](https://img.shields.io/badge/Solana-3.1.13-9945FF)](https://solana.com)
-[![Anchor](https://img.shields.io/badge/Anchor-0.31.1-512BD4)](https://www.anchor-lang.com)
+[![Pinocchio](https://img.shields.io/badge/Pinocchio-native-FF6B35)](https://github.com/anza-xyz/pinocchio) [![Light Protocol](https://img.shields.io/badge/Light_Protocol-state_compression-9945FF)](https://github.com/Lightprotocol/light-protocol) [![Shadow Drive](https://img.shields.io/badge/Shadow_Drive-storage-1a1a1a)](https://shdwdrive.com) [![Squads v4](https://img.shields.io/badge/Squads-v4-7C3AED)](https://squads.so) [![Cloak SDK](https://img.shields.io/badge/Cloak-SDK-000000)](https://cloak.ag) [![SP1 ZK](https://img.shields.io/badge/SP1_ZK-v6.1.0-blue)](https://github.com/succinctlabs/sp1) [![Anchor](https://img.shields.io/badge/Anchor-0.31.1-512BD4)](https://www.anchor-lang.com)
 
 > ⚡ **Submission to Colosseum Frontier 2026 — [see team + narrative](./TEAM.md)** · Also targeting the **[Cloak](https://cloak.ag) side track** ([see Cloak Bridge](#-cloak-bridge--compliance--audit-tooling-for-solanas-shielded-pools))
 
