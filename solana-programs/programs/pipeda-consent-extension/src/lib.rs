@@ -55,6 +55,13 @@ pub mod pipeda_consent_extension {
             matches!(consent_form, CONSENT_EXPRESS | CONSENT_IMPLIED | CONSENT_OPT_OUT),
             PipedaErr::InvalidConsentForm
         );
+        // Auditor F-002 fix (2026-05-11): Schedule 1 has 10 principles (bits 0-9).
+        // Reject bits 10-15 — they're undefined and confuse consumers.
+        const VALID_PRINCIPLES_MASK: u16 = 0x03FF; // bits 0..=9
+        require!(
+            principles_evidenced & !VALID_PRINCIPLES_MASK == 0,
+            PipedaErr::InvalidPrinciples
+        );
         require!(storage_uri.len() <= 128, PipedaErr::StorageUriTooLong);
 
         let clock = Clock::get()?;
@@ -158,8 +165,12 @@ pub struct PipedaConsentRecord {
 pub struct RecordPipedaConsent<'info> {
     #[account(mut)]
     pub organization: Signer<'info>,
-    /// CHECK: subject pubkey
-    pub subject: AccountInfo<'info>,
+    /// Auditor F-001 fix (2026-05-11): subject must co-sign their consent.
+    /// PIPEDA Schedule 1 Principle 4 requires "knowledge and consent" with
+    /// "meaningful" reading per OPC Findings 2014-005/2018-002 (Schrems-
+    /// Stoddart-Bracken-Cazares jurisprudence). Unilateral organization
+    /// attestation is non-compliant. BREAKING: subject must be present at tx time.
+    pub subject: Signer<'info>,
     #[account(
         init,
         payer = organization,
@@ -251,4 +262,6 @@ pub enum PipedaErr {
     AlreadyFlagged,
     #[msg("only the data subject can withdraw consent (Principle 4.3.8)")]
     Unauthorized,
+    #[msg("principles_evidenced bitmap contains bits above Schedule 1 Principle 10 (mask 0x03FF)")]
+    InvalidPrinciples,
 }

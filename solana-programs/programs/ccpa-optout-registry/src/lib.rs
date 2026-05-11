@@ -40,6 +40,12 @@ pub mod ccpa_optout_registry {
     /// `optout_kind` is OPTOUT_SALE | OPTOUT_SHARE | OPTOUT_SENSITIVE.
     /// `via_gpc=true` indicates the opt-out came via Global Privacy Control
     ///   (Cal. Code Regs. tit. 11 §7025 — businesses must honor this signal).
+    ///
+    /// Auditor F-001 fix (2026-05-11): the consumer pubkey is recorded so that
+    /// `reverse_optout` can verify the signer is the same consumer (CCPA
+    /// §1798.135(c) — business cannot self-reverse).
+    /// BREAKING: adds `consumer: Signer<'info>` to context + `consumer` field
+    /// to OptoutRecord. Clients must include consumer signature.
     pub fn register_optout(
         ctx: Context<RegisterOptout>,
         consumer_commitment_hash: [u8; 32],
@@ -56,6 +62,7 @@ pub mod ccpa_optout_registry {
         let clock = Clock::get()?;
         let rec = &mut ctx.accounts.optout;
         rec.business = ctx.accounts.business.key();
+        rec.consumer = ctx.accounts.consumer.key();
         rec.consumer_commitment_hash = consumer_commitment_hash;
         rec.optout_kind = optout_kind;
         rec.via_gpc = via_gpc;
@@ -68,6 +75,7 @@ pub mod ccpa_optout_registry {
 
         emit!(OptoutRegistered {
             business: rec.business,
+            consumer: rec.consumer,
             consumer_commitment_hash,
             optout_kind,
             via_gpc,
@@ -76,24 +84,24 @@ pub mod ccpa_optout_registry {
         Ok(())
     }
 
-    /// Reverse an opt-out — only the consumer (via signed `consumer_signer`
-    /// account) can reverse. Businesses cannot un-opt consumers.
-    ///
-    /// In practice the consumer authenticates off-chain (e.g., via business
-    /// portal) and the business submits the reversal — but the on-chain
-    /// signer MUST be the consumer wallet that controls the
-    /// commitment_hash. This protects against business-initiated reversal
-    /// attacks per CCPA §1798.135(c).
+    /// Reverse an opt-out — only the consumer that originally signed the
+    /// register_optout can reverse. Auditor F-001 fix (2026-05-11): on-chain
+    /// check matches signer to `rec.consumer`, preventing business-initiated
+    /// reversal per CCPA §1798.135(c).
     pub fn reverse_optout(ctx: Context<ReverseOptout>) -> Result<()> {
         let clock = Clock::get()?;
         let rec = &mut ctx.accounts.optout;
         require!(rec.reversed_at.is_none(), OptoutErr::AlreadyReversed);
-        // Note: signature alone doesn't prove control of consumer_commitment_hash.
-        // Off-chain, businesses MUST verify the signer ↔ commitment binding.
+        require_keys_eq!(
+            rec.consumer,
+            ctx.accounts.consumer_signer.key(),
+            OptoutErr::UnauthorizedConsumer
+        );
         rec.reversed_at = Some(clock.unix_timestamp);
 
         emit!(OptoutReversed {
             business: rec.business,
+            consumer: rec.consumer,
             consumer_commitment_hash: rec.consumer_commitment_hash,
             optout_kind: rec.optout_kind,
             reversed_at: clock.unix_timestamp,
@@ -108,6 +116,9 @@ pub mod ccpa_optout_registry {
 #[derive(InitSpace)]
 pub struct OptoutRecord {
     pub business: Pubkey,
+    /// Auditor F-001 fix (2026-05-11): consumer pubkey recorded at register
+    /// time so reverse_optout can authenticate the signer (CCPA §1798.135(c)).
+    pub consumer: Pubkey,
     pub consumer_commitment_hash: [u8; 32],
     pub optout_kind: u8,
     pub via_gpc: bool,
@@ -125,6 +136,10 @@ pub struct OptoutRecord {
 pub struct RegisterOptout<'info> {
     #[account(mut)]
     pub business: Signer<'info>,
+    /// Auditor F-001 fix (2026-05-11): consumer must co-sign their opt-out so
+    /// `reverse_optout` can later verify identity. Without this co-sig, business
+    /// could self-reverse. CCPA §1798.135(c) compliance.
+    pub consumer: Signer<'info>,
     #[account(
         init,
         payer = business,
@@ -143,8 +158,7 @@ pub struct RegisterOptout<'info> {
 
 #[derive(Accounts)]
 pub struct ReverseOptout<'info> {
-    /// Consumer signer — off-chain binding to consumer_commitment_hash MUST
-    /// be verified by business before submitting this transaction.
+    /// Consumer signer — must match `optout.consumer` recorded at register time.
     pub consumer_signer: Signer<'info>,
     #[account(
         mut,
@@ -164,6 +178,7 @@ pub struct ReverseOptout<'info> {
 #[event]
 pub struct OptoutRegistered {
     pub business: Pubkey,
+    pub consumer: Pubkey,
     pub consumer_commitment_hash: [u8; 32],
     pub optout_kind: u8,
     pub via_gpc: bool,
@@ -173,6 +188,7 @@ pub struct OptoutRegistered {
 #[event]
 pub struct OptoutReversed {
     pub business: Pubkey,
+    pub consumer: Pubkey,
     pub consumer_commitment_hash: [u8; 32],
     pub optout_kind: u8,
     pub reversed_at: i64,
@@ -188,4 +204,6 @@ pub enum OptoutErr {
     InvalidKind,
     #[msg("opt-out already reversed")]
     AlreadyReversed,
+    #[msg("only the consumer who registered the opt-out can reverse it (CCPA §1798.135(c))")]
+    UnauthorizedConsumer,
 }

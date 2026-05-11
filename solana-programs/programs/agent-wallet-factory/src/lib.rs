@@ -46,11 +46,22 @@ pub mod agent_wallet_factory {
     }
 
     /// Transfer SOL from wallet PDA (signed by program).
+    ///
+    /// Auditor F-001 fix (2026-05-11): respects rent-exempt minimum so wallet
+    /// state can't be drained → reclaim → re-init with attacker creator.
     pub fn wallet_transfer(ctx: Context<WalletTransfer>, lamports: u64) -> Result<()> {
         require_keys_eq!(ctx.accounts.wallet.creator, ctx.accounts.creator.key(), WalletErr::Unauthorized);
 
         let from = ctx.accounts.wallet.to_account_info();
         let to = ctx.accounts.destination.to_account_info();
+
+        // Reserve rent-exempt minimum — never let wallet drop below it.
+        let rent_min = Rent::get()?.minimum_balance(from.data_len());
+        let available = from
+            .lamports()
+            .checked_sub(rent_min)
+            .ok_or(WalletErr::InsufficientFunds)?;
+        require!(lamports <= available, WalletErr::InsufficientFunds);
 
         **from.try_borrow_mut_lamports()? = from
             .lamports()
@@ -81,11 +92,14 @@ pub struct AgentWallet {
 pub struct CreateAgentWallet<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
+    /// Auditor F-002 fix (2026-05-11): creator now in seed so wallets cannot
+    /// be front-run by anyone observing public agent_seeds (DIDs).
+    /// BREAKING: PDA addresses differ from pre-fix versions.
     #[account(
         init,
         payer = creator,
         space = 8 + AgentWallet::INIT_SPACE,
-        seeds = [b"agent_wallet".as_ref(), agent_seed.as_ref()],
+        seeds = [b"agent_wallet".as_ref(), creator.key().as_ref(), agent_seed.as_ref()],
         bump
     )]
     pub wallet: Account<'info, AgentWallet>,
@@ -97,7 +111,7 @@ pub struct WalletTransfer<'info> {
     pub creator: Signer<'info>,
     #[account(
         mut,
-        seeds = [b"agent_wallet".as_ref(), wallet.agent_seed.as_ref()],
+        seeds = [b"agent_wallet".as_ref(), wallet.creator.as_ref(), wallet.agent_seed.as_ref()],
         bump = wallet.bump
     )]
     pub wallet: Account<'info, AgentWallet>,

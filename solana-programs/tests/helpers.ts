@@ -264,9 +264,13 @@ export function deriveFeeConfigPda(): [PublicKey, number] {
   return PublicKey.findProgramAddressSync([Buffer.from('fee_config')], PROGRAM_IDS.fee_distributor);
 }
 
-export function deriveAgentWalletPda(agentSeed: Uint8Array): [PublicKey, number] {
+export function deriveAgentWalletPda(
+  creator: PublicKey,
+  agentSeed: Uint8Array,
+): [PublicKey, number] {
+  // Bucket 2 (2026-05-11): creator now in seed (anti front-run).
   return PublicKey.findProgramAddressSync(
-    [Buffer.from('agent_wallet'), Buffer.from(agentSeed)],
+    [Buffer.from('agent_wallet'), creator.toBuffer(), Buffer.from(agentSeed)],
     PROGRAM_IDS.agent_wallet_factory,
   );
 }
@@ -294,9 +298,13 @@ export function deriveArtVaultPda(authority: PublicKey): [PublicKey, number] {
   );
 }
 
-export function deriveAiverifyPda(modelHash: Uint8Array): [PublicKey, number] {
+export function deriveAiverifyPda(
+  operator: PublicKey,
+  modelHash: Uint8Array,
+): [PublicKey, number] {
+  // Bucket 2 (2026-05-11): operator now in seed (multi-operator support).
   return PublicKey.findProgramAddressSync(
-    [Buffer.from('aiverify'), Buffer.from(modelHash)],
+    [Buffer.from('aiverify'), operator.toBuffer(), Buffer.from(modelHash)],
     PROGRAM_IDS.aiverify_attestation,
   );
 }

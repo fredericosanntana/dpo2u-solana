@@ -68,9 +68,13 @@ pub mod popia_info_officer_registry {
 
     /// Designate a Deputy Information Officer (POPIA §56).
     ///
-    /// Only the responsible party may designate. Setting `deputy=None` removes
-    /// any current deputy.
-    pub fn set_deputy(ctx: Context<UpdateAppointment>, deputy: Option<Pubkey>) -> Result<()> {
+    /// Auditor F-002 fix (2026-05-11): deputy must co-sign their own appointment
+    /// — symmetric with the IO co-signature requirement. Use `clear_deputy` to
+    /// remove an existing deputy (responsible_party-only call).
+    /// BREAKING: replaces `set_deputy(Option<Pubkey>)` — clients must split into
+    /// `set_deputy_signed` (with deputy Signer) and `clear_deputy` (no deputy).
+    pub fn set_deputy_signed(ctx: Context<SetDeputySigned>) -> Result<()> {
+        let new_deputy_key = ctx.accounts.deputy.key();
         let rec = &mut ctx.accounts.appointment;
         require_keys_eq!(
             rec.responsible_party,
@@ -78,12 +82,32 @@ pub mod popia_info_officer_registry {
             IoErr::Unauthorized
         );
         require!(rec.revoked_at.is_none(), IoErr::AppointmentRevoked);
-        rec.deputy = deputy;
+        rec.deputy = Some(new_deputy_key);
 
         emit!(DeputyUpdated {
             responsible_party: rec.responsible_party,
             information_officer: rec.information_officer,
-            deputy,
+            deputy: Some(new_deputy_key),
+        });
+        Ok(())
+    }
+
+    /// Clear current deputy (responsible_party only — no co-signature needed
+    /// to *remove* someone from a role they may no longer hold).
+    pub fn clear_deputy(ctx: Context<UpdateAppointment>) -> Result<()> {
+        let rec = &mut ctx.accounts.appointment;
+        require_keys_eq!(
+            rec.responsible_party,
+            ctx.accounts.responsible_party.key(),
+            IoErr::Unauthorized
+        );
+        require!(rec.revoked_at.is_none(), IoErr::AppointmentRevoked);
+        rec.deputy = None;
+
+        emit!(DeputyUpdated {
+            responsible_party: rec.responsible_party,
+            information_officer: rec.information_officer,
+            deputy: None,
         });
         Ok(())
     }
@@ -142,8 +166,11 @@ pub struct InfoOfficerAppointment {
 pub struct RegisterAppointment<'info> {
     #[account(mut)]
     pub responsible_party: Signer<'info>,
-    /// CHECK: information_officer pubkey is the formal appointee
-    pub information_officer: AccountInfo<'info>,
+    /// Auditor F-001 fix (2026-05-11): IO must co-sign appointment.
+    /// POPIA §55 Information Regulator guidance recommends "documented acceptance"
+    /// — on-chain co-signature is the strongest possible form.
+    /// BREAKING: IO must be present at tx time (cannot register absentee IO).
+    pub information_officer: Signer<'info>,
     #[account(
         init,
         payer = responsible_party,
@@ -162,6 +189,23 @@ pub struct RegisterAppointment<'info> {
 #[derive(Accounts)]
 pub struct UpdateAppointment<'info> {
     pub responsible_party: Signer<'info>,
+    #[account(
+        mut,
+        seeds = [
+            b"popia_io",
+            appointment.responsible_party.as_ref(),
+            &appointment.organization_id_hash,
+        ],
+        bump = appointment.bump
+    )]
+    pub appointment: Account<'info, InfoOfficerAppointment>,
+}
+
+#[derive(Accounts)]
+pub struct SetDeputySigned<'info> {
+    pub responsible_party: Signer<'info>,
+    /// The deputy being designated — must sign to acknowledge appointment.
+    pub deputy: Signer<'info>,
     #[account(
         mut,
         seeds = [

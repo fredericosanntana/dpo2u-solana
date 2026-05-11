@@ -36,6 +36,11 @@ pub mod aiverify_attestation {
         vk_root: [u8; 32],
         framework_code: u16,
     ) -> Result<()> {
+        // Auditor F-003 fix (2026-05-11): framework_code is documented 0..=2
+        // (AI Verify, EU AI Act, ISO/IEC 42001). Reject unknown codes so
+        // consumers/indexers can rely on the semantic.
+        const MAX_FRAMEWORK_CODE: u16 = 2;
+        require!(framework_code <= MAX_FRAMEWORK_CODE, AiVerifyErr::InvalidFrameworkCode);
         let clock = Clock::get()?;
         let a = &mut ctx.accounts.attestation;
         a.operator = ctx.accounts.operator.key();
@@ -100,11 +105,15 @@ pub struct ModelAttestation {
 pub struct AttestModel<'info> {
     #[account(mut)]
     pub operator: Signer<'info>,
+    /// Auditor F-001 fix (2026-05-11): operator in seed so different operators
+    /// can attest the same model independently (Google + Anthropic + OpenAI etc).
+    /// Removes front-run hijack vector (someone races to seal a public model_hash).
+    /// BREAKING: PDA addresses differ from pre-fix versions.
     #[account(
         init,
         payer = operator,
         space = 8 + ModelAttestation::INIT_SPACE,
-        seeds = [b"aiverify".as_ref(), model_hash.as_ref()],
+        seeds = [b"aiverify".as_ref(), operator.key().as_ref(), model_hash.as_ref()],
         bump
     )]
     pub attestation: Account<'info, ModelAttestation>,
@@ -116,7 +125,7 @@ pub struct RevokeAttestation<'info> {
     pub operator: Signer<'info>,
     #[account(
         mut,
-        seeds = [b"aiverify".as_ref(), attestation.model_hash.as_ref()],
+        seeds = [b"aiverify".as_ref(), attestation.operator.as_ref(), attestation.model_hash.as_ref()],
         bump = attestation.bump
     )]
     pub attestation: Account<'info, ModelAttestation>,
@@ -150,4 +159,6 @@ pub enum AiVerifyErr {
     Unauthorized,
     #[msg("attestation already revoked")]
     AlreadyRevoked,
+    #[msg("framework_code must be 0=AI Verify, 1=EU AI Act, or 2=ISO/IEC 42001")]
+    InvalidFrameworkCode,
 }

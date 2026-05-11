@@ -18,32 +18,33 @@ describe('aiverify-attestation — program ID canary', () => {
 });
 
 describe('aiverify-attestation — PDA derivation', () => {
-  it('same model_hash → same PDA', () => {
+  const op = Keypair.generate().publicKey;
+
+  it('same (operator, model_hash) → same PDA', () => {
     const h = createHash('sha256').update('model_v1_weights').digest();
-    const [a] = deriveAiverifyPda(h);
-    const [b] = deriveAiverifyPda(h);
+    const [a] = deriveAiverifyPda(op, h);
+    const [b] = deriveAiverifyPda(op, h);
     expect(a.equals(b)).toBe(true);
   });
 
   it('different model_hash → different PDA', () => {
     const h1 = createHash('sha256').update('model_v1').digest();
     const h2 = createHash('sha256').update('model_v2').digest();
-    const [a] = deriveAiverifyPda(h1);
-    const [b] = deriveAiverifyPda(h2);
+    const [a] = deriveAiverifyPda(op, h1);
+    const [b] = deriveAiverifyPda(op, h2);
     expect(a.equals(b)).toBe(false);
   });
 
-  it('PDA is independent of operator (same model attested once globally)', () => {
-    // By design, seeds = [b"aiverify", model_hash] (no operator). Two operators
-    // cannot attest the same model independently — the PDA clashes on init.
-    // This is intentional: globally unique attestation per model_hash.
+  it('Bucket 2 fix: different operators → different PDAs for same model (multi-operator support)', () => {
+    // Post-fix seeds = [b"aiverify", operator, model_hash]. Multiple operators
+    // (e.g., Google + Anthropic + OpenAI) can each attest the same public
+    // model independently. Removes the front-run-and-seal-the-PDA vector.
     const h = createHash('sha256').update('shared_model').digest();
     const op1 = Keypair.generate().publicKey;
     const op2 = Keypair.generate().publicKey;
-    const [pdaFromOp1] = deriveAiverifyPda(h);
-    const [pdaFromOp2] = deriveAiverifyPda(h);
-    expect(pdaFromOp1.equals(pdaFromOp2)).toBe(true);
-    expect(op1.equals(op2)).toBe(false); // sanity
+    const [pdaFromOp1] = deriveAiverifyPda(op1, h);
+    const [pdaFromOp2] = deriveAiverifyPda(op2, h);
+    expect(pdaFromOp1.equals(pdaFromOp2)).toBe(false);
   });
 });
 

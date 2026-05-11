@@ -36,6 +36,9 @@ pub mod agent_registry {
         did_uri: String,
         _permissions: u16,
     ) -> Result<()> {
+        // Auditor F-004 fix (2026-05-11): empty name produces hard-to-index
+        // and PDA-distinguishable-by-prefix-only agents. Require at least 1 byte.
+        require!(!name.is_empty(), AgentErr::NameEmpty);
         require!(name.len() <= 32, AgentErr::NameTooLong);
         require!(did_uri.len() <= 128, AgentErr::UriTooLong);
 
@@ -59,10 +62,31 @@ pub mod agent_registry {
     }
 
     pub fn update_permissions(ctx: Context<AdminUpdateAgent>, new_permissions: u16) -> Result<()> {
+        // Auditor F-002 fix (2026-05-11): only canonical PERM_* bits accepted.
+        // Bits 5-15 are undefined — rejecting them prevents privilege smuggling
+        // through unknown bits that future consumers may interpret unsafely.
+        const VALID_PERMS_MASK: u16 =
+            PERM_READ | PERM_WRITE | PERM_TREASURY | PERM_DEPLOY | PERM_GOVERNANCE;
+        require!(
+            new_permissions & !VALID_PERMS_MASK == 0,
+            AgentErr::InvalidPermissions
+        );
         let clock = Clock::get()?;
         let agent = &mut ctx.accounts.agent;
         agent.permissions = new_permissions;
         agent.updated_at = clock.unix_timestamp;
+        Ok(())
+    }
+
+    /// Auditor F-005 fix (2026-05-11): close an agent account and reclaim rent
+    /// to authority. Only callable by the agent's authority. Permanent.
+    pub fn close_agent(ctx: Context<CloseAgent>) -> Result<()> {
+        let agent = &ctx.accounts.agent;
+        require_keys_eq!(agent.authority, ctx.accounts.authority.key(), AgentErr::Unauthorized);
+        emit!(AgentClosed {
+            authority: agent.authority,
+            name: agent.name.clone(),
+        });
         Ok(())
     }
 
@@ -127,6 +151,19 @@ pub struct UpdateAgent<'info> {
     pub agent: Account<'info, Agent>,
 }
 
+#[derive(Accounts)]
+pub struct CloseAgent<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(
+        mut,
+        close = authority,
+        seeds = [b"agent", agent.authority.as_ref(), agent.name.as_bytes()],
+        bump = agent.bump,
+    )]
+    pub agent: Account<'info, Agent>,
+}
+
 #[event]
 pub struct AgentRegistered {
     pub authority: Pubkey,
@@ -140,14 +177,24 @@ pub struct AgentRevoked {
     pub name: String,
 }
 
+#[event]
+pub struct AgentClosed {
+    pub authority: Pubkey,
+    pub name: String,
+}
+
 #[error_code]
 pub enum AgentErr {
-    #[msg("name exceeds 32 bytes")]
+    #[msg("name must be 1..=32 bytes")]
     NameTooLong,
+    #[msg("name must not be empty")]
+    NameEmpty,
     #[msg("did_uri exceeds 128 bytes")]
     UriTooLong,
     #[msg("only the registered authority can modify")]
     Unauthorized,
     #[msg("only the global admin can update permissions")]
     UnauthorizedAdmin,
+    #[msg("permissions bitmap contains undefined bits (only PERM_READ|WRITE|TREASURY|DEPLOY|GOVERNANCE allowed)")]
+    InvalidPermissions,
 }

@@ -191,7 +191,8 @@ pub mod hiroshima_ai_process_attestation {
         reason: String,
         is_termination_order: bool,
     ) -> Result<()> {
-        require!(reason.len() <= 64, HiroErr::ReasonTooLong);
+        // Auditor F-007 fix (2026-05-11): dedicated error code for revoke reason length.
+        require!(reason.len() <= 64, HiroErr::RevocationReasonTooLong);
         let r = &mut ctx.accounts.attestation;
         require_keys_eq!(r.attestor, ctx.accounts.attestor.key(), HiroErr::Unauthorized);
         require!(r.revoked_at.is_none(), HiroErr::AlreadyRevoked);
@@ -270,7 +271,15 @@ pub mod hiroshima_ai_process_attestation {
         evidence_hash: [u8; 32],
         red_line_category: u8,
     ) -> Result<()> {
-        require!(reason.len() <= 128, HiroErr::ReasonTooLong);
+        // Auditor F-007 fix (2026-05-11): dedicated error code for termination reason.
+        require!(reason.len() <= 128, HiroErr::TerminationReasonTooLong);
+        // Auditor F-005 fix (2026-05-11): bound red_line_category to CAIDP-UG
+        // canonical range (1..=12). 0 means "unset" and is rejected explicitly.
+        const MAX_RED_LINE_CATEGORY: u8 = 12;
+        require!(
+            red_line_category >= 1 && red_line_category <= MAX_RED_LINE_CATEGORY,
+            HiroErr::InvalidRedLineCategory
+        );
         let cfg = &ctx.accounts.config;
         require_keys_eq!(
             cfg.rapporteur_authority,
@@ -551,7 +560,9 @@ pub struct TerminationOrderEmitted {
 pub enum HiroErr {
     #[msg("storage_uri exceeds 128 bytes")]
     StorageUriTooLong,
-    #[msg("reason exceeds maximum length (revoke=64, terminate=128)")]
+    /// Kept for backwards compat with clients reading the old IDL — new code paths
+    /// use `RevocationReasonTooLong` or `TerminationReasonTooLong`.
+    #[msg("reason exceeds maximum length (deprecated — see RevocationReasonTooLong / TerminationReasonTooLong)")]
     ReasonTooLong,
     #[msg("attestation already revoked")]
     AlreadyRevoked,
@@ -559,4 +570,10 @@ pub enum HiroErr {
     Unauthorized,
     #[msg("attestation_type must be 4=DATA_QUALITY, 5=AIBOG, 6=RED_LINE_NEGATIVE, 7=HRIA, or 8=INCIDENT for generic submit")]
     InvalidAttestationType,
+    #[msg("revocation reason exceeds 64 bytes")]
+    RevocationReasonTooLong,
+    #[msg("termination reason exceeds 128 bytes")]
+    TerminationReasonTooLong,
+    #[msg("red_line_category must be 1..=12 (CAIDP-UG canonical range)")]
+    InvalidRedLineCategory,
 }

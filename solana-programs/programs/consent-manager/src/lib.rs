@@ -231,8 +231,11 @@ pub struct ConsentRecord {
 pub struct RecordConsent<'info> {
     #[account(mut)]
     pub data_fiduciary: Signer<'info>,
-    /// CHECK: user key is any pubkey (citizen wallet / DID controller)
-    pub user: AccountInfo<'info>,
+    /// Auditor F-001 fix (2026-05-11): user must co-sign their own consent.
+    /// DPDP §6(1) India requires "free, specific, informed, unconditional,
+    /// unambiguous with a clear affirmative action" — unilateral fiduciary
+    /// attestation is fraud. BREAKING: user must be present at tx time.
+    pub user: Signer<'info>,
     #[account(
         init,
         payer = data_fiduciary,
@@ -254,8 +257,12 @@ pub struct RecordConsent<'info> {
 pub struct RecordVerifiedConsent<'info> {
     #[account(mut)]
     pub data_fiduciary: Signer<'info>,
-    /// CHECK: user key is any pubkey (citizen wallet / DID controller)
-    pub user: AccountInfo<'info>,
+    /// Auditor F-002 fix (partial — 2026-05-11): user must co-sign even on
+    /// verified path. Full fix requires PublicValuesStruct extension to bind
+    /// user_signature_commitment inside the ZK proof — out of scope without
+    /// SP1 circuit rebuild + verifier redeploy. Co-signature here is the
+    /// minimum on-chain authentication. BREAKING.
+    pub user: Signer<'info>,
     #[account(
         init,
         payer = data_fiduciary,

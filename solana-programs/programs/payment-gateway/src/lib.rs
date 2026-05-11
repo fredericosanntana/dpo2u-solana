@@ -59,6 +59,12 @@ pub mod payment_gateway {
         let inv = &ctx.accounts.invoice;
         require!(inv.settled_at.is_none(), PaymentErr::AlreadySettled);
         require!(settled_amount >= inv.amount, PaymentErr::InsufficientPayment);
+        // Auditor F-002 fix (2026-05-11): cap overpayment at 5% above invoice.
+        // Prevents client off-by-decimal bugs from silently overcharging customers.
+        let max_overpay = inv.amount
+            .saturating_mul(105)
+            .saturating_div(100);
+        require!(settled_amount <= max_overpay, PaymentErr::OverpaymentTooLarge);
         require_keys_eq!(inv.payer, ctx.accounts.payer.key(), PaymentErr::Unauthorized);
         require_keys_eq!(ctx.accounts.mint.key(), inv.mint, PaymentErr::MintMismatch);
         require_keys_eq!(
@@ -146,7 +152,10 @@ pub struct SettleInvoice<'info> {
     pub payer: Signer<'info>,
     #[account(mut, seeds = [b"invoice", invoice.payer.as_ref(), invoice.tool_name.as_bytes(), &invoice.nonce.to_le_bytes()], bump = invoice.bump)]
     pub invoice: Account<'info, Invoice>,
-    #[account(mut)]
+    // Auditor F-001 fix (2026-05-11): payer must own the source ATA.
+    // Prevents delegate-abuse: payer with delegate authority on victim's ATA
+    // would otherwise route victim's tokens through this invoice flow.
+    #[account(mut, constraint = payer_token_account.owner == payer.key() @ PaymentErr::UnauthorizedSource)]
     pub payer_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub payee_token_account: Account<'info, TokenAccount>,
@@ -187,4 +196,8 @@ pub enum PaymentErr {
     MintMismatch,
     #[msg("payee token account does not belong to invoice payee")]
     UnauthorizedDestination,
+    #[msg("payer_token_account is not owned by the payer")]
+    UnauthorizedSource,
+    #[msg("settled amount exceeds 5% slippage above invoice amount")]
+    OverpaymentTooLarge,
 }

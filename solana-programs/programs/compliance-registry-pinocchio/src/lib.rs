@@ -215,15 +215,27 @@ struct SubmitVerifiedCompressedArgs {
 ///
 /// Signer deve ser a authority gravada no leaf (i.e. Squads vault[3] PDA via
 /// vault_transaction_execute). Light Protocol exige passar a leaf data antiga
-/// pra computar o nullifier corretamente.
+/// pra computar o nullifier corretamente, mais validity proof do Photon
+/// Indexer (proof + old_leaf_index + old_root_index).
+///
+/// BREAKING change 2026-05-11 (Auditor F-001 fix): adicionados proof +
+/// old_leaf_index + old_root_index — necessários pro CPI atômico que
+/// efetivamente NULLIFICA o leaf antigo (antes só inseria leaf novo
+/// REVOKED enquanto old leaf ACTIVE permanecia válido na CMT).
 #[derive(BorshDeserialize)]
 struct RevokeCompressedArgs {
-    /// Leaf antigo a ser nullificado (251 bytes serializados)
+    /// Leaf antigo a ser nullificado (252 bytes serializados)
     old_leaf: Vec<u8>,
     /// Reason code (0..255 — encoded externally; map em docs/GOVERNANCE.md)
     revoke_reason: u8,
     /// Leaf hash esperado — pra detecção de tampering antes de gastar CU
     expected_old_leaf_hash: [u8; 32],
+    /// Light Protocol validity proof (Photon Indexer supplies via getValidityProof)
+    proof: CompressedProof,
+    /// Index do leaf na CMT (Photon supplies)
+    old_leaf_index: u32,
+    /// Root index na changelog buffer da CMT (Photon supplies)
+    old_root_index: u16,
 }
 
 /// AttestationLeaf — fixed-size, deterministic-hash struct that lives as a
@@ -694,10 +706,12 @@ fn revoke_compressed(
         return Err(ProgramError::Custom(err_composed::INVALID_AUTHORITY));
     }
 
-    // Nullify old leaf (Fase 3.b: stand-alone path — atomic revoke prefers
-    // cpi_light_revoke_atomic with proof + new leaf in single CPI).
+    // Auditor F-001 fix (2026-05-11): use cpi_light_revoke_atomic em vez de
+    // 2 CPIs separadas (stub nullify + insert). O stub não chamava Light, então
+    // old leaf permanecia ACTIVE enquanto new leaf REVOKED era inserido.
+    // Single atomic CPI: 1 input nullified + 1 output inserted, em 1 tx.
     let old_leaf_hash = computed;
-    cpi_light_nullify_leaf(&accounts[2..], &leaf, &old_leaf_hash)?;
+    let old_leaf = leaf.clone();
 
     // Build new leaf with REVOKED status
     let clock_ref = Clock::from_account_info(clock_sysvar)?;
@@ -709,10 +723,17 @@ fn revoke_compressed(
     leaf.revoke_reason = args.revoke_reason;
     let new_leaf_hash = leaf.hash();
 
-    // Insert new leaf
-    cpi_light_insert_leaf(&accounts[2..], &leaf, &new_leaf_hash)?;
+    cpi_light_revoke_atomic(
+        &accounts[2..],
+        args.proof,
+        &old_leaf,
+        &old_leaf_hash,
+        args.old_leaf_index,
+        args.old_root_index,
+        &leaf,
+        &new_leaf_hash,
+    )?;
 
-    let _ = new_leaf_hash;
     log!("CompressedAttestationRevoked reason={}", args.revoke_reason);
     Ok(())
 }
@@ -823,7 +844,6 @@ fn cpi_light_nullify_leaf(
 /// Atomic nullify-old + insert-new (UTXO-style). Used by `revoke_compressed`.
 /// Signature distinct from `cpi_light_nullify_leaf` to make the call site
 /// explicit about the flow.
-#[allow(dead_code)]
 fn cpi_light_revoke_atomic(
     light_accounts: &[AccountInfo],
     proof: CompressedProof,

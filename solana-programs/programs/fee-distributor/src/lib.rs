@@ -153,7 +153,9 @@ pub struct Distribute<'info> {
     #[account(mut, seeds = [b"fee_config"], bump = config.bump)]
     pub config: Account<'info, Config>,
     pub source: Signer<'info>,
-    #[account(mut)]
+    // Auditor F-001 fix (2026-05-11): source must own the source ATA — prevents
+    // delegate-abuse where source has token delegate on victim's ATA.
+    #[account(mut, constraint = source_ata.owner == source.key() @ FeeErr::UnauthorizedSource)]
     pub source_ata: Account<'info, TokenAccount>,
     #[account(mut)]
     pub treasury_ata: Account<'info, TokenAccount>,
@@ -184,4 +186,6 @@ pub enum FeeErr {
     MintMismatch,
     #[msg("vault ATA owner does not match config.treasury/operator/reserve")]
     VaultOwnerMismatch,
+    #[msg("source_ata is not owned by the source signer")]
+    UnauthorizedSource,
 }

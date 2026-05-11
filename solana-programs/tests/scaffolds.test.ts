@@ -81,16 +81,27 @@ describe('Sprint 3 — PDA derivation determinism', () => {
     expect(a.equals(b)).toBe(true);
   });
 
-  it('agent_wallet PDA same for same seed', () => {
+  it('agent_wallet PDA same for same (creator, seed)', () => {
+    const creator = Keypair.generate().publicKey;
     const seed = randomSeed();
-    const [a] = deriveAgentWalletPda(seed);
-    const [b] = deriveAgentWalletPda(seed);
+    const [a] = deriveAgentWalletPda(creator, seed);
+    const [b] = deriveAgentWalletPda(creator, seed);
     expect(a.equals(b)).toBe(true);
   });
 
   it('agent_wallet PDA differs for different seeds', () => {
-    const [a] = deriveAgentWalletPda(randomSeed());
-    const [b] = deriveAgentWalletPda(randomSeed());
+    const creator = Keypair.generate().publicKey;
+    const [a] = deriveAgentWalletPda(creator, randomSeed());
+    const [b] = deriveAgentWalletPda(creator, randomSeed());
+    expect(a.equals(b)).toBe(false);
+  });
+
+  it('Bucket 2 fix: agent_wallet PDA differs per creator for same seed (anti front-run)', () => {
+    const seed = randomSeed();
+    const c1 = Keypair.generate().publicKey;
+    const c2 = Keypair.generate().publicKey;
+    const [a] = deriveAgentWalletPda(c1, seed);
+    const [b] = deriveAgentWalletPda(c2, seed);
     expect(a.equals(b)).toBe(false);
   });
 });

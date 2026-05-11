@@ -134,7 +134,8 @@ pub mod art_vault {
         require_keys_eq!(v.authority, ctx.accounts.authority.key(), VaultErr::Unauthorized);
 
         let now = Clock::get()?.unix_timestamp;
-        let price_feed = SolanaPriceAccount::account_info_to_feed(&ctx.accounts.pyth_price)
+        let pyth_ai = ctx.accounts.pyth_price.to_account_info();
+        let price_feed = SolanaPriceAccount::account_info_to_feed(&pyth_ai)
             .map_err(|_| VaultErr::PythAccountInvalid)?;
 
         // Get price with a staleness check. This returns Ok only if the
@@ -250,9 +251,18 @@ pub mod art_vault {
         let liquidity_budget = mul_bps(v.reserve_amount, v.liquidity_bps)?;
         require!(amount <= liquidity_budget, VaultErr::LiquidityVaultExceeded);
 
-        v.outstanding_supply = v.outstanding_supply.saturating_sub(amount);
-        // Reserve decreases in lockstep — this is the "burn + unlock" accounting.
-        v.reserve_amount = v.reserve_amount.saturating_sub(amount);
+        // Auditor F-004 fix (2026-05-11): checked_sub on financial path — never
+        // saturating, since silently floored reserve_amount would falsely report
+        // reserve=0 while previous accounting state was non-zero (state lying).
+        v.outstanding_supply = v
+            .outstanding_supply
+            .checked_sub(amount)
+            .ok_or(VaultErr::InsufficientSupply)?;
+        // Reserve decreases in lockstep — "burn + unlock" accounting.
+        v.reserve_amount = v
+            .reserve_amount
+            .checked_sub(amount)
+            .ok_or(VaultErr::ReserveInsufficient)?;
 
         emit!(ArtRedeemed {
             authority: v.authority,
@@ -454,7 +464,9 @@ pub struct UpdateReserveFromPyth<'info> {
     /// CHECK: owner + discriminator are validated via `SolanaPriceAccount::account_info_to_feed`.
     /// No address constraint — the authority chooses which price feed backs this vault
     /// (e.g., SOL/USD on mainnet: H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG).
-    pub pyth_price: AccountInfo<'info>,
+    /// Auditor F-006 fix (2026-05-11): UncheckedAccount (preferred in Anchor 0.31+)
+    /// over deprecated bare AccountInfo. Behavior identical, signals intent clearer.
+    pub pyth_price: UncheckedAccount<'info>,
 }
 
 #[derive(Accounts)]
