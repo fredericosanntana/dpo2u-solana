@@ -52,7 +52,7 @@
     },
     {
       "role": "Emergency",
-      "description": "Circuit breaker art-vault (halt rápido)",
+      "description": "Circuit breaker art-vault (halt r\u00e1pido)",
       "threshold": "2-of-5",
       "timeLockSeconds": 0,
       "multisigPda": "5jEkkVeKpJrwbxrydF6N4d8dfN2XQLhY5BRWv66QdnHR",
@@ -60,5 +60,33 @@
       "createKey": "77N3uSGC2nVDECHKsRnMVoAJMA37LwpWr7m71uM72mVM",
       "txSig": "3Wkx4XtJuZZMg8wA9hQ6uUi9s5MYGaR3YmbhDXCZLpQeGDEkdW2K9TRXXkCkpZC4VgNokvmftekue184daafeHD5"
     }
-  ]
+  ],
+  "s1_2_transfers": {
+    "completedAt": "2026-05-13T00:30:00Z",
+    "target": "aiverify_attestation",
+    "programId": "DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm",
+    "newAuthority": "9CgU19wh7F9AckNLZshcUE3TUX6bRhCRR421F332ESe3",
+    "newAuthorityRole": "Treasury vault (2-of-5, no timelock)",
+    "transferMethod": "solana CLI set-upgrade-authority --skip-new-upgrade-authority-signer-check",
+    "buffer": "3xJk3beAhxw32P5hYYCp7dekQJACL8Y68R5Gqrmmnzo7",
+    "bufferAuthority": "9CgU19wh7F9AckNLZshcUE3TUX6bRhCRR421F332ESe3",
+    "squadsRoundtripTxs": {
+      "vaultTransactionCreate_idx1": "PzAbGGHrJQhameQzbU7kwHRBxuXm2dziDjuGA2DxH3FmSVe8prVa3qpFs1EoS6nJ3CqRWy7UXoPUKrAf1gEzRW1",
+      "proposalCreate_idx1": "4UeMte4pwCEZGpeG1WiXAL8sR4t29CVpaYqX4KAogzm66mHm6U82w21hs4vFPaTvRCpiNYv6xrumVky9ZvfW9pwa",
+      "proposalApprove_m1_idx1": "2ksVgjqVNynaXw7ectZL2sP8AN28gWZai8Pw4MSm7GjaRRrzsV1afVRTbScZucjDbtyVEpLsxr1VSPY3w4SPHNfq",
+      "proposalApprove_m2_idx1": "3tbdgECBQdfJCeuFZ1jiGKYbD5yHUKojRBStX3ygQwwhzW9X2YiPqP35PkAqWgJkVvqxRMhcDfBbV7eP4gPSR7J9",
+      "vaultTransactionCreate_idx2_with_extend": "3kvVdxVAX3Z7csL31ufzSLawuw3rAdo87HQaKEhhgzBgmSzRX18CH8A7Kj7JWfXY9jLSF4e8ujSNgzXSFA5NdouS",
+      "proposalCreate_idx2": "5raCVqRy8oiY4gRw6jHqbLEG5BF5KqNsNSb2MKqQqx8ToqpohdKQ1agqX7pactmCiNVSUBYsmYz1Q6ah9vHFucHu",
+      "proposalApprove_m1_idx2": "3GcyUFwDuXyq6ShYDYP2XyypZctHW4cmtGG88y9xjLK6yDwFwVQRp6F4AzKyKmEf5xnh9RAdvuuSeBwXRa2WA4RH",
+      "proposalApprove_m2_idx2": "3FrfnEtinLtLEDzUFCiJBtVzwkk4gXvSYyBQca4EjynUsLKNAZDfCxteWHhTTi1zy3Kxyd3jojTNAmEbo8v8YZwf"
+    },
+    "executeBlocker": "Squads V4 generic vault_transaction_execute rejects CPI to BPFLoaderUpgradeable (runtime: 'Program BPFLoaderUpgradeab1e11111111111111111111111 not supported by inner instructions'). Real program upgrades via Squads need a separate path (Squads doesn't ship a programUpgrade SDK helper in v2.1.4). Alternatives: SPL Governance with the explicit 'upgrade program' instruction; or wait for Squads V5 if it ships native BPF upgrade flow.",
+    "donePercent": 75,
+    "nextSteps": [
+      "Investigate Squads V4 'spending limits' or governance feature for native program-upgrade flow",
+      "OR adopt SPL Governance for the upgrade-authority track and keep Squads for treasury/admin",
+      "Close buffer 3xJk3be... to recover 1.46 SOL (requires Squads-via-CPI path that works)",
+      "Document this trade-off in dpo2u-solana/docs/GOVERNANCE.md"
+    ]
+  }
 }
