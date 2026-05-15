@@ -19,7 +19,7 @@
 |---|---|---|
 | `consent_manager` | `D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB` | [view](https://explorer.solana.com/address/D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB?cluster=devnet) |
 | `art_vault` (MiCAR Asset-Referenced Token) | `C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna` | [view](https://explorer.solana.com/address/C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna?cluster=devnet) |
-| `aiverify_attestation` (IMDA AI-Verify) | `DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm` | [view](https://explorer.solana.com/address/DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm?cluster=devnet) |
+| `aiverify_attestation` (IMDA AI-Verify) | `CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j` | [view](https://explorer.solana.com/address/CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j?cluster=devnet) |
 
 ## Batch 3 — Jurisdiction-specific primitives (Sprint D phase 1, 2026 Q2)
 

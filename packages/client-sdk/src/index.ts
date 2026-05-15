@@ -55,6 +55,24 @@ export type { DPO2UPipedaClientOptions, RecordPipedaConsentArgs, ConsentForm } f
 export { DPO2UPipaClient, PIPA_KOREA_ZK_ID_PROGRAM_ID, ATTRIBUTE_KIND } from './pipa.js';
 export type { DPO2UPipaClientOptions, IssueAttestationArgs, AttributeKind } from './pipa.js';
 
+// Hiroshima AI Process attestation (cross-framework G7 ICOC + AIBOG + DS-920).
+// Minimal client surface focused on verify_against_legal_manifest — added 2026-05-15.
+export {
+  DPO2UHiroshimaClient,
+  HIROSHIMA_AI_PROCESS_PROGRAM_ID,
+  HIROSHIMA_ATTESTATION_TYPE,
+} from './hiroshima.js';
+export type { DPO2UHiroshimaClientOptions, HiroshimaAttestationType } from './hiroshima.js';
+
+// Agent Registry — MCP whitelist + 5-actor value chain (Sprint Continuable round 2 2026-05-15).
+// Built + IDL shipped; on-chain upgrade pending devnet airdrop window.
+export {
+  DPO2UAgentRegistryClient,
+  AGENT_REGISTRY_PROGRAM_ID,
+  VALUE_CHAIN_ROLE,
+} from './agent-registry.js';
+export type { DPO2UAgentRegistryClientOptions, ValueChainRole } from './agent-registry.js';
+
 // -- Composed Stack (Fase 3) — Light Protocol + Pinocchio + Shadow Drive + Squads --
 //
 // Photon Indexer wrapper + composed flow function. Use submitComposedAttestation
@@ -79,3 +97,22 @@ export type {
   ComposedAttestationResult,
   Jurisdiction,
 } from './composed.js';
+
+// -- Legal Corpus Sprint (2026-05-14) — legal_source_manifest deployed devnet --
+//
+// On-chain pointer to the off-chain legal corpus produced by dpo2u-legal-worker.
+// Reading the PDA's content_hash and matching it to the worker's manifest.json
+// proves which version of the law a downstream attestation was evaluated against.
+
+export {
+  DPO2ULegalManifestClient,
+  LEGAL_SOURCE_MANIFEST_PROGRAM_ID,
+  JURISDICTION_SEED_LEN,
+} from './legal-manifest.js';
+export type {
+  DPO2ULegalManifestClientOptions,
+  InitManifestArgs,
+  UpdateManifestArgs,
+  TransferAuthorityArgs,
+  LegalSourceManifestAccount,
+} from './legal-manifest.js';

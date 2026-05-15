@@ -55,7 +55,7 @@ const PROGRAM_IDS: Record<string, string> = {
   agent_wallet_factory: "AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in",
   compliance_registry: "7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK",
   compliance_registry_pinocchio: "FZ21S53Rn8Y6ANfccS2waCrkYWh5zfjXK3hkKU5YSkJ8",
-  aiverify_attestation: "DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm",
+  aiverify_attestation: "CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j" // v2 (v1 DSCVx...6cm orphaned post-Squads deadlock 2026-05-15),
   art_vault: "C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna",
   consent_manager: "D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB",
   fee_distributor: "88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x",

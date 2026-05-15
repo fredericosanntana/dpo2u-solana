@@ -1,0 +1,46 @@
+name: Cargo Audit
+
+# RustSec advisory scan for all Rust workspaces.
+# Added 2026-05-15 (total audit P1 — Rust dep tree was previously unaudited).
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '.github/workflows/cargo-audit.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+  schedule:
+    # Nightly at 04:00 UTC catches new RustSec advisories on existing deps.
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - solana-programs
+          - packages/rust-sdk
+          - zk-circuits
+          - sp1-solana
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Audit ${{ matrix.workspace }}
+        working-directory: ${{ matrix.workspace }}
+        # Hard-fail on advisories; let "unmaintained" warnings through for now.
+        # When a new vuln lands, this job fires and stops merges.
+        run: cargo audit --deny warnings --ignore RUSTSEC-2025-0141 --ignore RUSTSEC-2025-0161 --ignore RUSTSEC-2024-0375 --ignore RUSTSEC-2024-0388 --ignore RUSTSEC-2024-0436 --ignore RUSTSEC-2026-0097
+        # Ignored: bincode/libsecp256k1/atty/derivative/paste/rand — all transitive
+        # from Solana/Anchor; track upstream for fix, not actionable today.
