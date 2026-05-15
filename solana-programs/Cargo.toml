@@ -15,6 +15,7 @@ members = [
   "programs/pipeda-consent-extension",
   "programs/pipa-korea-zk-identity",
   "programs/hiroshima-ai-process-attestation",
+  "programs/legal-source-manifest",
 ]
 
 [profile.release]

@@ -112,6 +112,32 @@ pub mod payment_gateway {
         });
         Ok(())
     }
+
+    /// Cross-program attestation: anchor a payment invoice against a
+    /// jurisdiction's legal_source_manifest (e.g., MICAR for stablecoin
+    /// payments, GDPR for cross-border data flows tied to the payment).
+    /// Added 2026-05-15 (Sprint Continuable round 2).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        let nul = m.jurisdiction.iter().position(|&b| b == 0).unwrap_or(m.jurisdiction.len());
+        let mut juris_buf = [0u8; 16];
+        juris_buf[..nul].copy_from_slice(&m.jurisdiction[..nul]);
+        let inv = &ctx.accounts.invoice;
+        emit!(InvoiceVerifiedAgainstManifest {
+            payer: inv.payer,
+            payee: inv.payee,
+            amount: inv.amount,
+            tool_name: inv.tool_name.clone(),
+            jurisdiction: juris_buf,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 #[account]
@@ -163,6 +189,22 @@ pub struct SettleInvoice<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+/// Cross-program verification accounts (Sprint Continuable round 2 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [b"invoice", invoice.payer.as_ref(), invoice.tool_name.as_bytes(), &invoice.nonce.to_le_bytes()],
+        bump = invoice.bump
+    )]
+    pub invoice: Account<'info, Invoice>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 #[event]
 pub struct InvoiceCreated {
     pub payer: Pubkey,
@@ -180,6 +222,19 @@ pub struct PaymentSettled {
     pub tool_name: String,
     pub nonce: u64,
     pub settled_at: i64,
+}
+
+#[event]
+pub struct InvoiceVerifiedAgainstManifest {
+    pub payer: Pubkey,
+    pub payee: Pubkey,
+    pub amount: u64,
+    pub tool_name: String,
+    pub jurisdiction: [u8; 16],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
 }
 
 #[error_code]

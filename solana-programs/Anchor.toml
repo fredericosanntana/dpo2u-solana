@@ -10,7 +10,7 @@ agent_registry = "5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7"
 agent_wallet_factory = "AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in"
 compliance_registry = "7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK"
 compliance_registry_pinocchio = "FZ21S53Rn8Y6ANfccS2waCrkYWh5zfjXK3hkKU5YSkJ8"
-aiverify_attestation = "DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm"
+aiverify_attestation = "CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j"
 art_vault = "C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna"
 consent_manager = "D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB"
 fee_distributor = "88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x"
@@ -20,13 +20,14 @@ ccpa_optout_registry = "5xVQq4KKsAST14RGvxP2aSNZhp681tRENM9TFwVfUpgk"
 pipeda_consent_extension = "G98d5DAEC17xWfojMCdsYrAdAXP8E7QC2g2KrrnLrMPT"
 pipa_korea_zk_identity = "41JLtHb54P8LMLeSccZM1XR6xr4gxcDbVrNRZVg2hPhR"
 hiroshima_ai_process_attestation = "4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx"
+legal_source_manifest = "eb579ftMYPtFb7pSsB3ULJJHCbisYe7EJdhWnHUt8dK"
 
 [programs.localnet]
 # Re-added 2026-04-22 after anchor build generated all .so artifacts.
 # bankrun's startAnchor now loads all 9 programs for local integration tests.
 agent_registry = "5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7"
 agent_wallet_factory = "AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in"
-aiverify_attestation = "DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm"
+aiverify_attestation = "CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j"
 art_vault = "C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna"
 compliance_registry = "7q19zbMMFCPSDhJhh3cfUVJstin6r1Q4dgmeDAuQERyK"
 compliance_registry_pinocchio = "FZ21S53Rn8Y6ANfccS2waCrkYWh5zfjXK3hkKU5YSkJ8"
@@ -38,6 +39,7 @@ ccpa_optout_registry = "5xVQq4KKsAST14RGvxP2aSNZhp681tRENM9TFwVfUpgk"
 pipeda_consent_extension = "G98d5DAEC17xWfojMCdsYrAdAXP8E7QC2g2KrrnLrMPT"
 pipa_korea_zk_identity = "41JLtHb54P8LMLeSccZM1XR6xr4gxcDbVrNRZVg2hPhR"
 hiroshima_ai_process_attestation = "4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx"
+legal_source_manifest = "eb579ftMYPtFb7pSsB3ULJJHCbisYe7EJdhWnHUt8dK"
 
 [registry]
 url = "https://api.apr.dev"

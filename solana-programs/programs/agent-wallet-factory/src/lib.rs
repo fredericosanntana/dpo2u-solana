@@ -74,6 +74,29 @@ pub mod agent_wallet_factory {
 
         Ok(())
     }
+
+    /// Cross-program attestation that this agent wallet was created in
+    /// compliance with a jurisdiction's KYC/source-of-funds requirements.
+    /// Audit SOL-M002 fix (2026-05-15) — completes orphan struct with handler.
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        let nul = m.jurisdiction.iter().position(|&b| b == 0).unwrap_or(m.jurisdiction.len());
+        let mut juris_buf = [0u8; 16];
+        juris_buf[..nul].copy_from_slice(&m.jurisdiction[..nul]);
+        let w = &ctx.accounts.wallet;
+        emit!(WalletVerifiedAgainstManifest {
+            creator: w.creator,
+            agent_seed: w.agent_seed,
+            jurisdiction: juris_buf,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 #[account]
@@ -120,12 +143,39 @@ pub struct WalletTransfer<'info> {
     pub destination: AccountInfo<'info>,
 }
 
+/// Cross-program verification accounts (Sprint Continuable round 2 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [b"agent_wallet".as_ref(), wallet.creator.as_ref(), wallet.agent_seed.as_ref()],
+        bump = wallet.bump
+    )]
+    pub wallet: Account<'info, AgentWallet>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 #[event]
 pub struct WalletCreated {
     pub creator: Pubkey,
     pub agent_seed: [u8; 32],
     pub label: String,
     pub wallet_pubkey: Pubkey,
+}
+
+#[event]
+pub struct WalletVerifiedAgainstManifest {
+    pub creator: Pubkey,
+    pub agent_seed: [u8; 32],
+    pub jurisdiction: [u8; 16],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
 }
 
 #[error_code]

@@ -166,6 +166,30 @@ pub mod pipa_korea_zk_identity {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against the PIPA legal_source_manifest PDA.
+    /// Emits AttestationVerifiedAgainstManifest. Pure read.
+    /// Added 2026-05-15 (Sprint Replicate).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        require!(
+            m.jurisdiction.starts_with(b"PIPA"),
+            ZkIdErr::ManifestJurisdictionMismatch
+        );
+        let att = &ctx.accounts.attestation;
+        emit!(AttestationVerifiedAgainstManifest {
+            attestor: att.attestor,
+            subject_commitment: att.subject_commitment,
+            attribute_kind: att.attribute_kind,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Accounts --
@@ -249,6 +273,38 @@ pub struct AttestationRevoked {
     pub revoked_at: i64,
 }
 
+#[event]
+pub struct AttestationVerifiedAgainstManifest {
+    pub attestor: Pubkey,
+    pub subject_commitment: [u8; 32],
+    pub attribute_kind: u8,
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
+}
+
+/// Cross-program verification accounts (Sprint Replicate 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [
+            b"pipa_zk_id",
+            attestation.attestor.as_ref(),
+            &attestation.subject_commitment,
+            &[attestation.attribute_kind],
+        ],
+        bump = attestation.bump
+    )]
+    pub attestation: Account<'info, ZkIdentityAttestation>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 // -- Errors --
 
 #[error_code]
@@ -277,4 +333,6 @@ pub enum ZkIdErr {
     AlreadyRevoked,
     #[msg("only the original attestor can revoke (PIPA Art. 24 chain of trust)")]
     Unauthorized,
+    #[msg("legal_manifest jurisdiction does not start with \"PIPA\"")]
+    ManifestJurisdictionMismatch,
 }

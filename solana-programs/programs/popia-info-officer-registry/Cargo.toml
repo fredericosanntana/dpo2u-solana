@@ -14,8 +14,10 @@ no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
 cpi = ["no-entrypoint"]
-idl-build = ["anchor-lang/idl-build"]
+idl-build = ["anchor-lang/idl-build", "legal-source-manifest/idl-build"]
 
 [dependencies]
 anchor-lang = "0.31.1"
 borsh = "1.5.1"
+# Cross-program account type for verify_against_legal_manifest (added 2026-05-14)
+legal-source-manifest = { path = "../legal-source-manifest", features = ["cpi"] }

@@ -14,10 +14,12 @@ no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
 cpi = ["no-entrypoint"]
-idl-build = ["anchor-lang/idl-build"]
+idl-build = ["anchor-lang/idl-build", "legal-source-manifest/idl-build"]
 
 [dependencies]
 anchor-lang = "0.31.1"
 # Match the on-chain verifier's borsh version to keep the Borsh SP1Groth16Proof
 # wire format consistent. See sp1-solana/Cargo.toml workspace dep.
 borsh = "1.5.1"
+# Cross-program account type for verify_against_legal_manifest (added 2026-05-15)
+legal-source-manifest = { path = "../legal-source-manifest", features = ["cpi"] }

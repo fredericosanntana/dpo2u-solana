@@ -25,6 +25,11 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount, TransferChecked};
 
 declare_id!("88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x");
 
+use anchor_lang::solana_program::pubkey;
+// Devnet admin authority — rotate to multisig before mainnet.
+// Added 2026-05-15 (audit SOL-H001) to prevent first-caller-wins init race.
+pub const ADMIN_PUBKEY: Pubkey = pubkey!("HjpGXPWQF1PiqjdWtNNEbAxqNamXKGpJspRZm9Jv5LZj");
+
 pub const TREASURY_BPS: u16 = 7000; // 70%
 pub const OPERATOR_BPS: u16 = 2000; // 20%
 pub const RESERVE_BPS: u16 = 1000;  // 10%
@@ -33,6 +38,33 @@ pub const TOTAL_BPS: u16 = 10_000;
 #[program]
 pub mod fee_distributor {
     use super::*;
+
+    /// Cross-program attestation that this fee schedule (70/20/10 split + the
+    /// treasury/operator/reserve vaults) was published in compliance with a
+    /// jurisdiction's fee-disclosure requirements. Relevant for MICAR Art. 86
+    /// (white paper fee transparency for ART/EMT issuers) and EU PSD2/PSD3
+    /// fee disclosure. Added 2026-05-15 Sprint Continuable round 2.
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        let nul = m.jurisdiction.iter().position(|&b| b == 0).unwrap_or(m.jurisdiction.len());
+        let mut juris_buf = [0u8; 16];
+        juris_buf[..nul].copy_from_slice(&m.jurisdiction[..nul]);
+        let cfg = &ctx.accounts.config;
+        emit!(FeeConfigVerifiedAgainstManifest {
+            authority: cfg.authority,
+            treasury: cfg.treasury,
+            operator: cfg.operator,
+            reserve: cfg.reserve,
+            jurisdiction: juris_buf,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 
     pub fn initialize(
         ctx: Context<Initialize>,
@@ -135,7 +167,9 @@ pub struct Config {
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    #[account(mut)]
+    // Audit SOL-H001 fix (2026-05-15): only ADMIN_PUBKEY can initialize the
+    // singleton fee_config PDA. Prevents first-caller-wins race after deploy.
+    #[account(mut, address = ADMIN_PUBKEY @ FeeErr::Unauthorized)]
     pub authority: Signer<'info>,
     #[account(
         init,
@@ -167,6 +201,32 @@ pub struct Distribute<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+/// Cross-program verification accounts (Sprint Continuable round 2 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(seeds = [b"fee_config"], bump = config.bump)]
+    pub config: Account<'info, Config>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
+#[event]
+pub struct FeeConfigVerifiedAgainstManifest {
+    pub authority: Pubkey,
+    pub treasury: Pubkey,
+    pub operator: Pubkey,
+    pub reserve: Pubkey,
+    pub jurisdiction: [u8; 16],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
+}
+
 #[event]
 pub struct FeeDistributed {
     pub amount: u64,
@@ -180,6 +240,8 @@ pub struct FeeDistributed {
 
 #[error_code]
 pub enum FeeErr {
+    #[msg("only ADMIN_PUBKEY can initialize the fee_config singleton")]
+    Unauthorized,
     #[msg("arithmetic overflow when computing shares")]
     MathOverflow,
     #[msg("token account mint does not match the mint argument")]

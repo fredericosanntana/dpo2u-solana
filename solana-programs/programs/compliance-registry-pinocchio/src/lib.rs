@@ -300,8 +300,109 @@ pub fn process_instruction(
         0x02 => revoke_attestation(program_id, accounts, rest),
         0x03 => submit_verified_compressed(program_id, accounts, rest),
         0x04 => revoke_compressed(program_id, accounts, rest),
+        0x05 => verify_against_legal_manifest(program_id, accounts, rest),
         _ => Err(ProgramError::InvalidInstructionData),
     }
+}
+
+// =============================================================================
+// verify_against_legal_manifest (selector 0x05) — Sprint Continuable round 2
+// 2026-05-15
+// =============================================================================
+//
+// Cross-program reference to a `legal_source_manifest` PDA. Pinocchio doesn't
+// give us Anchor's `seeds::program` constraint, so we replicate the validation
+// manually:
+//   1. Verify `legal_manifest.owner == legal_source_manifest::ID`
+//   2. Skip the 8-byte Anchor discriminator
+//   3. Read the first 16 bytes as `jurisdiction`
+//   4. Recompute `find_program_address([b"legal_manifest", jurisdiction],
+//      legal_source_manifest_program_id)` and assert match
+//   5. Parse content_hash + manifest_version + effective_date from layout
+//   6. Emit a structured log captured by Photon for off-chain indexing
+//
+// Layout (LegalSourceManifestAccount, after 8-byte discriminator):
+//   [0..16]    jurisdiction: [u8; 16]
+//   [16..48]   content_hash: [u8; 32]
+//   [48..52]   manifest_version: u32 LE
+//   [52..60]   effective_date: i64 LE
+//   ...remaining fields (last_sync, source_uri, authority, bump) — unread here
+
+const LEGAL_SOURCE_MANIFEST_PROGRAM_ID: Pubkey =
+    pinocchio_pubkey::pubkey!("eb579ftMYPtFb7pSsB3ULJJHCbisYe7EJdhWnHUt8dK");
+
+const LEGAL_MANIFEST_SEED: &[u8] = b"legal_manifest";
+
+fn verify_against_legal_manifest(
+    _program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    _data: &[u8],
+) -> ProgramResult {
+    // Accounts: [legal_manifest(readonly), clock_sysvar]
+    let [legal_manifest, clock_sysvar] = accounts else {
+        return Err(ProgramError::NotEnoughAccountKeys);
+    };
+
+    // Owner check — must be the legal_source_manifest program.
+    if legal_manifest.owner() != &LEGAL_SOURCE_MANIFEST_PROGRAM_ID {
+        return Err(ProgramError::Custom(err_composed::INVALID_AUTHORITY));
+    }
+
+    let data = legal_manifest.try_borrow_data()?;
+    if data.len() < 8 + 16 + 32 + 4 + 8 {
+        return Err(ProgramError::AccountDataTooSmall);
+    }
+    // Skip 8-byte Anchor discriminator.
+    let body = &data[8..];
+
+    let mut jurisdiction = [0u8; 16];
+    jurisdiction.copy_from_slice(&body[0..16]);
+
+    let mut content_hash = [0u8; 32];
+    content_hash.copy_from_slice(&body[16..48]);
+
+    let manifest_version = u32::from_le_bytes([body[48], body[49], body[50], body[51]]);
+    let effective_date = i64::from_le_bytes([
+        body[52], body[53], body[54], body[55], body[56], body[57], body[58], body[59],
+    ]);
+
+    drop(data);
+
+    // Recompute the PDA against the legal_source_manifest program. Any
+    // substitution of the legal_manifest account fails here.
+    let (expected_pda, _bump) = find_program_address(
+        &[LEGAL_MANIFEST_SEED, &jurisdiction],
+        &LEGAL_SOURCE_MANIFEST_PROGRAM_ID,
+    );
+    if legal_manifest.key() != &expected_pda {
+        return Err(ProgramError::Custom(err::WRONG_PDA));
+    }
+
+    let clock_ref = Clock::from_account_info(clock_sysvar)?;
+    let verified_at = clock_ref.unix_timestamp;
+    drop(clock_ref);
+
+    // Structured log captured by Photon Indexer; mirrors the Anchor
+    // `LegalManifestVerified` event shape.
+    log!(
+        "CompliancePinocchioVerifiedAgainstManifest version={} effective_date={} verified_at={}",
+        manifest_version,
+        effective_date,
+        verified_at
+    );
+    // First 4 bytes of content_hash + first 6 bytes of jurisdiction logged separately
+    // (pinocchio_log doesn't yet support arbitrary byte arrays in one call).
+    log!(
+        "  jurisdiction_prefix={} {} {} {} {} {}",
+        jurisdiction[0], jurisdiction[1], jurisdiction[2],
+        jurisdiction[3], jurisdiction[4], jurisdiction[5]
+    );
+    log!(
+        "  content_hash_prefix={} {} {} {}",
+        content_hash[0], content_hash[1], content_hash[2], content_hash[3]
+    );
+
+    Ok(())
 }
 
 // -----------------------------------------------------------------------------
