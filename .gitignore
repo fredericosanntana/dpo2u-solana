@@ -45,3 +45,4 @@ packages/client-sdk/bridge-*-results.json
 packages/client-sdk/retry-failed-results.json
 packages/client-sdk/demo-verify-popia-result.json
 packages/client-sdk/anchor-*.json
+solana-programs/smoke-*-result.json

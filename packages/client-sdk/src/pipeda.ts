@@ -186,4 +186,56 @@ export class DPO2UPipedaClient {
     if (!info) return null;
     return this.coder.accounts.decode('PipedaConsentRecord', info.data);
   }
+
+  /**
+   * Cross-program verify against the PIPEDA legal_source_manifest PDA.
+   * Pure read on-chain — emits ConsentVerifiedAgainstManifest event.
+   * Added 2026-05-15 (Sprint Replicate).
+   */
+  async verifyAgainstLegalManifest(args: {
+    subject: PublicKey;
+    organization: PublicKey;
+    purposeHash: Uint8Array;
+    legalManifestJurisdiction?: string;
+  }): Promise<{
+    signature: string;
+    consentPda: PublicKey;
+    legalManifestPda: PublicKey;
+    explorerUrl: string;
+  }> {
+    const [consentPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from('pipeda_consent'),
+        args.subject.toBuffer(),
+        args.organization.toBuffer(),
+        Buffer.from(args.purposeHash),
+      ],
+      PIPEDA_CONSENT_EXT_PROGRAM_ID,
+    );
+    const { DPO2ULegalManifestClient } = await import('./legal-manifest.js');
+    const [legalManifestPda] = DPO2ULegalManifestClient.derivePda(
+      args.legalManifestJurisdiction ?? 'PIPEDA',
+    );
+    const data = this.coder.instruction.encode('verify_against_legal_manifest', {});
+    const ix = new TransactionInstruction({
+      programId: PIPEDA_CONSENT_EXT_PROGRAM_ID,
+      keys: [
+        { pubkey: consentPda, isSigner: false, isWritable: false },
+        { pubkey: legalManifestPda, isSigner: false, isWritable: false },
+      ],
+      data,
+    });
+    const tx = new Transaction()
+      .add(ComputeBudgetProgram.setComputeUnitLimit({ units: this.computeUnitLimit }))
+      .add(ix);
+    tx.feePayer = this.signer.publicKey;
+    tx.recentBlockhash = (await this.connection.getLatestBlockhash('confirmed')).blockhash;
+    const signature = await sendAndConfirmTransaction(this.connection, tx, [this.signer]);
+    return {
+      signature,
+      consentPda,
+      legalManifestPda,
+      explorerUrl: buildExplorerUrl(signature, this.cluster),
+    };
+  }
 }

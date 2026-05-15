@@ -171,4 +171,52 @@ export class DPO2UPipaClient {
     if (!info) return null;
     return this.coder.accounts.decode('ZkIdentityAttestation', info.data);
   }
+
+  /**
+   * Cross-program verify against the PIPA legal_source_manifest PDA.
+   * Pure read on-chain — emits AttestationVerifiedAgainstManifest event.
+   * Added 2026-05-15 (Sprint Replicate).
+   */
+  async verifyAgainstLegalManifest(args: {
+    attestor: PublicKey;
+    subjectCommitment: Uint8Array;
+    attributeKind: number;
+    legalManifestJurisdiction?: string;
+  }): Promise<{
+    signature: string;
+    attestationPda: PublicKey;
+    legalManifestPda: PublicKey;
+    explorerUrl: string;
+  }> {
+    const [attestationPda] = this.derivePda(
+      args.attestor,
+      args.subjectCommitment,
+      args.attributeKind as any,
+    );
+    const { DPO2ULegalManifestClient } = await import('./legal-manifest.js');
+    const [legalManifestPda] = DPO2ULegalManifestClient.derivePda(
+      args.legalManifestJurisdiction ?? 'PIPA',
+    );
+    const data = this.coder.instruction.encode('verify_against_legal_manifest', {});
+    const ix = new TransactionInstruction({
+      programId: PIPA_KOREA_ZK_ID_PROGRAM_ID,
+      keys: [
+        { pubkey: attestationPda, isSigner: false, isWritable: false },
+        { pubkey: legalManifestPda, isSigner: false, isWritable: false },
+      ],
+      data,
+    });
+    const tx = new Transaction()
+      .add(ComputeBudgetProgram.setComputeUnitLimit({ units: this.computeUnitLimit }))
+      .add(ix);
+    tx.feePayer = this.signer.publicKey;
+    tx.recentBlockhash = (await this.connection.getLatestBlockhash('confirmed')).blockhash;
+    const signature = await sendAndConfirmTransaction(this.connection, tx, [this.signer]);
+    return {
+      signature,
+      attestationPda,
+      legalManifestPda,
+      explorerUrl: buildExplorerUrl(signature, this.cluster),
+    };
+  }
 }

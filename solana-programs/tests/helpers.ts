@@ -16,7 +16,7 @@ export const PROGRAM_IDS = {
   agent_wallet_factory: new PublicKey('AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in'),
   consent_manager: new PublicKey('D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB'),
   art_vault: new PublicKey('C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna'),
-  aiverify_attestation: new PublicKey('DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm'),
+  aiverify_attestation: new PublicKey('CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j'),
   // -- 4 jurisdiction-specific programs (deployed devnet 2026-05-01) --
   popia_info_officer_registry: new PublicKey('ASqTAMhhki7btr3WL768v2yUPKWuGfMEGWnP7TxALmmb'),
   ccpa_optout_registry: new PublicKey('5xVQq4KKsAST14RGvxP2aSNZhp681tRENM9TFwVfUpgk'),

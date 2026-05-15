@@ -12,7 +12,7 @@ import { PROGRAM_IDS, deriveAiverifyPda } from './helpers.js';
 describe('aiverify-attestation — program ID canary', () => {
   it('program ID matches declare_id!()', () => {
     expect(PROGRAM_IDS.aiverify_attestation.toBase58()).toBe(
-      'DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm',
+      'CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j',
     );
   });
 });

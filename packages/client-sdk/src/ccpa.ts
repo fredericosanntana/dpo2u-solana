@@ -166,4 +166,52 @@ export class DPO2UCcpaClient {
     if (!info) return null;
     return this.coder.accounts.decode('OptoutRecord', info.data);
   }
+
+  /**
+   * Cross-program verify against the CCPA legal_source_manifest PDA.
+   * Pure read on-chain — emits OptoutVerifiedAgainstManifest event.
+   * Added 2026-05-15 (Sprint Replicate).
+   */
+  async verifyAgainstLegalManifest(args: {
+    business: PublicKey;
+    consumerCommitmentHash: Uint8Array;
+    optoutKind: number;
+    legalManifestJurisdiction?: string;
+  }): Promise<{
+    signature: string;
+    optoutPda: PublicKey;
+    legalManifestPda: PublicKey;
+    explorerUrl: string;
+  }> {
+    const [optoutPda] = this.derivePda(
+      args.business,
+      args.consumerCommitmentHash,
+      args.optoutKind as any,
+    );
+    const { DPO2ULegalManifestClient } = await import('./legal-manifest.js');
+    const [legalManifestPda] = DPO2ULegalManifestClient.derivePda(
+      args.legalManifestJurisdiction ?? 'CCPA',
+    );
+    const data = this.coder.instruction.encode('verify_against_legal_manifest', {});
+    const ix = new TransactionInstruction({
+      programId: CCPA_OPTOUT_PROGRAM_ID,
+      keys: [
+        { pubkey: optoutPda, isSigner: false, isWritable: false },
+        { pubkey: legalManifestPda, isSigner: false, isWritable: false },
+      ],
+      data,
+    });
+    const tx = new Transaction()
+      .add(ComputeBudgetProgram.setComputeUnitLimit({ units: this.computeUnitLimit }))
+      .add(ix);
+    tx.feePayer = this.signer.publicKey;
+    tx.recentBlockhash = (await this.connection.getLatestBlockhash('confirmed')).blockhash;
+    const signature = await sendAndConfirmTransaction(this.connection, tx, [this.signer]);
+    return {
+      signature,
+      optoutPda,
+      legalManifestPda,
+      explorerUrl: buildExplorerUrl(signature, this.cluster),
+    };
+  }
 }
