@@ -1,0 +1,180 @@
+{
+  "run_config": {
+    "agents": 3,
+    "ticks": 2,
+    "scenario": "baseline",
+    "seed": 42,
+    "personas": [],
+    "validator_url": "http://localhost:8899",
+    "output_path": "riptide-output/generic-demo"
+  },
+  "seed": 42,
+  "total_ticks": 2,
+  "timeseries": [
+    {
+      "active_agents": 3,
+      "split.buyback_bps": 0.0,
+      "split.fundo_bps": 0.0,
+      "split.kbr_bps": 0.0,
+      "split.staking_bps": 0.0,
+      "tick": 0,
+      "tokenomics.distributions_count": 0.0,
+      "tokenomics.total_distributed": 0.0
+    },
+    {
+      "active_agents": 3,
+      "split.buyback_bps": 0.0,
+      "split.fundo_bps": 0.0,
+      "split.kbr_bps": 0.0,
+      "split.staking_bps": 0.0,
+      "tick": 1,
+      "tokenomics.distributions_count": 0.0,
+      "tokenomics.total_distributed": 0.0
+    },
+    {
+      "active_agents": 3,
+      "split.buyback_bps": 0.0,
+      "split.fundo_bps": 0.0,
+      "split.kbr_bps": 0.0,
+      "split.staking_bps": 0.0,
+      "tick": 2,
+      "tokenomics.distributions_count": 0.0,
+      "tokenomics.total_distributed": 0.0
+    }
+  ],
+  "events": [
+    {
+      "tick": 1,
+      "agent_id": "agent-001",
+      "persona_id": "dispensary_high_volume",
+      "persona_label": "High-volume dispensary",
+      "action": "distribute_fee",
+      "params": {
+        "amount": 1
+      },
+      "outcome": "failed",
+      "outcome_detail": "InstructionError(0, Custom(16394))"
+    },
+    {
+      "tick": 1,
+      "agent_id": "agent-002",
+      "persona_id": "dispensary_low_volume",
+      "persona_label": "Low-volume dispensary",
+      "action": "distribute_fee",
+      "params": {
+        "amount": 1
+      },
+      "outcome": "failed",
+      "outcome_detail": "InstructionError(0, Custom(16394))"
+    },
+    {
+      "tick": 1,
+      "agent_id": "agent-003",
+      "persona_id": "dispensary_high_volume",
+      "persona_label": "High-volume dispensary",
+      "action": "distribute_fee",
+      "params": {
+        "amount": 1
+      },
+      "outcome": "failed",
+      "outcome_detail": "InstructionError(0, Custom(16394))"
+    },
+    {
+      "tick": 2,
+      "agent_id": "agent-001",
+      "persona_id": "dispensary_high_volume",
+      "persona_label": "High-volume dispensary",
+      "action": "distribute_fee",
+      "params": {
+        "amount": 1
+      },
+      "outcome": "failed",
+      "outcome_detail": "InstructionError(0, Custom(16394))"
+    },
+    {
+      "tick": 2,
+      "agent_id": "agent-002",
+      "persona_id": "dispensary_low_volume",
+      "persona_label": "Low-volume dispensary",
+      "action": "distribute_fee",
+      "params": {
+        "amount": 1
+      },
+      "outcome": "failed",
+      "outcome_detail": "InstructionError(0, Custom(16394))"
+    },
+    {
+      "tick": 2,
+      "agent_id": "agent-003",
+      "persona_id": "dispensary_high_volume",
+      "persona_label": "High-volume dispensary",
+      "action": "distribute_fee",
+      "params": {
+        "amount": 1
+      },
+      "outcome": "failed",
+      "outcome_detail": "InstructionError(0, Custom(16394))"
+    }
+  ],
+  "agents": [
+    {
+      "agent_id": "agent-001",
+      "persona_id": "dispensary_high_volume",
+      "persona_label": "High-volume dispensary",
+      "status": "active",
+      "final_balance": 20000.0,
+      "pnl": 0.0,
+      "total_actions": 0,
+      "triggers_activated": 0
+    },
+    {
+      "agent_id": "agent-002",
+      "persona_id": "dispensary_low_volume",
+      "persona_label": "Low-volume dispensary",
+      "status": "active",
+      "final_balance": 20000.0,
+      "pnl": 0.0,
+      "total_actions": 0,
+      "triggers_activated": 0
+    },
+    {
+      "agent_id": "agent-003",
+      "persona_id": "dispensary_high_volume",
+      "persona_label": "High-volume dispensary",
+      "status": "active",
+      "final_balance": 20000.0,
+      "pnl": 0.0,
+      "total_actions": 0,
+      "triggers_activated": 0
+    }
+  ],
+  "summary": {
+    "agents_active": 3,
+    "agents_depleted": 0,
+    "agents_liquidated": 0,
+    "split.buyback_bps_avg": 0.0,
+    "split.buyback_bps_max": 0.0,
+    "split.buyback_bps_min": 0.0,
+    "split.fundo_bps_avg": 0.0,
+    "split.fundo_bps_max": 0.0,
+    "split.fundo_bps_min": 0.0,
+    "split.kbr_bps_avg": 0.0,
+    "split.kbr_bps_max": 0.0,
+    "split.kbr_bps_min": 0.0,
+    "split.staking_bps_avg": 0.0,
+    "split.staking_bps_max": 0.0,
+    "split.staking_bps_min": 0.0,
+    "tokenomics.distributions_count_avg": 0.0,
+    "tokenomics.distributions_count_max": 0.0,
+    "tokenomics.distributions_count_min": 0.0,
+    "tokenomics.total_distributed_avg": 0.0,
+    "tokenomics.total_distributed_max": 0.0,
+    "tokenomics.total_distributed_min": 0.0
+  },
+  "simulation_boundaries": [
+    "In-process LiteSVM backend (no external validator).",
+    "Generic adapters expose only adapter-defined actions/observations; no default TVL/health semantics are inferred.",
+    "Pool-wide TVL/utilization metrics are zeroed on the generic path until a protocol-specific aggregate is declared.",
+    "Custom actions do not mutate engine cash/PnL by default; only on-chain account observations are authoritative."
+  ]
+}

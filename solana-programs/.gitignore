@@ -1,2 +1,6 @@
 # Test fixtures — populated by `pretest` script from sibling sp1-solana build.
 tests/fixtures/*.so
+
+# Riptide run state (auto-added by riptide init)
+.riptide/runs/
+.riptide/last-run.json

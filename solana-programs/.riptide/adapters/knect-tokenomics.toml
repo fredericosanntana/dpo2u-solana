@@ -1,0 +1,158 @@
+# Riptide adapter — knect-tokenomics-pinocchio (Kolibri tokenomics)
+#
+# Atomic 25/25/35/15 fee split (KBR cbBTC / Buyback&Burn / Pool Staking USDC / Fundo).
+# Adapter stubs the 3 instructions (initialize_config / distribute / update_splits).
+# To finalize personas + scenarios + invariants, run `/riptide-config` from a
+# fresh Claude Code session (or edit manually following the lint output).
+
+protocol = "generic"
+program_so = "target/deploy/knect_tokenomics_pinocchio.so"
+idl_path = ".riptide/idl/knect_tokenomics_pinocchio.json"
+
+# -----------------------------------------------------------------------------
+# Accounts
+# -----------------------------------------------------------------------------
+
+[accounts]
+
+[accounts.config]
+kind = "shared"
+space = 230
+
+[accounts.source_ata]
+kind = "agent"
+space = 165
+
+[accounts.vault_kbr]
+kind = "shared"
+space = 165
+
+[accounts.vault_buyback]
+kind = "shared"
+space = 165
+
+[accounts.vault_staking]
+kind = "shared"
+space = 165
+
+[accounts.vault_fundo]
+kind = "shared"
+space = 165
+
+[accounts.fee_token_mint]
+kind = "shared"
+space = 82               # SPL Mint v1 size
+
+# -----------------------------------------------------------------------------
+# Instructions
+# -----------------------------------------------------------------------------
+
+[instructions]
+
+[instructions.initialize_config]
+action = "init_config"
+amount = "bps_kbr"
+args = { fee_token_mint = "@persona.fee_mint", vault_kbr = "@persona.vault_kbr", vault_buyback = "@persona.vault_buyback", vault_staking = "@persona.vault_staking", vault_fundo = "@persona.vault_fundo", bps_buyback = 2500, bps_staking = 3500, bps_fundo = 1500 }
+
+[instructions.distribute]
+action = "distribute_fee"
+amount = "amount"
+
+[instructions.update_splits]
+action = "update_splits"
+amount = "bps_kbr"
+args = { bps_buyback = 2500, bps_staking = 3500, bps_fundo = 1500 }
+
+# -----------------------------------------------------------------------------
+# State mapping (on-chain → observation keys)
+# -----------------------------------------------------------------------------
+
+[state_mapping]
+# Only program-owned account fields are mappable here. SPL vault balances
+# are observed via external token-balance hooks added in S2.
+"config.bps_kbr"             = "split.kbr_bps"
+"config.bps_buyback"         = "split.buyback_bps"
+"config.bps_staking"         = "split.staking_bps"
+"config.bps_fundo"           = "split.fundo_bps"
+"config.total_distributed"   = "tokenomics.total_distributed"
+"config.distributions_count" = "tokenomics.distributions_count"
+
+# -----------------------------------------------------------------------------
+# Actions — dashboard-visible labels + bound numeric args
+# -----------------------------------------------------------------------------
+
+[actions]
+
+[actions.init_config]
+label = "Initialize tokenomics config"
+takes = []   # leave empty for IDL-backed arg inference (all 9 IDL args auto-bound)
+
+[actions.distribute_fee]
+label = "Distribute fee (4-way split)"
+takes = ["amount"]
+
+[actions.update_splits]
+label = "Update bps splits (admin)"
+takes = []
+
+# -----------------------------------------------------------------------------
+# Observations
+# -----------------------------------------------------------------------------
+
+[observations]
+"split.kbr_bps"                  = "uint"
+"split.buyback_bps"              = "uint"
+"split.staking_bps"              = "uint"
+"split.fundo_bps"                = "uint"
+"tokenomics.total_distributed"   = "uint"
+"tokenomics.distributions_count" = "uint"
+
+# -----------------------------------------------------------------------------
+# Personas — TO BE COMPLETED via /riptide-config
+# -----------------------------------------------------------------------------
+#
+# Suggested personas for Kolibri tokenomics stress tests:
+#   - dispensary_low_volume   (1 distribution / day, amount 50 USDC equiv)
+#   - dispensary_high_volume  (100 distributions / day, amount 500 USDC equiv)
+#   - admin_tuner             (occasionally adjusts splits — should be RARE)
+#   - attacker_zero_amount    (always tries amount=0 — should always revert)
+#   - attacker_substitute_vault (passes fake vault — should always revert)
+
+[personas]
+
+[personas.dispensary_low_volume]
+label = "Low-volume dispensary"
+action_rate_multiplier = 0.1
+action_weights = { distribute_fee = 1.0 }
+triggers = []
+
+[personas.dispensary_high_volume]
+label = "High-volume dispensary"
+action_rate_multiplier = 1.0
+action_weights = { distribute_fee = 1.0 }
+triggers = []
+
+# -----------------------------------------------------------------------------
+# Invariants (to be added via /riptide-config)
+# -----------------------------------------------------------------------------
+#
+# Recommended invariants to encode for the tokenomics tese:
+#
+#   1. SPLIT_SUMS_TO_AMOUNT
+#      After every distribute_fee, the sum of (kbr + buyback + staking + fundo)
+#      balance deltas MUST equal the amount field. No leakage.
+#
+#   2. NO_NEGATIVE_VAULT
+#      No vault balance ever decreases (config-only adds, never removes).
+#
+#   3. BPS_RATIO_HELD
+#      Over a campaign sweep, kbr_balance / total_distributed ≈ bps_kbr / 10000
+#      within rounding error proportional to distributions_count.
+#
+#   4. ADMIN_ONLY_UPDATE
+#      update_splits only succeeds when signer == config.admin.
+#
+#   5. AMOUNT_ZERO_REJECTED
+#      distribute_fee with amount=0 always returns ERR_AMOUNT_ZERO (0x4007).
+#
+# Encode each as a `[invariants.<name>]` block once scenarios are wired.
