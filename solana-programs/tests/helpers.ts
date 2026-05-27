@@ -167,7 +167,87 @@ export const pinocchioIx = {
       args.expectedOldLeafHash,
     ]);
   },
+
+  // ---------------------------------------------------------------------------
+  // submit_cannabis_event (selector 0x06) — Kolibri seed-to-sale traceability
+  // ---------------------------------------------------------------------------
+
+  submitCannabisEvent(args: {
+    batchId: Buffer;          // 16 bytes (ULID raw)
+    eventType: number;        // 1..15 (see CANNABIS_EVENT_TYPE)
+    parentBatchId: Buffer;    // 16 bytes (zero-filled if root)
+    payloadHash: Buffer;      // 32 bytes (sha256 of canonicalized payload)
+    storageUri: string;       // up to 200 chars
+    cultivarCode: Buffer;     // 8 bytes (right-padded ascii)
+    emittedAt: bigint;        // i64 unix
+  }): Buffer {
+    if (args.batchId.length !== 16) throw new Error(`batchId must be 16 bytes, got ${args.batchId.length}`);
+    if (args.parentBatchId.length !== 16) throw new Error('parentBatchId must be 16 bytes (zeros if root)');
+    if (args.payloadHash.length !== 32) throw new Error('payloadHash must be 32 bytes');
+    if (args.cultivarCode.length !== 8) throw new Error('cultivarCode must be 8 bytes');
+    if (args.eventType < 1 || args.eventType > 15) throw new Error(`eventType out of range: ${args.eventType}`);
+    if (args.storageUri.length > 200) throw new Error('storageUri too long (max 200)');
+
+    const emittedBuf = Buffer.alloc(8);
+    emittedBuf.writeBigInt64LE(args.emittedAt, 0);
+
+    return Buffer.concat([
+      Buffer.from([0x06]),
+      args.batchId,
+      Buffer.from([args.eventType]),
+      args.parentBatchId,
+      args.payloadHash,
+      encodeBorshString(args.storageUri),
+      args.cultivarCode,
+      emittedBuf,
+    ]);
+  },
 };
+
+// =============================================================================
+// Cannabis event types — single source of truth shared with Rust enum
+// programs/compliance-registry-pinocchio/src/lib.rs MAX_CANNABIS_EVENT_TYPE=15
+// =============================================================================
+
+export const CANNABIS_EVENT_TYPE = {
+  SEED_PLANTED: 1,
+  MOTHER_REGISTERED: 2,
+  CLONE_CUT: 3,
+  VEGETATION_START: 4,
+  FLOWERING_START: 5,
+  HARVEST: 6,
+  DRYING_START: 7,
+  CURING_START: 8,
+  LAB_SAMPLE_TAKEN: 9,
+  LAB_RESULT_RELEASED: 10,
+  PACKAGED: 11,
+  TRANSFERRED: 12,
+  DISPENSED: 13,
+  RECALLED: 14,
+  DESTROYED: 15,
+} as const;
+
+export type CannabisEventType = (typeof CANNABIS_EVENT_TYPE)[keyof typeof CANNABIS_EVENT_TYPE];
+
+export function deriveCannabisEventPda(
+  batchId: Uint8Array,
+  eventType: number,
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('cannabis_event'), Buffer.from(batchId), Buffer.from([eventType])],
+    PROGRAM_IDS.compliance_registry_pinocchio,
+  );
+}
+
+/** Random 16-byte ULID-shaped buffer for tests. Real code should use a ULID lib. */
+export function randomBatchId(): Buffer {
+  const b = Buffer.alloc(16);
+  for (let i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256);
+  return b;
+}
+
+/** Zero batch id — used as parent_batch_id when an event is a root (seed). */
+export const ROOT_BATCH_ID: Buffer = Buffer.alloc(16);
 
 // =============================================================================
 // AttestationLeaf — TS replica of the Rust struct in

@@ -98,6 +98,27 @@ export type {
   Jurisdiction,
 } from './composed.js';
 
+// -- Kolibri seed-to-sale traceability (2026-05-27) — selector 0x06 in Pinocchio --
+//
+// Anchors plant lifecycle events on Solana (15 event types), gated by
+// agent-registry (cultivator/dispensary/lab must be pre-registered).
+
+export {
+  DPO2UCannabisClient,
+  CANNABIS_EVENT_TYPE,
+  ROOT_BATCH_ID,
+  deriveCannabisEventPda,
+  deriveAgentPda as deriveAgentPdaFromCannabis,
+  buildSubmitCannabisEventIx,
+  encodeSubmitCannabisEvent,
+} from './cannabis.js';
+export type {
+  DPO2UCannabisClientOptions,
+  SubmitCannabisEventArgs,
+  SubmitCannabisEventResult,
+  CannabisEventType,
+} from './cannabis.js';
+
 // -- Legal Corpus Sprint (2026-05-14) — legal_source_manifest deployed devnet --
 //
 // On-chain pointer to the off-chain legal corpus produced by dpo2u-legal-worker.

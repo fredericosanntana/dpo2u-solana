@@ -13,6 +13,9 @@
 //!   0x03 → submit_verified_compressed      (SP1 verify + Light Protocol insert leaf)
 //!   0x04 → revoke_compressed               (signer-gated by leaf.authority Squads vault)
 //!
+//! Kolibri seed-to-sale traceability (2026-05-27):
+//!   0x06 → submit_cannabis_event           (plant lifecycle anchor, agent-registry gated)
+//!
 //! Layout de bytes do instruction_data: [selector: u8][Borsh(args)].
 //! Sem 8-byte Anchor discriminator na instruction — o dispatcher é manual.
 //! O Attestation account é prefixado com 8 bytes de zero (pseudo-discriminator)
@@ -301,8 +304,207 @@ pub fn process_instruction(
         0x03 => submit_verified_compressed(program_id, accounts, rest),
         0x04 => revoke_compressed(program_id, accounts, rest),
         0x05 => verify_against_legal_manifest(program_id, accounts, rest),
+        0x06 => submit_cannabis_event(program_id, accounts, rest),
         _ => Err(ProgramError::InvalidInstructionData),
     }
+}
+
+// =============================================================================
+// submit_cannabis_event (selector 0x06) — Kolibri seed-to-sale plant tracing
+// 2026-05-27
+// =============================================================================
+//
+// Anchors one event of a cannabis plant lifecycle (seed→mother→clone→harvest
+// →drying→curing→lab→packaging→transfer→dispense→recall→destroy).
+//
+// Design:
+//   - 1 PDA per (batch_id, event_type) — `[b"cannabis_event", batch_id, &[event_type]]`
+//   - Authority MUST be registered in agent-registry (cultivator/dispensary/lab)
+//   - Cross-program check: agent_account.owner == agent_registry::ID + bytes[8..40] == authority
+//   - Idempotent: trying to record same (batch, type) twice fails with EVENT_ALREADY_RECORDED
+//   - No ZK proof (plant events are auditable, not private) — compression can be added
+//     later via selector 0x07 if volume requires
+//
+// Cost: ~0.003 SOL rent-locked per event (regular PDA, no compression).
+//
+// Account layout (6 accounts, no remaining_accounts):
+//   [0] authority             (signer, writable, fee payer)
+//   [1] event_pda             (writable)
+//   [2] agent_account         (readonly, owned by agent_registry)
+//   [3] system_program
+//   [4] rent_sysvar
+//   [5] clock_sysvar
+
+const AGENT_REGISTRY_PROGRAM_ID: Pubkey =
+    pinocchio_pubkey::pubkey!("5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7");
+
+const CANNABIS_EVENT_SEED: &[u8] = b"cannabis_event";
+
+/// Max storage_uri length for cannabis events (200 bytes per Kolibri spec —
+/// larger than the 128 used by attestations to accommodate Shadow Drive URLs).
+const MAX_CANNABIS_STORAGE_URI_LEN: usize = 200;
+
+/// Event types — 1-15 enumerate the seed-to-sale lifecycle. Keep in sync with
+/// `tests/helpers.ts` and `packages/client-sdk/src/cannabis.ts`.
+const MAX_CANNABIS_EVENT_TYPE: u8 = 15;
+
+mod err_cannabis {
+    pub const CANNABIS_URI_TOO_LONG: u32 = 0x3001;
+    pub const INVALID_EVENT_TYPE: u32 = 0x3002;
+    pub const AGENT_WRONG_OWNER: u32 = 0x3003;
+    pub const AGENT_NOT_REGISTERED: u32 = 0x3004;
+    pub const EVENT_ALREADY_RECORDED: u32 = 0x3005;
+}
+
+/// First 8 bytes of sha256("account:CannabisEvent"). Keeps clients using a
+/// generic BorshCoder pattern compatible (mirrors the 8-byte pseudo-discriminator
+/// trick used by `Attestation`).
+const CANNABIS_EVENT_DISCRIMINATOR: [u8; 8] = [201, 187, 134, 71, 250, 109, 18, 245];
+
+/// Args of submit_cannabis_event (selector 0x06).
+#[derive(BorshDeserialize)]
+struct SubmitCannabisEventArgs {
+    batch_id: [u8; 16],
+    event_type: u8,
+    parent_batch_id: [u8; 16],
+    payload_hash: [u8; 32],
+    storage_uri: String,
+    cultivar_code: [u8; 8],
+    emitted_at: i64,
+}
+
+/// Persisted event account. Schema-versioned via `schema_version` for forward
+/// compatibility; readers should branch on it before parsing.
+#[derive(BorshSerialize, BorshDeserialize)]
+struct CannabisEvent {
+    batch_id: [u8; 16],
+    event_type: u8,
+    parent_batch_id: [u8; 16],
+    payload_hash: [u8; 32],
+    storage_uri: String,
+    cultivar_code: [u8; 8],
+    emitted_at: i64,
+    issued_at: i64,
+    authority: [u8; 32],
+    bump: u8,
+    schema_version: u8,
+}
+
+/// Max Borsh-serialized size:
+///   16 + 1 + 16 + 32 + (4 + 200) + 8 + 8 + 8 + 32 + 1 + 1 = 327 bytes
+const CANNABIS_EVENT_MAX_DATA: usize = 327;
+const CANNABIS_EVENT_ACCOUNT_SPACE: usize = 8 + CANNABIS_EVENT_MAX_DATA;
+
+fn submit_cannabis_event(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: &[u8],
+) -> ProgramResult {
+    let args = SubmitCannabisEventArgs::try_from_slice(data)
+        .map_err(|_| ProgramError::InvalidInstructionData)?;
+
+    if args.event_type == 0 || args.event_type > MAX_CANNABIS_EVENT_TYPE {
+        return Err(ProgramError::Custom(err_cannabis::INVALID_EVENT_TYPE));
+    }
+    if args.storage_uri.len() > MAX_CANNABIS_STORAGE_URI_LEN {
+        return Err(ProgramError::Custom(err_cannabis::CANNABIS_URI_TOO_LONG));
+    }
+
+    let [authority, event_pda, agent_account, system_program, rent_sysvar, clock_sysvar] = accounts
+    else {
+        return Err(ProgramError::NotEnoughAccountKeys);
+    };
+
+    require_signer(authority)?;
+    require_system_program(system_program)?;
+
+    // Cross-program ref to agent-registry — authority must be a registered agent.
+    // Layout: [0..8] Anchor discriminator, [8..40] authority (Pubkey), then remainder.
+    if agent_account.owner() != &AGENT_REGISTRY_PROGRAM_ID {
+        return Err(ProgramError::Custom(err_cannabis::AGENT_WRONG_OWNER));
+    }
+    {
+        let agent_data = agent_account.try_borrow_data()?;
+        if agent_data.len() < 8 + 32 {
+            return Err(ProgramError::AccountDataTooSmall);
+        }
+        let mut agent_authority = [0u8; 32];
+        agent_authority.copy_from_slice(&agent_data[8..40]);
+        if &agent_authority != authority.key() {
+            return Err(ProgramError::Custom(err_cannabis::AGENT_NOT_REGISTERED));
+        }
+    }
+
+    let event_type_bytes = [args.event_type];
+    let (expected_pda, bump) = find_program_address(
+        &[CANNABIS_EVENT_SEED, &args.batch_id, &event_type_bytes],
+        program_id,
+    );
+    if event_pda.key() != &expected_pda {
+        return Err(ProgramError::Custom(err::WRONG_PDA));
+    }
+
+    // Idempotency check — recording the same (batch, type) twice is a bug.
+    if event_pda.lamports() > 0 {
+        return Err(ProgramError::Custom(err_cannabis::EVENT_ALREADY_RECORDED));
+    }
+
+    let rent_ref = Rent::from_account_info(rent_sysvar)?;
+    let lamports = rent_ref.minimum_balance(CANNABIS_EVENT_ACCOUNT_SPACE);
+    drop(rent_ref);
+
+    let bump_seed = [bump];
+    let seeds_array: [Seed; 4] = [
+        Seed::from(CANNABIS_EVENT_SEED),
+        Seed::from(args.batch_id.as_slice()),
+        Seed::from(event_type_bytes.as_slice()),
+        Seed::from(bump_seed.as_slice()),
+    ];
+    let signer = Signer::from(&seeds_array);
+
+    CreateAccount {
+        from: authority,
+        to: event_pda,
+        lamports,
+        space: CANNABIS_EVENT_ACCOUNT_SPACE as u64,
+        owner: program_id,
+    }
+    .invoke_signed(&[signer])?;
+
+    let clock_ref = Clock::from_account_info(clock_sysvar)?;
+    let issued_at = clock_ref.unix_timestamp;
+    drop(clock_ref);
+
+    let event = CannabisEvent {
+        batch_id: args.batch_id,
+        event_type: args.event_type,
+        parent_batch_id: args.parent_batch_id,
+        payload_hash: args.payload_hash,
+        storage_uri: args.storage_uri,
+        cultivar_code: args.cultivar_code,
+        emitted_at: args.emitted_at,
+        issued_at,
+        authority: *authority.key(),
+        bump,
+        schema_version: 1,
+    };
+
+    let mut acct_data = event_pda.try_borrow_mut_data()?;
+    if acct_data.len() < CANNABIS_EVENT_ACCOUNT_SPACE {
+        return Err(ProgramError::AccountDataTooSmall);
+    }
+    acct_data[0..8].copy_from_slice(&CANNABIS_EVENT_DISCRIMINATOR);
+    let mut cursor = &mut acct_data[8..];
+    event
+        .serialize(&mut cursor)
+        .map_err(|_| ProgramError::InvalidAccountData)?;
+
+    log!(
+        "CannabisEventRecorded type={} emitted_at={}",
+        args.event_type,
+        args.emitted_at
+    );
+    Ok(())
 }
 
 // =============================================================================
