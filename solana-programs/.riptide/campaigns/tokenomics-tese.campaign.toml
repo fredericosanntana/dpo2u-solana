@@ -1,0 +1,76 @@
+# Kolibri KNECT tokenomics — atomic 25/25/35/15 split-correctness campaign.
+#
+# Validates the on-chain economic primitive at the heart of the protocol:
+# every fee MUST be split exactly per PRD §2.3 with rounding absorbed by the
+# Fundo vault (no leakage). The six invariants in the adapter enforce both
+# the canonical bps shape and the post-tick non-negative monotonic counters.
+#
+# This is NOT a tokenomics policy proof (no buyback&burn or Jupiter swap
+# logic on-chain in v0.1). It is a deterministic split-correctness proof
+# for the primitive the rest of the tokenomics builds on.
+
+[campaign]
+name = "knect-tokenomics-tese"
+adapter = "../adapters/knect-tokenomics.toml"
+# Campaign v1 schema requires a built-in class — "lending.v1" reused
+# cosmetically per the stablecoin-adapter precedent (classification reads
+# instruction/observation names, not the class string).
+class = "lending.v1"
+risk_objective = "custom:split-correctness"
+run_budget = 8
+seed_policy = "fixed:20260528"
+replay_retention = [
+  "first_failure",
+  "median",
+]
+
+[campaign.scenarios]
+selection = "weighted"
+families = [
+  "baseline",
+  "happy_split",
+  "rounding_sweep",
+]
+
+[campaign.scenarios.baseline]
+source = "../scenarios/baseline"
+weight = 1
+
+[campaign.scenarios.happy_split]
+source = "../scenarios/happy-split"
+weight = 2
+
+[campaign.scenarios.rounding_sweep]
+source = "../scenarios/rounding-sweep"
+weight = 2
+
+[campaign.personas]
+base = "../personas"
+families = []
+
+# Campaign v1 schema requires [campaign.parameters] to be non-empty.
+# Until generic-parameter materialization ships, we keep one inert axis
+# that lets the scheduler split runs across the 3 scenarios under the
+# run_budget=8 without affecting any observation. The real "amount" sweep
+# lives in the static scenarios + bankrun reference cases.
+
+[campaign.parameters.shock_profile]
+distribution = "discrete"
+values = ["price-shock"]
+weights = [1]
+
+# -----------------------------------------------------------------------------
+# Parameter sweep notes (NOT materialized into run configs by Campaign v1
+# generic plumbing — the engine receives the static run-config.json amounts).
+# These are the canonical edge cases the bankrun suite already proves:
+#
+#   - amount = 1          → rounding edge: 0/0/0/1 (fundo absorbs all)
+#   - amount = 7          → 1/1/2/3 (integer division behavior)
+#   - amount = 100        → 25/25/35/15 (round numbers)
+#   - amount = 10_000     → 2500/2500/3500/1500
+#   - amount = 1_000_000  → 250000/250000/350000/150000 (bankrun reference)
+#   - amount = 1_000_000_001 → off-round large (bigger rounding path)
+#
+# When Riptide v0.10+ ships generic-parameter materialization, move this
+# list into [campaign.parameters.amount].
+# -----------------------------------------------------------------------------

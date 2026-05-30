@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "kind": "simulation-run",
+  "run_id": "baseline",
+  "scenario": "baseline",
+  "adapter": ".riptide/adapters/knect-tokenomics.toml",
+  "component_adapters": {},
+  "total_ticks": 5,
+  "agents": 3,
+  "event_count": 39,
+  "canonical_hash": "219e7975137c5d53ebfd2a734384c5a4a728c3c6829acd01c6dfe5b3ef72b101",
+  "invariant_firings": [
+    {
+      "name": "kbr_bps_canonical",
+      "firings": 6,
+      "first_tick": 0,
+      "field": "split.kbr_bps",
+      "op": "==",
+      "value": 2500.0
+    },
+    {
+      "name": "buyback_bps_canonical",
+      "firings": 6,
+      "first_tick": 0,
+      "field": "split.buyback_bps",
+      "op": "==",
+      "value": 2500.0
+    },
+    {
+      "name": "staking_bps_canonical",
+      "firings": 6,
+      "first_tick": 0,
+      "field": "split.staking_bps",
+      "op": "==",
+      "value": 3500.0
+    },
+    {
+      "name": "fundo_bps_canonical",
+      "firings": 6,
+      "first_tick": 0,
+      "field": "split.fundo_bps",
+      "op": "==",
+      "value": 1500.0
+    },
+    {
+      "name": "total_distributed_nonnegative",
+      "firings": 0,
+      "first_tick": null,
+      "field": "tokenomics.total_distributed",
+      "op": ">=",
+      "value": 0.0
+    },
+    {
+      "name": "distributions_count_nonnegative",
+      "firings": 0,
+      "first_tick": null,
+      "field": "tokenomics.distributions_count",
+      "op": ">=",
+      "value": 0.0
+    }
+  ],
+  "exit_code": 1,
+  "inputs": {
+    "adapter": ".riptide/adapters/knect-tokenomics.toml",
+    "config": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/run-config.json",
+    "policies": null,
+    "trajectory_dirs": {},
+    "component_adapters": {}
+  },
+  "outputs": {
+    "simulation_result": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/simulation-result.json",
+    "last_run": null
+  },
+  "simulation_boundaries": [
+    "In-process LiteSVM backend (no external validator).",
+    "Generic adapters expose only adapter-defined actions/observations; no default TVL/health semantics are inferred.",
+    "Pool-wide TVL/utilization metrics are zeroed on the generic path until a protocol-specific aggregate is declared.",
+    "Custom actions do not mutate engine cash/PnL by default; only on-chain account observations are authoritative."
+  ]
+}

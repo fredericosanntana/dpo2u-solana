@@ -9,6 +9,43 @@ protocol = "generic"
 program_so = "target/deploy/knect_tokenomics_pinocchio.so"
 idl_path = ".riptide/idl/knect_tokenomics_pinocchio.json"
 
+[lineage]
+idl_source = ".riptide/idl/knect_tokenomics_pinocchio.json"
+generator = "hand-authored"
+# Pinocchio programs do not emit Anchor IDL by default. The JSON shape mimics
+# Anchor's IDL format (instructions[].accounts, args, accounts[] type defs,
+# errors[]) so generic Riptide dispatch encodes instruction bytes
+# deterministically. Discriminator [223,18,91,144,207,33,86,12] matches the
+# on-chain Borsh layout in src/lib.rs.
+inferred_assumptions = [
+  "Pinocchio entrypoint dispatches by 1-byte selector (0x00 init, 0x01 distribute, 0x02 update_splits).",
+  "Config PDA seed = [b\"knect_config\", admin_pubkey]; bump computed by find_program_address.",
+  "All 4 vaults are SPL Token v1 accounts (165 bytes) with the SAME mint as config.fee_token_mint.",
+  "fee_token_mint is an SPL Token v1 Mint (82 bytes) with 6 decimals.",
+  "source_ata is owned by the agent (payer) and pre-funded by harness setup.",
+  "Splits are atomic: any failed transfer reverts the entire tx (no partial state).",
+  "Last vault (fundo) absorbs all rounding so Σ shares == amount exactly.",
+  "Token-2022 NOT supported in v0.1 — only SPL Token v1 (TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA)."
+]
+unsupported_fields = [
+  # Protocol-level deferred surfaces
+  "Cashback Fase A → B logic — orchestration off-chain via the gateway, no on-chain selector.",
+  "Buyback&burn KNECT swap leg — requires Jupiter aggregator integration (post-TGE).",
+  "DCA-to-cbBTC — requires Jupiter DCA program integration (post-TGE).",
+  "Token-2022 (transfer fees, transfer hooks) — defer to selector 0x03 in v0.2.",
+  "Multi-tenant config — one admin per chain instance currently; multi-admin shard goes to v0.3.",
+  # IDL fields that are immutable post-init or housekeeping-only — not telemetry-useful
+  "`config.admin` — set once at init, validated via NotAdmin error path, not observed as timeseries.",
+  "`config.fee_token_mint` — set once at init; the mint identity is structural, not a numeric observation.",
+  "`config.vault_kbr` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.vault_buyback` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.vault_staking` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.vault_fundo` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.last_distribution_at` — reserved for future Clock CPI; currently always 0.",
+  "`config.bump` — PDA derivation housekeeping, not telemetry-useful.",
+  "`config.schema_version` — forward-compat tag; always 1 in v0.1."
+]
+
 # -----------------------------------------------------------------------------
 # Accounts
 # -----------------------------------------------------------------------------
@@ -108,25 +145,71 @@ takes = []
 "tokenomics.distributions_count" = "uint"
 
 # -----------------------------------------------------------------------------
+# Invariants — KNECT tokenomics tese encoded as engine-checkable predicates
+# -----------------------------------------------------------------------------
+
+[[invariants]]
+name = "kbr_bps_canonical"
+field = "split.kbr_bps"
+op = "=="
+value = 2500
+# PRD §2.3 declares 25% to KBR Vault — fires if an update_splits drifts the canonical share.
+
+[[invariants]]
+name = "buyback_bps_canonical"
+field = "split.buyback_bps"
+op = "=="
+value = 2500
+# PRD §2.3 declares 25% to Buyback&Burn KNECT.
+
+[[invariants]]
+name = "staking_bps_canonical"
+field = "split.staking_bps"
+op = "=="
+value = 3500
+# PRD §2.3 declares 35% to Pool Staking USDC — the largest single share.
+
+[[invariants]]
+name = "fundo_bps_canonical"
+field = "split.fundo_bps"
+op = "=="
+value = 1500
+# PRD §2.3 declares 15% to Fundo Kolibri (multi-sig 3/5).
+
+[[invariants]]
+name = "total_distributed_nonnegative"
+field = "tokenomics.total_distributed"
+op = ">="
+value = 0
+# Cumulative sum invariant — fires only if u64 underflows (impossible by program guard 0x4008).
+
+[[invariants]]
+name = "distributions_count_nonnegative"
+field = "tokenomics.distributions_count"
+op = ">="
+value = 0
+# Counter never decrements; checked_add prevents wraparound.
+
+# -----------------------------------------------------------------------------
 # Personas — TO BE COMPLETED via /riptide-config
 # -----------------------------------------------------------------------------
 #
 # Suggested personas for Kolibri tokenomics stress tests:
-#   - dispensary_low_volume   (1 distribution / day, amount 50 USDC equiv)
-#   - dispensary_high_volume  (100 distributions / day, amount 500 USDC equiv)
+#   - dispensary-low-volume   (1 distribution / day, amount 50 USDC equiv)
+#   - dispensary-high-volume  (100 distributions / day, amount 500 USDC equiv)
 #   - admin_tuner             (occasionally adjusts splits — should be RARE)
 #   - attacker_zero_amount    (always tries amount=0 — should always revert)
 #   - attacker_substitute_vault (passes fake vault — should always revert)
 
 [personas]
 
-[personas.dispensary_low_volume]
+[personas.dispensary-low-volume]
 label = "Low-volume dispensary"
 action_rate_multiplier = 0.1
 action_weights = { distribute_fee = 1.0 }
 triggers = []
 
-[personas.dispensary_high_volume]
+[personas.dispensary-high-volume]
 label = "High-volume dispensary"
 action_rate_multiplier = 1.0
 action_weights = { distribute_fee = 1.0 }

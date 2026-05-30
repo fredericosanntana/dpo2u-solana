@@ -17,7 +17,7 @@ import {
   ComputeBudgetProgram,
   sendAndConfirmTransaction,
 } from '@solana/web3.js';
-import { BorshCoder } from '@coral-xyz/anchor';
+import { BorshCoder, type Idl } from '@coral-xyz/anchor';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
@@ -51,11 +51,25 @@ const EXPLORER_CLUSTER: Record<ClusterName, string> = {
   'mainnet-beta': '',
 };
 
+/**
+ * External signer (wallet adapter) — v0.4.0. Lets the SDK sign with a browser wallet
+ * (Solflare/Phantom) or any custodial signer instead of a raw Keypair. Provide EITHER
+ * `signer` (Keypair) OR `wallet` (this) — not both.
+ */
+export interface ExternalWallet {
+  publicKey: PublicKey;
+  signTransaction(tx: Transaction): Promise<Transaction>;
+}
+
 export interface DPO2UClientOptions {
   cluster?: ClusterName;
   rpcUrl?: string;
-  /** Keypair used as issuer + tx fee payer. */
-  signer: Keypair;
+  /** Keypair used as issuer + tx fee payer. Provide this OR `wallet`. */
+  signer?: Keypair;
+  /** External signer (wallet adapter / custodial). Provide this OR `signer`. v0.4.0. */
+  wallet?: ExternalWallet;
+  /** IDL as a parsed object — pass this in the browser to avoid Node `fs`. Overrides idlPath. */
+  idl?: unknown;
   /** Absolute path to compliance_registry IDL json. Defaults to the repo's build artifact. */
   idlPath?: string;
   /** Override compute-unit limit. Default 400_000 — enough for pairing + CPI overhead. */
@@ -96,7 +110,12 @@ export interface AttestationRecord {
 
 export class DPO2UClient {
   private readonly connection: Connection;
-  private readonly signer: Keypair;
+  /** Set when constructed with a Keypair (node). */
+  private readonly keypairSigner?: Keypair;
+  /** Set when constructed with an external wallet (browser/custodial). v0.4.0. */
+  private readonly externalWallet?: ExternalWallet;
+  /** Issuer + fee payer pubkey — works for both signer paths. */
+  private readonly payerPubkey: PublicKey;
   private readonly coder: BorshCoder;
   private readonly computeUnitLimit: number;
   private readonly cluster: ClusterName;
@@ -104,12 +123,34 @@ export class DPO2UClient {
   constructor(opts: DPO2UClientOptions) {
     this.cluster = opts.cluster ?? 'localnet';
     this.connection = new Connection(opts.rpcUrl ?? CLUSTER_URLS[this.cluster], 'confirmed');
-    this.signer = opts.signer;
+    if (opts.signer && opts.wallet) {
+      throw new Error('provide either `signer` (Keypair) or `wallet` (external), not both');
+    }
+    if (!opts.signer && !opts.wallet) {
+      throw new Error('a `signer` (Keypair) or `wallet` (external signer) is required');
+    }
+    this.keypairSigner = opts.signer;
+    this.externalWallet = opts.wallet;
+    this.payerPubkey = opts.signer?.publicKey ?? opts.wallet!.publicKey;
     this.computeUnitLimit = opts.computeUnitLimit ?? 400_000;
 
-    const idlPath = opts.idlPath ?? DPO2UClient.defaultIdlPath();
-    const idl = JSON.parse(readFileSync(idlPath, 'utf-8'));
+    // IDL: prefer an object passed directly (browser, no fs); else read from disk (node).
+    const idl = (opts.idl ?? JSON.parse(readFileSync(opts.idlPath ?? DPO2UClient.defaultIdlPath(), 'utf-8'))) as Idl;
     this.coder = new BorshCoder(idl);
+  }
+
+  /** Signs + sends `tx` (feePayer + recentBlockhash must already be set), via Keypair or
+   *  external wallet, and waits for confirmation. Returns the signature. */
+  private async signAndSend(tx: Transaction): Promise<string> {
+    if (this.keypairSigner) {
+      return sendAndConfirmTransaction(this.connection, tx, [this.keypairSigner], {
+        commitment: 'confirmed',
+      });
+    }
+    const signed = await this.externalWallet!.signTransaction(tx);
+    const sig = await this.connection.sendRawTransaction(signed.serialize());
+    await this.connection.confirmTransaction(sig, 'confirmed');
+    return sig;
   }
 
   static defaultIdlPath(): string {
@@ -179,7 +220,7 @@ export class DPO2UClient {
     const verifyIx = new TransactionInstruction({
       programId: PROGRAM_IDS.compliance_registry,
       keys: [
-        { pubkey: this.signer.publicKey, isSigner: true, isWritable: true },
+        { pubkey: this.payerPubkey, isSigner: true, isWritable: true },
         { pubkey: args.subject, isSigner: false, isWritable: false },
         { pubkey: attestationPda, isSigner: false, isWritable: true },
         { pubkey: VERIFIER_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -193,13 +234,11 @@ export class DPO2UClient {
     });
 
     const tx = new Transaction().add(computeIx).add(verifyIx);
-    tx.feePayer = this.signer.publicKey;
+    tx.feePayer = this.payerPubkey;
     const { blockhash } = await this.connection.getLatestBlockhash('confirmed');
     tx.recentBlockhash = blockhash;
 
-    const signature = await sendAndConfirmTransaction(this.connection, tx, [this.signer], {
-      commitment: 'confirmed',
-    });
+    const signature = await this.signAndSend(tx);
 
     return {
       signature,
@@ -268,20 +307,18 @@ export class DPO2UClient {
     const ix = new TransactionInstruction({
       programId: PROGRAM_IDS.compliance_registry,
       keys: [
-        { pubkey: this.signer.publicKey, isSigner: true, isWritable: false },
+        { pubkey: this.payerPubkey, isSigner: true, isWritable: false },
         { pubkey: args.attestation, isSigner: false, isWritable: true },
       ],
       data,
     });
 
     const tx = new Transaction().add(ix);
-    tx.feePayer = this.signer.publicKey;
+    tx.feePayer = this.payerPubkey;
     const { blockhash } = await this.connection.getLatestBlockhash('confirmed');
     tx.recentBlockhash = blockhash;
 
-    const signature = await sendAndConfirmTransaction(this.connection, tx, [this.signer], {
-      commitment: 'confirmed',
-    });
+    const signature = await this.signAndSend(tx);
 
     return {
       signature,

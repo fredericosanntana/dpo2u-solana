@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+set -eu
+cd /root/dpo2u-solana/solana-programs
+exec riptide run .riptide/campaigns/campaign_acc2b43f451c/runs/run_000000_dda2c471d7fc/run-config.json

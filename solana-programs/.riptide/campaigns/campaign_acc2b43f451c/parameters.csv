@@ -1,0 +1,9 @@
+run_index,run_id,status,scenario_family,run_seed,first_failure_tick,total_bad_debt,max_utilization,min_tvl,total_liquidations,fixed_one,shock_profile
+0,run_000000_dda2c471d7fc,fail,happy_split,4027052366509715533,0,,,,,,
+1,run_000001_73622645c483,fail,happy_split,17182866465201971385,0,,,,,,
+2,run_000002_c5b87a6406cd,fail,baseline,8959039877488759047,0,,,,,,
+3,run_000003_0e80f7bc936d,fail,happy_split,1537580502657802631,0,,,,,,
+4,run_000004_b53d4f807242,fail,happy_split,6337957253194453997,0,,,,,,
+5,run_000005_32e1843d13e7,fail,happy_split,6764218855957996575,0,,,,,,
+6,run_000006_b80f34296420,fail,baseline,4370836100786895825,0,,,,,,
+7,run_000007_590057da852e,fail,happy_split,15703108834122818979,0,,,,,,

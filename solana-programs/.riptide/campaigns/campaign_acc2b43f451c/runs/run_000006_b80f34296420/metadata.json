@@ -1,0 +1,121 @@
+{
+  "schema_version": "campaign-run-metadata.v1",
+  "campaign_id": "campaign_acc2b43f451c",
+  "campaign_digest": "acc2b43f451c8223514b440b4ae719b37294328c5045a63d9331ae19534a22c2",
+  "campaign_name": "knect-tokenomics-tese",
+  "class": "lending.v1",
+  "risk_objective": "custom:split-correctness",
+  "run_id": "run_000006_b80f34296420",
+  "run_index": 6,
+  "run_seed": "4370836100786895825",
+  "engine_seed": 539747423,
+  "run_config_digest": "b80f342964204d144bebb5834ce92351741e3d26abff832d65db0c657c00550e",
+  "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/run-config.json",
+  "scenario_family": "baseline",
+  "scenario_source": "../scenarios/baseline",
+  "sampled_parameters": {},
+  "personas": [],
+  "config_status": "created",
+  "status": "fail",
+  "invariant_fires": [
+    {
+      "name": "kbr_bps_canonical",
+      "tick": 0
+    },
+    {
+      "name": "buyback_bps_canonical",
+      "tick": 0
+    },
+    {
+      "name": "staking_bps_canonical",
+      "tick": 0
+    },
+    {
+      "name": "fundo_bps_canonical",
+      "tick": 0
+    },
+    {
+      "name": "kbr_bps_canonical",
+      "tick": 1
+    },
+    {
+      "name": "buyback_bps_canonical",
+      "tick": 1
+    },
+    {
+      "name": "staking_bps_canonical",
+      "tick": 1
+    },
+    {
+      "name": "fundo_bps_canonical",
+      "tick": 1
+    },
+    {
+      "name": "kbr_bps_canonical",
+      "tick": 2
+    },
+    {
+      "name": "buyback_bps_canonical",
+      "tick": 2
+    },
+    {
+      "name": "staking_bps_canonical",
+      "tick": 2
+    },
+    {
+      "name": "fundo_bps_canonical",
+      "tick": 2
+    },
+    {
+      "name": "kbr_bps_canonical",
+      "tick": 3
+    },
+    {
+      "name": "buyback_bps_canonical",
+      "tick": 3
+    },
+    {
+      "name": "staking_bps_canonical",
+      "tick": 3
+    },
+    {
+      "name": "fundo_bps_canonical",
+      "tick": 3
+    },
+    {
+      "name": "kbr_bps_canonical",
+      "tick": 4
+    },
+    {
+      "name": "buyback_bps_canonical",
+      "tick": 4
+    },
+    {
+      "name": "staking_bps_canonical",
+      "tick": 4
+    },
+    {
+      "name": "fundo_bps_canonical",
+      "tick": 4
+    },
+    {
+      "name": "kbr_bps_canonical",
+      "tick": 5
+    },
+    {
+      "name": "buyback_bps_canonical",
+      "tick": 5
+    },
+    {
+      "name": "staking_bps_canonical",
+      "tick": 5
+    },
+    {
+      "name": "fundo_bps_canonical",
+      "tick": 5
+    }
+  ],
+  "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420",
+  "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/simulation-result.json",
+  "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/report.md"
+}

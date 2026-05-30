@@ -11,6 +11,7 @@ export type {
   AttestWithProofArgs,
   ClusterName,
   DPO2UClientOptions,
+  ExternalWallet,
 } from './client.js';
 
 export { DPO2UConsentClient, CONSENT_MANAGER_PROGRAM_ID } from './consent.js';
