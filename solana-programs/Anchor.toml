@@ -22,6 +22,7 @@ pipa_korea_zk_identity = "41JLtHb54P8LMLeSccZM1XR6xr4gxcDbVrNRZVg2hPhR"
 hiroshima_ai_process_attestation = "4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx"
 legal_source_manifest = "eb579ftMYPtFb7pSsB3ULJJHCbisYe7EJdhWnHUt8dK"
 knect_tokenomics_pinocchio = "Emhv7pBYgqyYQ2Bzcbi8nXphA1AmgoWmU7aKKxCNbk2v"
+knect_kbr_pinocchio = "2KjMGtciVcoWVJ6qUjkwupixUWW8kyvRNSpDdgAWeXd9"
 
 [programs.localnet]
 # Re-added 2026-04-22 after anchor build generated all .so artifacts.
@@ -42,6 +43,7 @@ pipa_korea_zk_identity = "41JLtHb54P8LMLeSccZM1XR6xr4gxcDbVrNRZVg2hPhR"
 hiroshima_ai_process_attestation = "4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx"
 legal_source_manifest = "eb579ftMYPtFb7pSsB3ULJJHCbisYe7EJdhWnHUt8dK"
 knect_tokenomics_pinocchio = "Emhv7pBYgqyYQ2Bzcbi8nXphA1AmgoWmU7aKKxCNbk2v"
+knect_kbr_pinocchio = "2KjMGtciVcoWVJ6qUjkwupixUWW8kyvRNSpDdgAWeXd9"
 
 [registry]
 url = "https://api.apr.dev"

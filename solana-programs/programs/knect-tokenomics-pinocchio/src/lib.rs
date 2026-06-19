@@ -1,13 +1,20 @@
 // Kolibri KNECT Tokenomics — Pinocchio
 // =====================================
 //
-// Implements the atomic 25/25/35/15 fee split from Kolibri PRD §2.3
-// (Receita do protocolo — split automático):
+// Implements the atomic phased revenue split from the KNECT White Paper v2.1 §04
+// (Receita do protocolo — split automático por fase). The mechanism is generic
+// (bps sum == 10_000, fundo absorbs rounding); the canonical bps come from the WP:
 //
-//   25% → KBR Vault (cbBTC via Jupiter DCA semanal)
-//   25% → Buyback & Burn KNECT
-//   35% → Pool de Staking USDC (mensal)
-//   15% → Fundo Kolibri (multi-sig 3/5)
+//   Fase 1 (construção):  50% KBR · 25% Buyback→Reserva de Cashback · 0% Staking · 25% Fundo
+//   Fase 2 (maturidade):  25% KBR · 25% Buyback→Reserva de Cashback · 25% Staking · 25% Fundo
+//
+//   KBR Vault     — cbBTC via Jupiter DCA semanal (lastro / floor)
+//   Buyback       — compra KNECT no mercado → Reserva de Cashback (SEM QUEIMA; a
+//                   única queima é no resgate ao floor, fora deste programa)
+//   Staking       — Pool de Staking USDC (0% na Fase 1; ativo só na Fase 2, gated por parecer)
+//   Fundo Kolibri — operação (multi-sig 3/5)
+//
+//   Transição Fase 1 → Fase 2 é unidirecional via update_splits (0x02), gated a Squads.
 //
 // Selectors:
 //   0x00 initialize_config — admin sets 4 vaults + bps splits + admin pubkey
@@ -20,8 +27,9 @@
 //   - bps (basis points) sum MUST equal 10_000 — checked at init + update
 //   - last vault absorbs rounding (no leakage) — `share_4 = amount - share_1 - share_2 - share_3`
 //   - source_ata signer = the wallet receiving 0.4% take rate from a Cloak tx
-//   - phase state (A=airdrop / B=cashback-from-burn) is OFF-CHAIN (orchestration);
-//     this program only does the deterministic split. Phase logic lives in the gateway.
+//   - phase transition (Fase 1 → Fase 2) and buyback→cashback orchestration are
+//     OFF-CHAIN (gateway); this program only does the deterministic split. The
+//     buyback vault ACCUMULATES (no burn) — cashback is paid from it off-chain.
 //
 // Program ID: Emhv7pBYgqyYQ2Bzcbi8nXphA1AmgoWmU7aKKxCNbk2v (devnet, will rotate before mainnet)
 
@@ -84,10 +92,10 @@ struct KnectConfig {
     fee_token_mint: [u8; 32],
 
     // 4 destination vaults (token account addresses, NOT owners)
-    vault_kbr: [u8; 32],      // 25% — cbBTC vault (or USDC pre-cbBTC-DCA)
-    vault_buyback: [u8; 32],  // 25% — Buyback & Burn KNECT
-    vault_staking: [u8; 32],  // 35% — Pool Staking USDC
-    vault_fundo: [u8; 32],    // 15% — Fundo Kolibri (multi-sig 3/5)
+    vault_kbr: [u8; 32],      // KBR — cbBTC vault (or USDC pre-cbBTC-DCA) — lastro
+    vault_buyback: [u8; 32],  // Buyback → Reserva de Cashback (NO burn)
+    vault_staking: [u8; 32],  // Pool Staking USDC (0% in Fase 1; active Fase 2)
+    vault_fundo: [u8; 32],    // Fundo Kolibri (multi-sig 3/5) — absorbs rounding
 
     // Splits in basis points (sum must == TOTAL_BPS = 10_000)
     bps_kbr: u16,

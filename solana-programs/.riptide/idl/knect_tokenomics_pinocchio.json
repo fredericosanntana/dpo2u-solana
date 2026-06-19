@@ -5,7 +5,7 @@
   "metadata": {
     "name": "knect_tokenomics_pinocchio",
     "version": "0.1.0",
-    "description": "Kolibri KNECT tokenomics — atomic 25/25/35/15 fee split (Pinocchio)"
+    "description": "Kolibri KNECT tokenomics — atomic phased revenue split, Fase 1 50/25/0/25 → Fase 2 25/25/25/25 (Pinocchio)"
   },
   "instructions": [
     {

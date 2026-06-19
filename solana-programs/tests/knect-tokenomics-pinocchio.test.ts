@@ -1,7 +1,9 @@
 /**
  * knect-tokenomics-pinocchio — bankrun integration tests
  *
- * Validates the atomic 25/25/35/15 fee split for Kolibri KNECT tokenomics.
+ * Validates the atomic phased revenue split for Kolibri KNECT tokenomics
+ * (KNECT White Paper v2.1 §04): Fase 1 = 50/25/0/25 (KBR/buyback/staking/fundo),
+ * Fase 2 = 25/25/25/25 via the unidirectional update_splits transition.
  * Mirrors the test harness from `spl-token-cpi.test.ts` (SPL mint + ATA setup
  * via bankrun) and proves:
  *
@@ -330,13 +332,13 @@ describe('knect-tokenomics-pinocchio — selector 0x00/0x01/0x02', () => {
     await mintTo(context, mintFix.mint, mintFix.authority, sourceAta, 1_000_000n);
   });
 
-  it('initialize_config with bps 25/25/35/15 writes the PDA', async () => {
+  it('initialize_config with Fase 1 bps 50/25/0/25 writes the PDA', async () => {
     const ix = buildInitializeIx({
       admin: admin.publicKey,
       configPda,
       feeMint: mintFix.mint,
       vaultKbr, vaultBuyback, vaultStaking, vaultFundo,
-      bpsKbr: 2500, bpsBuyback: 2500, bpsStaking: 3500, bpsFundo: 1500,
+      bpsKbr: 5000, bpsBuyback: 2500, bpsStaking: 0, bpsFundo: 2500,
     });
     const r = await processOne(context, ix, [admin], admin);
     expect(r.result, `init failed: ${JSON.stringify(r)}`).toBeNull();
@@ -357,7 +359,7 @@ describe('knect-tokenomics-pinocchio — selector 0x00/0x01/0x02', () => {
       configPda: otherConfig,
       feeMint: mintFix.mint,
       vaultKbr, vaultBuyback, vaultStaking, vaultFundo,
-      bpsKbr: 2500, bpsBuyback: 2500, bpsStaking: 3500, bpsFundo: 1499, // 9999
+      bpsKbr: 5000, bpsBuyback: 2500, bpsStaking: 0, bpsFundo: 2499, // 9999
     });
     const r = await processOne(context, ix, [otherAdmin], otherAdmin);
     expect(extractCustomErrorCode(r)).toBe(ERR_BPS_SUM_MISMATCH);
@@ -369,13 +371,13 @@ describe('knect-tokenomics-pinocchio — selector 0x00/0x01/0x02', () => {
       configPda,
       feeMint: mintFix.mint,
       vaultKbr, vaultBuyback, vaultStaking, vaultFundo,
-      bpsKbr: 2500, bpsBuyback: 2500, bpsStaking: 3500, bpsFundo: 1500,
+      bpsKbr: 5000, bpsBuyback: 2500, bpsStaking: 0, bpsFundo: 2500,
     });
     const r = await processOne(context, ix, [admin], admin);
     expect(extractCustomErrorCode(r)).toBe(ERR_ALREADY_INITIALIZED);
   });
 
-  it('distribute splits 1_000_000 → 250000/250000/350000/150000 exactly', async () => {
+  it('distribute splits 1_000_000 → 500000/250000/0/250000 exactly (Fase 1)', async () => {
     const before = {
       kbr: await readBalance(context.banksClient, vaultKbr),
       buyback: await readBalance(context.banksClient, vaultBuyback),
@@ -403,10 +405,10 @@ describe('knect-tokenomics-pinocchio — selector 0x00/0x01/0x02', () => {
       source: await readBalance(context.banksClient, sourceAta),
     };
 
-    expect(after.kbr - before.kbr).toBe(250_000n);
+    expect(after.kbr - before.kbr).toBe(500_000n);
     expect(after.buyback - before.buyback).toBe(250_000n);
-    expect(after.staking - before.staking).toBe(350_000n);
-    expect(after.fundo - before.fundo).toBe(150_000n);
+    expect(after.staking - before.staking).toBe(0n);
+    expect(after.fundo - before.fundo).toBe(250_000n);
     expect(before.source - after.source).toBe(1_000_000n);
   });
 
@@ -467,7 +469,7 @@ describe('knect-tokenomics-pinocchio — selector 0x00/0x01/0x02', () => {
       fundo: await readBalance(context.banksClient, vaultFundo),
     };
 
-    // 1 * 2500 / 10000 = 0, 1 * 2500 / 10000 = 0, 1 * 3500 / 10000 = 0
+    // 1 * 5000 / 10000 = 0, 1 * 2500 / 10000 = 0, 1 * 0 / 10000 = 0
     // fundo = 1 - 0 - 0 - 0 = 1
     expect(after.kbr - before.kbr).toBe(0n);
     expect(after.buyback - before.buyback).toBe(0n);
@@ -475,17 +477,17 @@ describe('knect-tokenomics-pinocchio — selector 0x00/0x01/0x02', () => {
     expect(after.fundo - before.fundo).toBe(1n);
   });
 
-  it('update_splits with admin signer changes bps; subsequent distribute uses new bps', async () => {
-    // Change to 40/30/20/10
+  it('update_splits Fase 1 → Fase 2 (25/25/25/25); subsequent distribute uses new bps', async () => {
+    // Unidirectional transition to Fase 2 — staking activates at 25% (WP v2.1 §04)
     const upd = buildUpdateSplitsIx({
       admin: admin.publicKey,
       configPda,
-      bpsKbr: 4000, bpsBuyback: 3000, bpsStaking: 2000, bpsFundo: 1000,
+      bpsKbr: 2500, bpsBuyback: 2500, bpsStaking: 2500, bpsFundo: 2500,
     });
     const r1 = await processOne(context, upd, [admin], admin);
     expect(r1.result, `update failed: ${JSON.stringify(r1)}`).toBeNull();
 
-    // Distribute 10000 → 4000/3000/2000/1000
+    // Distribute 10000 → 2500/2500/2500/2500
     await mintTo(context, mintFix.mint, mintFix.authority, sourceAta, 10_000n);
     const before = {
       kbr: await readBalance(context.banksClient, vaultKbr),
@@ -510,10 +512,10 @@ describe('knect-tokenomics-pinocchio — selector 0x00/0x01/0x02', () => {
       staking: await readBalance(context.banksClient, vaultStaking),
       fundo: await readBalance(context.banksClient, vaultFundo),
     };
-    expect(after.kbr - before.kbr).toBe(4000n);
-    expect(after.buyback - before.buyback).toBe(3000n);
-    expect(after.staking - before.staking).toBe(2000n);
-    expect(after.fundo - before.fundo).toBe(1000n);
+    expect(after.kbr - before.kbr).toBe(2500n);
+    expect(after.buyback - before.buyback).toBe(2500n);
+    expect(after.staking - before.staking).toBe(2500n);
+    expect(after.fundo - before.fundo).toBe(2500n);
   });
 
   it('update_splits by non-admin rejects with NOT_ADMIN', async () => {

@@ -16,6 +16,9 @@
 //! Kolibri seed-to-sale traceability (2026-05-27):
 //!   0x06 → submit_cannabis_event           (plant lifecycle anchor, agent-registry gated)
 //!
+//! Kolibri Score / KCS (2026-06-18):
+//!   0x07 → submit_kcs_snapshot             (monthly operational-health snapshot, Poseidon commitment, agent-registry gated)
+//!
 //! Layout de bytes do instruction_data: [selector: u8][Borsh(args)].
 //! Sem 8-byte Anchor discriminator na instruction — o dispatcher é manual.
 //! O Attestation account é prefixado com 8 bytes de zero (pseudo-discriminator)
@@ -305,6 +308,7 @@ pub fn process_instruction(
         0x04 => revoke_compressed(program_id, accounts, rest),
         0x05 => verify_against_legal_manifest(program_id, accounts, rest),
         0x06 => submit_cannabis_event(program_id, accounts, rest),
+        0x07 => submit_kcs_snapshot(program_id, accounts, rest),
         _ => Err(ProgramError::InvalidInstructionData),
     }
 }
@@ -503,6 +507,210 @@ fn submit_cannabis_event(
         "CannabisEventRecorded type={} emitted_at={}",
         args.event_type,
         args.emitted_at
+    );
+    Ok(())
+}
+
+// =============================================================================
+// submit_kcs_snapshot (selector 0x07) — Kolibri Score, 2026-06-18
+// =============================================================================
+//
+// Monthly operational-health snapshot per tenant. The 5 components are computed
+// and normalized off-chain (gateway worker); on-chain we store the published
+// scores + a Poseidon commitment so anyone can recompute and verify (KNECT/ERP
+// WP §04 "verificável por qualquer parte"). On-chain Poseidon verification via
+// the sol_poseidon syscall is a hardening follow-up; here we only persist.
+//
+// Components (normalized 0..10_000 bps), weighted off-chain 30/25/20/15/10:
+//   [0] on-chain transaction volume
+//   [1] average dispensing time
+//   [2] time in protocol
+//   [3] cancellation / refund rate
+//   [4] Cloak privacy adoption
+//
+// Design (mirrors submit_cannabis_event):
+//   - 1 PDA per (tenant, period) — `[b"kcs_snapshot", tenant, period_le]`
+//   - period = yyyymm (e.g. 202606); idempotent — one snapshot per tenant/month
+//   - Authority (the KCS worker) MUST be a registered agent (agent-registry gated)
+//
+// Account layout (6 accounts):
+//   [0] authority      (signer, writable, fee payer — the KCS worker)
+//   [1] snapshot_pda   (writable)
+//   [2] agent_account  (readonly, owned by agent_registry)
+//   [3] system_program
+//   [4] rent_sysvar
+//   [5] clock_sysvar
+
+const KCS_SNAPSHOT_SEED: &[u8] = b"kcs_snapshot";
+
+/// Max storage_uri length for KCS snapshots (200 bytes — same Shadow Drive cap
+/// as cannabis events).
+const MAX_KCS_STORAGE_URI_LEN: usize = 200;
+
+/// All score components and the composite are normalized to basis points (0..10_000).
+const KCS_SCORE_MAX: u32 = 10_000;
+const KCS_COMPONENTS: usize = 5;
+
+mod err_kcs {
+    pub const KCS_URI_TOO_LONG: u32 = 0x3101;
+    pub const INVALID_PERIOD: u32 = 0x3102;
+    pub const SCORE_OUT_OF_BOUNDS: u32 = 0x3103;
+    pub const SNAPSHOT_ALREADY_RECORDED: u32 = 0x3104;
+}
+
+/// First 8 bytes of sha256("account:KcsSnapshot") — pseudo-discriminator, same
+/// trick as Attestation / CannabisEvent for generic BorshCoder clients.
+const KCS_SNAPSHOT_DISCRIMINATOR: [u8; 8] = [0xce, 0xc3, 0xf2, 0xdc, 0xd6, 0x36, 0x8c, 0xf6];
+
+/// Args of submit_kcs_snapshot (selector 0x07).
+#[derive(BorshDeserialize)]
+struct SubmitKcsSnapshotArgs {
+    tenant: [u8; 32],
+    period: u32, // yyyymm
+    kcs_commitment: [u8; 32],
+    scores: [u32; KCS_COMPONENTS],
+    composite: u32,
+    storage_uri: String,
+}
+
+/// Persisted snapshot account. Schema-versioned for forward compatibility.
+#[derive(BorshSerialize, BorshDeserialize)]
+struct KcsSnapshot {
+    tenant: [u8; 32],
+    period: u32,
+    kcs_commitment: [u8; 32],
+    scores: [u32; KCS_COMPONENTS],
+    composite: u32,
+    storage_uri: String,
+    issued_at: i64,
+    authority: [u8; 32],
+    bump: u8,
+    schema_version: u8,
+}
+
+/// Max Borsh-serialized size:
+///   32 + 4 + 32 + (5*4) + 4 + (4 + 200) + 8 + 32 + 1 + 1 = 338 bytes
+const KCS_SNAPSHOT_MAX_DATA: usize = 338;
+const KCS_SNAPSHOT_ACCOUNT_SPACE: usize = 8 + KCS_SNAPSHOT_MAX_DATA;
+
+fn submit_kcs_snapshot(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: &[u8],
+) -> ProgramResult {
+    let args = SubmitKcsSnapshotArgs::try_from_slice(data)
+        .map_err(|_| ProgramError::InvalidInstructionData)?;
+
+    if args.storage_uri.len() > MAX_KCS_STORAGE_URI_LEN {
+        return Err(ProgramError::Custom(err_kcs::KCS_URI_TOO_LONG));
+    }
+
+    // Period must be a plausible yyyymm: month 1..=12, year 2000..4000.
+    let month = args.period % 100;
+    let year = args.period / 100;
+    if month < 1 || month > 12 || year < 2000 || year >= 4000 {
+        return Err(ProgramError::Custom(err_kcs::INVALID_PERIOD));
+    }
+
+    // Each component score and the composite are bounded to 0..=10_000 bps.
+    if args.composite > KCS_SCORE_MAX || args.scores.iter().any(|&s| s > KCS_SCORE_MAX) {
+        return Err(ProgramError::Custom(err_kcs::SCORE_OUT_OF_BOUNDS));
+    }
+
+    let [authority, snapshot_pda, agent_account, system_program, rent_sysvar, clock_sysvar] =
+        accounts
+    else {
+        return Err(ProgramError::NotEnoughAccountKeys);
+    };
+
+    require_signer(authority)?;
+    require_system_program(system_program)?;
+
+    // Cross-program ref to agent-registry — the worker authority must be a
+    // registered agent. Same layout as submit_cannabis_event:
+    // [0..8] Anchor discriminator, [8..40] authority (Pubkey).
+    if agent_account.owner() != &AGENT_REGISTRY_PROGRAM_ID {
+        return Err(ProgramError::Custom(err_cannabis::AGENT_WRONG_OWNER));
+    }
+    {
+        let agent_data = agent_account.try_borrow_data()?;
+        if agent_data.len() < 8 + 32 {
+            return Err(ProgramError::AccountDataTooSmall);
+        }
+        let mut agent_authority = [0u8; 32];
+        agent_authority.copy_from_slice(&agent_data[8..40]);
+        if &agent_authority != authority.key() {
+            return Err(ProgramError::Custom(err_cannabis::AGENT_NOT_REGISTERED));
+        }
+    }
+
+    let period_bytes = args.period.to_le_bytes();
+    let (expected_pda, bump) = find_program_address(
+        &[KCS_SNAPSHOT_SEED, &args.tenant, &period_bytes],
+        program_id,
+    );
+    if snapshot_pda.key() != &expected_pda {
+        return Err(ProgramError::Custom(err::WRONG_PDA));
+    }
+
+    // Idempotency — one snapshot per (tenant, period).
+    if snapshot_pda.lamports() > 0 {
+        return Err(ProgramError::Custom(err_kcs::SNAPSHOT_ALREADY_RECORDED));
+    }
+
+    let rent_ref = Rent::from_account_info(rent_sysvar)?;
+    let lamports = rent_ref.minimum_balance(KCS_SNAPSHOT_ACCOUNT_SPACE);
+    drop(rent_ref);
+
+    let bump_seed = [bump];
+    let seeds_array: [Seed; 4] = [
+        Seed::from(KCS_SNAPSHOT_SEED),
+        Seed::from(args.tenant.as_slice()),
+        Seed::from(period_bytes.as_slice()),
+        Seed::from(bump_seed.as_slice()),
+    ];
+    let signer = Signer::from(&seeds_array);
+
+    CreateAccount {
+        from: authority,
+        to: snapshot_pda,
+        lamports,
+        space: KCS_SNAPSHOT_ACCOUNT_SPACE as u64,
+        owner: program_id,
+    }
+    .invoke_signed(&[signer])?;
+
+    let clock_ref = Clock::from_account_info(clock_sysvar)?;
+    let issued_at = clock_ref.unix_timestamp;
+    drop(clock_ref);
+
+    let snapshot = KcsSnapshot {
+        tenant: args.tenant,
+        period: args.period,
+        kcs_commitment: args.kcs_commitment,
+        scores: args.scores,
+        composite: args.composite,
+        storage_uri: args.storage_uri,
+        issued_at,
+        authority: *authority.key(),
+        bump,
+        schema_version: 1,
+    };
+
+    let mut acct_data = snapshot_pda.try_borrow_mut_data()?;
+    if acct_data.len() < KCS_SNAPSHOT_ACCOUNT_SPACE {
+        return Err(ProgramError::AccountDataTooSmall);
+    }
+    acct_data[0..8].copy_from_slice(&KCS_SNAPSHOT_DISCRIMINATOR);
+    let mut cursor = &mut acct_data[8..];
+    snapshot
+        .serialize(&mut cursor)
+        .map_err(|_| ProgramError::InvalidAccountData)?;
+
+    log!(
+        "KcsSnapshotRecorded period={} composite={}",
+        args.period,
+        args.composite
     );
     Ok(())
 }

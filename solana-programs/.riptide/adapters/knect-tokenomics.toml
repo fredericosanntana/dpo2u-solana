@@ -1,6 +1,9 @@
 # Riptide adapter — knect-tokenomics-pinocchio (Kolibri tokenomics)
 #
-# Atomic 25/25/35/15 fee split (KBR cbBTC / Buyback&Burn / Pool Staking USDC / Fundo).
+# Atomic phased revenue split (KNECT WP v2.1 §04): Fase 1 = 50/25/0/25
+# (KBR cbBTC / Buyback→Reserva de Cashback / Staking / Fundo); Fase 2 = 25/25/25/25.
+# Buyback has NO burn (accumulates → cashback off-chain); the only burn is at the
+# floor redemption (separate KBR program).
 # Adapter stubs the 3 instructions (initialize_config / distribute / update_splits).
 # To finalize personas + scenarios + invariants, run `/riptide-config` from a
 # fresh Claude Code session (or edit manually following the lint output).
@@ -86,19 +89,21 @@ space = 82               # SPL Mint v1 size
 
 [instructions]
 
+# Fase 1 canonical: bps_kbr=5000 (via amount binding), buyback=2500, staking=0, fundo=2500.
 [instructions.initialize_config]
 action = "init_config"
 amount = "bps_kbr"
-args = { fee_token_mint = "@persona.fee_mint", vault_kbr = "@persona.vault_kbr", vault_buyback = "@persona.vault_buyback", vault_staking = "@persona.vault_staking", vault_fundo = "@persona.vault_fundo", bps_buyback = 2500, bps_staking = 3500, bps_fundo = 1500 }
+args = { fee_token_mint = "@persona.fee_mint", vault_kbr = "@persona.vault_kbr", vault_buyback = "@persona.vault_buyback", vault_staking = "@persona.vault_staking", vault_fundo = "@persona.vault_fundo", bps_buyback = 2500, bps_staking = 0, bps_fundo = 2500 }
 
 [instructions.distribute]
 action = "distribute_fee"
 amount = "amount"
 
+# Fase 2 transition: bps_kbr=2500 (via amount), buyback=2500, staking=2500, fundo=2500.
 [instructions.update_splits]
 action = "update_splits"
 amount = "bps_kbr"
-args = { bps_buyback = 2500, bps_staking = 3500, bps_fundo = 1500 }
+args = { bps_buyback = 2500, bps_staking = 2500, bps_fundo = 2500 }
 
 # -----------------------------------------------------------------------------
 # State mapping (on-chain → observation keys)
@@ -148,33 +153,37 @@ takes = []
 # Invariants — KNECT tokenomics tese encoded as engine-checkable predicates
 # -----------------------------------------------------------------------------
 
+# Canonical Fase 1 split (KNECT WP v2.1 §04 = 50/25/0/25). A campaign starts in
+# Fase 1; the deliberate, Squads-gated Fase 1 → Fase 2 transition is the ONE event
+# expected to change these — the invariants flag any other drift.
+
 [[invariants]]
-name = "kbr_bps_canonical"
+name = "kbr_bps_canonical_fase1"
 field = "split.kbr_bps"
 op = "=="
-value = 2500
-# PRD §2.3 declares 25% to KBR Vault — fires if an update_splits drifts the canonical share.
+value = 5000
+# WP v2.1 §04 declares 50% to KBR Vault in Fase 1 (the floor/lastro share).
 
 [[invariants]]
 name = "buyback_bps_canonical"
 field = "split.buyback_bps"
 op = "=="
 value = 2500
-# PRD §2.3 declares 25% to Buyback&Burn KNECT.
+# WP v2.1 §04 declares 25% to Buyback → Reserva de Cashback (NO burn).
 
 [[invariants]]
-name = "staking_bps_canonical"
+name = "staking_bps_canonical_fase1"
 field = "split.staking_bps"
 op = "=="
-value = 3500
-# PRD §2.3 declares 35% to Pool Staking USDC — the largest single share.
+value = 0
+# WP v2.1 §04: staking is 0% in Fase 1 — activates (25%) only in Fase 2, gated by parecer.
 
 [[invariants]]
 name = "fundo_bps_canonical"
 field = "split.fundo_bps"
 op = "=="
-value = 1500
-# PRD §2.3 declares 15% to Fundo Kolibri (multi-sig 3/5).
+value = 2500
+# WP v2.1 §04 declares 25% to Fundo Kolibri (multi-sig 3/5).
 
 [[invariants]]
 name = "total_distributed_nonnegative"

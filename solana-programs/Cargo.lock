@@ -1016,6 +1016,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "knect-kbr-pinocchio"
+version = "0.1.0"
+dependencies = [
+ "borsh 1.6.1",
+ "pinocchio",
+ "pinocchio-log",
+ "pinocchio-pubkey",
+ "pinocchio-system",
+ "pinocchio-token",
+]
+
+[[package]]
 name = "knect-tokenomics-pinocchio"
 version = "0.1.0"
 dependencies = [

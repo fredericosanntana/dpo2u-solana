@@ -120,6 +120,25 @@ export type {
   CannabisEventType,
 } from './cannabis.js';
 
+// -- Kolibri Score / KCS (2026-06-18) — selector 0x07 in Pinocchio --
+//
+// Monthly operational-health snapshot per tenant with a Poseidon (BN254)
+// commitment computed off-chain and stored on-chain for public verification.
+
+export {
+  KCS_SNAPSHOT_SEED,
+  KCS_COMPONENTS,
+  KCS_SCORE_MAX,
+  KCS_COMPONENT_WEIGHTS,
+  scoresToArray,
+  computeComposite,
+  deriveKcsSnapshotPda,
+  computeKcsCommitment,
+  encodeSubmitKcsSnapshot,
+  buildSubmitKcsSnapshotIx,
+} from './kcs.js';
+export type { KcsScores, KcsCommitmentInput, SubmitKcsSnapshotArgs } from './kcs.js';
+
 // -- Legal Corpus Sprint (2026-05-14) — legal_source_manifest deployed devnet --
 //
 // On-chain pointer to the off-chain legal corpus produced by dpo2u-legal-worker.

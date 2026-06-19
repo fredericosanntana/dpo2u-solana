@@ -1,12 +1,12 @@
 [package]
-name = "knect-tokenomics-pinocchio"
+name = "knect-kbr-pinocchio"
 version = "0.1.0"
-description = "Kolibri KNECT tokenomics — atomic phased revenue split (WP v2.1 §04): Fase 1 50/25/0/25, Fase 2 25/25/25/25 (KBR cbBTC / Buyback→Reserva de Cashback no-burn / Pool Staking USDC / Fundo Kolibri). Pinocchio port for low-CU mainnet operation."
+description = "Kolibri KBR (Kolibri Bitcoin Reserve) — cbBTC reserve vault + sovereign redemption (KNECT WP v2.1 §05). redeem: burn KNECT, retain 1% fee, pay cbBTC at the KBR ratio; the floor of remaining holders can only rise. Pinocchio port for low-CU mainnet operation."
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "knect_tokenomics_pinocchio"
+name = "knect_kbr_pinocchio"
 
 [features]
 no-entrypoint = []

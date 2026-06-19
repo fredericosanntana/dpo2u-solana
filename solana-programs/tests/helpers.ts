@@ -202,6 +202,38 @@ export const pinocchioIx = {
       emittedBuf,
     ]);
   },
+
+  // ---------------------------------------------------------------------------
+  // submit_kcs_snapshot (selector 0x07) — Kolibri Score monthly snapshot
+  // ---------------------------------------------------------------------------
+
+  submitKcsSnapshot(args: {
+    tenant: Buffer;            // 32 bytes
+    period: number;            // yyyymm (e.g. 202606)
+    kcsCommitment: Buffer;     // 32 bytes (Poseidon, computed off-chain)
+    scores: number[];          // exactly 5 components, each 0..10_000 bps
+    composite: number;         // 0..10_000 bps
+    storageUri: string;        // up to 200 chars
+  }): Buffer {
+    if (args.tenant.length !== 32) throw new Error(`tenant must be 32 bytes, got ${args.tenant.length}`);
+    if (args.kcsCommitment.length !== 32) throw new Error('kcsCommitment must be 32 bytes');
+    if (args.scores.length !== 5) throw new Error(`scores must have 5 components, got ${args.scores.length}`);
+    if (args.storageUri.length > 200) throw new Error('storageUri too long (max 200)');
+
+    const periodBuf = encodeBorshU32LE(args.period);
+    const scoresBuf = Buffer.concat(args.scores.map((s) => encodeBorshU32LE(s)));
+    const compositeBuf = encodeBorshU32LE(args.composite);
+
+    return Buffer.concat([
+      Buffer.from([0x07]),
+      args.tenant,
+      periodBuf,
+      args.kcsCommitment,
+      scoresBuf,
+      compositeBuf,
+      encodeBorshString(args.storageUri),
+    ]);
+  },
 };
 
 // =============================================================================
@@ -235,6 +267,17 @@ export function deriveCannabisEventPda(
 ): [PublicKey, number] {
   return PublicKey.findProgramAddressSync(
     [Buffer.from('cannabis_event'), Buffer.from(batchId), Buffer.from([eventType])],
+    PROGRAM_IDS.compliance_registry_pinocchio,
+  );
+}
+
+/** KCS snapshot PDA — one per (tenant, period). Mirrors the Rust seeds in
+ *  programs/compliance-registry-pinocchio/src/lib.rs (selector 0x07). */
+export function deriveKcsSnapshotPda(tenant: PublicKey, period: number): [PublicKey, number] {
+  const periodBuf = Buffer.alloc(4);
+  periodBuf.writeUInt32LE(period, 0);
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('kcs_snapshot'), tenant.toBuffer(), periodBuf],
     PROGRAM_IDS.compliance_registry_pinocchio,
   );
 }
