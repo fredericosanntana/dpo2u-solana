@@ -333,6 +333,31 @@ pub mod art_vault {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against the MICAR legal_source_manifest PDA.
+    /// Pure read on-chain — emits VaultVerifiedAgainstManifest event.
+    /// Added 2026-05-15 (Sprint Continuable).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        require!(
+            m.jurisdiction.starts_with(b"MICAR"),
+            VaultErr::ManifestJurisdictionMismatch
+        );
+        let v = &ctx.accounts.vault;
+        emit!(VaultVerifiedAgainstManifest {
+            vault: ctx.accounts.vault.key(),
+            authority: v.authority,
+            reserve_amount: v.reserve_amount,
+            outstanding_supply: v.outstanding_supply,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Helpers --
@@ -512,6 +537,22 @@ pub struct TransferAuthority<'info> {
     pub vault: Account<'info, ArtVault>,
 }
 
+/// Cross-program verification accounts (Sprint Continuable 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [b"art_vault", vault.authority.as_ref()],
+        bump = vault.bump
+    )]
+    pub vault: Account<'info, ArtVault>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 // -- Events --
 
 #[event]
@@ -582,6 +623,18 @@ pub struct AuthorityTransferred {
     pub transferred_at: i64,
 }
 
+#[event]
+pub struct VaultVerifiedAgainstManifest {
+    pub vault: Pubkey,
+    pub authority: Pubkey,
+    pub reserve_amount: u64,
+    pub outstanding_supply: u64,
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
+}
+
 // -- Errors --
 
 #[error_code]
@@ -616,6 +669,8 @@ pub enum VaultErr {
     PythConfidenceTooWide,
     #[msg("new authority cannot be the zero pubkey (would brick the vault)")]
     InvalidNewAuthority,
+    #[msg("legal_manifest jurisdiction does not start with \"MICAR\"")]
+    ManifestJurisdictionMismatch,
 }
 
 // -- Inline Rust unit tests --

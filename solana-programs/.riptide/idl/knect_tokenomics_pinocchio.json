@@ -1,0 +1,133 @@
+{
+  "version": "0.1.0",
+  "name": "knect_tokenomics_pinocchio",
+  "address": "Emhv7pBYgqyYQ2Bzcbi8nXphA1AmgoWmU7aKKxCNbk2v",
+  "metadata": {
+    "name": "knect_tokenomics_pinocchio",
+    "version": "0.1.0",
+    "description": "Kolibri KNECT tokenomics — atomic phased revenue split, Fase 1 50/25/0/25 → Fase 2 25/25/25/25 (Pinocchio)"
+  },
+  "instructions": [
+    {
+      "name": "initialize_config",
+      "discriminator": [0],
+      "accounts": [
+        { "name": "admin", "isMut": true, "isSigner": true },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "system_program", "isMut": false, "isSigner": false },
+        { "name": "rent_sysvar", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "fee_token_mint", "type": { "array": ["u8", 32] } },
+        { "name": "vault_kbr", "type": { "array": ["u8", 32] } },
+        { "name": "vault_buyback", "type": { "array": ["u8", 32] } },
+        { "name": "vault_staking", "type": { "array": ["u8", 32] } },
+        { "name": "vault_fundo", "type": { "array": ["u8", 32] } },
+        { "name": "bps_kbr", "type": "u16" },
+        { "name": "bps_buyback", "type": "u16" },
+        { "name": "bps_staking", "type": "u16" },
+        { "name": "bps_fundo", "type": "u16" }
+      ]
+    },
+    {
+      "name": "distribute",
+      "discriminator": [1],
+      "accounts": [
+        { "name": "payer", "isMut": true, "isSigner": true },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "source_ata", "isMut": true, "isSigner": false },
+        { "name": "vault_kbr", "isMut": true, "isSigner": false },
+        { "name": "vault_buyback", "isMut": true, "isSigner": false },
+        { "name": "vault_staking", "isMut": true, "isSigner": false },
+        { "name": "vault_fundo", "isMut": true, "isSigner": false },
+        { "name": "fee_token_mint", "isMut": false, "isSigner": false },
+        { "name": "token_program", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "amount", "type": "u64" }]
+    },
+    {
+      "name": "update_splits",
+      "discriminator": [2],
+      "accounts": [
+        { "name": "admin", "isMut": false, "isSigner": true },
+        { "name": "config", "isMut": true, "isSigner": false }
+      ],
+      "args": [
+        { "name": "bps_kbr", "type": "u16" },
+        { "name": "bps_buyback", "type": "u16" },
+        { "name": "bps_staking", "type": "u16" },
+        { "name": "bps_fundo", "type": "u16" }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "source_ata",
+      "size": 165,
+      "type": { "kind": "struct", "fields": [] }
+    },
+    {
+      "name": "vault_kbr",
+      "size": 165,
+      "type": { "kind": "struct", "fields": [] }
+    },
+    {
+      "name": "vault_buyback",
+      "size": 165,
+      "type": { "kind": "struct", "fields": [] }
+    },
+    {
+      "name": "vault_staking",
+      "size": 165,
+      "type": { "kind": "struct", "fields": [] }
+    },
+    {
+      "name": "vault_fundo",
+      "size": 165,
+      "type": { "kind": "struct", "fields": [] }
+    },
+    {
+      "name": "fee_token_mint",
+      "size": 82,
+      "type": { "kind": "struct", "fields": [] }
+    },
+    {
+      "name": "config",
+      "discriminator": [223, 18, 91, 144, 207, 33, 86, 12],
+      "size": 230,
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "admin", "type": { "array": ["u8", 32] } },
+          { "name": "fee_token_mint", "type": { "array": ["u8", 32] } },
+          { "name": "vault_kbr", "type": { "array": ["u8", 32] } },
+          { "name": "vault_buyback", "type": { "array": ["u8", 32] } },
+          { "name": "vault_staking", "type": { "array": ["u8", 32] } },
+          { "name": "vault_fundo", "type": { "array": ["u8", 32] } },
+          { "name": "bps_kbr", "type": "u16" },
+          { "name": "bps_buyback", "type": "u16" },
+          { "name": "bps_staking", "type": "u16" },
+          { "name": "bps_fundo", "type": "u16" },
+          { "name": "total_distributed", "type": "u64" },
+          { "name": "distributions_count", "type": "u32" },
+          { "name": "last_distribution_at", "type": "i64" },
+          { "name": "bump", "type": "u8" },
+          { "name": "schema_version", "type": "u8" }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    { "code": 16385, "name": "BpsSumMismatch", "msg": "bps fields must sum to 10_000" },
+    { "code": 16386, "name": "NotAdmin", "msg": "signer is not the configured admin" },
+    { "code": 16387, "name": "WrongPda", "msg": "PDA derivation does not match expected" },
+    { "code": 16388, "name": "WrongTokenProgram", "msg": "token program account does not match SPL Token" },
+    { "code": 16389, "name": "VaultOwnerMismatch", "msg": "passed vault does not match config" },
+    { "code": 16390, "name": "VaultMintMismatch", "msg": "fee_token_mint does not match config" },
+    { "code": 16391, "name": "AmountZero", "msg": "distribute amount must be > 0" },
+    { "code": 16392, "name": "ArithmeticOverflow", "msg": "computation overflowed" },
+    { "code": 16393, "name": "AlreadyInitialized", "msg": "config PDA already exists" },
+    { "code": 16394, "name": "NotInitialized", "msg": "config PDA was never initialized" },
+    { "code": 16395, "name": "SignerRequired", "msg": "expected signer not provided" }
+  ]
+}

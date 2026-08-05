@@ -139,6 +139,36 @@ pub mod popia_info_officer_registry {
         });
         Ok(())
     }
+
+    /// Verify a POPIA appointment against the current on-chain legal-source
+    /// manifest. Pure attestation — does not modify any state on the popia
+    /// program. Emits `AppointmentVerifiedAgainstManifest` so off-chain
+    /// auditors can prove "this appointment was checked against POPIA legal
+    /// corpus version N at timestamp T". Cross-program reference to
+    /// `legal_source_manifest` (added 2026-05-14, Legal Corpus Sprint).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        // Anchor validates owner + seeds via `seeds::program` constraint below.
+        // Extra business check: jurisdiction code must start with "POPIA".
+        require!(
+            m.jurisdiction.starts_with(b"POPIA"),
+            IoErr::ManifestJurisdictionMismatch
+        );
+        let app = &ctx.accounts.appointment;
+        let now = Clock::get()?.unix_timestamp;
+
+        emit!(AppointmentVerifiedAgainstManifest {
+            responsible_party: app.responsible_party,
+            organization_id_hash: app.organization_id_hash,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: now,
+        });
+        Ok(())
+    }
 }
 
 // -- Accounts --
@@ -218,6 +248,33 @@ pub struct SetDeputySigned<'info> {
     pub appointment: Account<'info, InfoOfficerAppointment>,
 }
 
+/// Cross-program verification accounts (Legal Corpus Sprint 2026-05-14):
+/// reads the POPIA jurisdiction's on-chain `legal_source_manifest` PDA so the
+/// emitted event carries the exact corpus version used for the appointment
+/// check. `seeds::program` tells Anchor the PDA belongs to a foreign program.
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    /// Read-only: existing POPIA appointment under inspection.
+    #[account(
+        seeds = [
+            b"popia_io",
+            appointment.responsible_party.as_ref(),
+            &appointment.organization_id_hash,
+        ],
+        bump = appointment.bump
+    )]
+    pub appointment: Account<'info, InfoOfficerAppointment>,
+    /// Read-only: legal_source_manifest PDA owned by the foreign program.
+    /// Anchor validates owner + seeds; we additionally check jurisdiction
+    /// prefix "POPIA" inside the instruction body.
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 // -- Events --
 
 #[event]
@@ -243,6 +300,16 @@ pub struct AppointmentRevoked {
     pub revoked_at: i64,
 }
 
+#[event]
+pub struct AppointmentVerifiedAgainstManifest {
+    pub responsible_party: Pubkey,
+    pub organization_id_hash: [u8; 32],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
+}
+
 // -- Errors --
 
 #[error_code]
@@ -257,4 +324,6 @@ pub enum IoErr {
     Unauthorized,
     #[msg("appointment is revoked — cannot mutate further")]
     AppointmentRevoked,
+    #[msg("legal_manifest jurisdiction does not start with \"POPIA\"")]
+    ManifestJurisdictionMismatch,
 }

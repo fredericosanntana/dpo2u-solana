@@ -1,0 +1,11 @@
+[package]
+name = "riptide-setup"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+anyhow = "1.0"
+riptide-engine = "0.9.1"

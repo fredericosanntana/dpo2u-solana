@@ -11,6 +11,7 @@ export type {
   AttestWithProofArgs,
   ClusterName,
   DPO2UClientOptions,
+  ExternalWallet,
 } from './client.js';
 
 export { DPO2UConsentClient, CONSENT_MANAGER_PROGRAM_ID } from './consent.js';
@@ -55,6 +56,24 @@ export type { DPO2UPipedaClientOptions, RecordPipedaConsentArgs, ConsentForm } f
 export { DPO2UPipaClient, PIPA_KOREA_ZK_ID_PROGRAM_ID, ATTRIBUTE_KIND } from './pipa.js';
 export type { DPO2UPipaClientOptions, IssueAttestationArgs, AttributeKind } from './pipa.js';
 
+// Hiroshima AI Process attestation (cross-framework G7 ICOC + AIBOG + DS-920).
+// Minimal client surface focused on verify_against_legal_manifest — added 2026-05-15.
+export {
+  DPO2UHiroshimaClient,
+  HIROSHIMA_AI_PROCESS_PROGRAM_ID,
+  HIROSHIMA_ATTESTATION_TYPE,
+} from './hiroshima.js';
+export type { DPO2UHiroshimaClientOptions, HiroshimaAttestationType } from './hiroshima.js';
+
+// Agent Registry — MCP whitelist + 5-actor value chain (Sprint Continuable round 2 2026-05-15).
+// Built + IDL shipped; on-chain upgrade pending devnet airdrop window.
+export {
+  DPO2UAgentRegistryClient,
+  AGENT_REGISTRY_PROGRAM_ID,
+  VALUE_CHAIN_ROLE,
+} from './agent-registry.js';
+export type { DPO2UAgentRegistryClientOptions, ValueChainRole } from './agent-registry.js';
+
 // -- Composed Stack (Fase 3) — Light Protocol + Pinocchio + Shadow Drive + Squads --
 //
 // Photon Indexer wrapper + composed flow function. Use submitComposedAttestation
@@ -79,3 +98,62 @@ export type {
   ComposedAttestationResult,
   Jurisdiction,
 } from './composed.js';
+
+// -- Kolibri seed-to-sale traceability (2026-05-27) — selector 0x06 in Pinocchio --
+//
+// Anchors plant lifecycle events on Solana (15 event types), gated by
+// agent-registry (cultivator/dispensary/lab must be pre-registered).
+
+export {
+  DPO2UCannabisClient,
+  CANNABIS_EVENT_TYPE,
+  ROOT_BATCH_ID,
+  deriveCannabisEventPda,
+  deriveAgentPda as deriveAgentPdaFromCannabis,
+  buildSubmitCannabisEventIx,
+  encodeSubmitCannabisEvent,
+} from './cannabis.js';
+export type {
+  DPO2UCannabisClientOptions,
+  SubmitCannabisEventArgs,
+  SubmitCannabisEventResult,
+  CannabisEventType,
+} from './cannabis.js';
+
+// -- Kolibri Score / KCS (2026-06-18) — selector 0x07 in Pinocchio --
+//
+// Monthly operational-health snapshot per tenant with a Poseidon (BN254)
+// commitment computed off-chain and stored on-chain for public verification.
+
+export {
+  KCS_SNAPSHOT_SEED,
+  KCS_COMPONENTS,
+  KCS_SCORE_MAX,
+  KCS_COMPONENT_WEIGHTS,
+  scoresToArray,
+  computeComposite,
+  deriveKcsSnapshotPda,
+  computeKcsCommitment,
+  encodeSubmitKcsSnapshot,
+  buildSubmitKcsSnapshotIx,
+} from './kcs.js';
+export type { KcsScores, KcsCommitmentInput, SubmitKcsSnapshotArgs } from './kcs.js';
+
+// -- Legal Corpus Sprint (2026-05-14) — legal_source_manifest deployed devnet --
+//
+// On-chain pointer to the off-chain legal corpus produced by dpo2u-legal-worker.
+// Reading the PDA's content_hash and matching it to the worker's manifest.json
+// proves which version of the law a downstream attestation was evaluated against.
+
+export {
+  DPO2ULegalManifestClient,
+  LEGAL_SOURCE_MANIFEST_PROGRAM_ID,
+  JURISDICTION_SEED_LEN,
+} from './legal-manifest.js';
+export type {
+  DPO2ULegalManifestClientOptions,
+  InitManifestArgs,
+  UpdateManifestArgs,
+  TransferAuthorityArgs,
+  LegalSourceManifestAccount,
+} from './legal-manifest.js';

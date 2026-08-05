@@ -16,7 +16,7 @@ export const PROGRAM_IDS = {
   agent_wallet_factory: new PublicKey('AjRqmxyieQieov2qsNefdYpa6HbPhzciED7s5TfZi1in'),
   consent_manager: new PublicKey('D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB'),
   art_vault: new PublicKey('C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna'),
-  aiverify_attestation: new PublicKey('DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm'),
+  aiverify_attestation: new PublicKey('CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j'),
   // -- 4 jurisdiction-specific programs (deployed devnet 2026-05-01) --
   popia_info_officer_registry: new PublicKey('ASqTAMhhki7btr3WL768v2yUPKWuGfMEGWnP7TxALmmb'),
   ccpa_optout_registry: new PublicKey('5xVQq4KKsAST14RGvxP2aSNZhp681tRENM9TFwVfUpgk'),
@@ -167,7 +167,130 @@ export const pinocchioIx = {
       args.expectedOldLeafHash,
     ]);
   },
+
+  // ---------------------------------------------------------------------------
+  // submit_cannabis_event (selector 0x06) — Kolibri seed-to-sale traceability
+  // ---------------------------------------------------------------------------
+
+  submitCannabisEvent(args: {
+    batchId: Buffer;          // 16 bytes (ULID raw)
+    eventType: number;        // 1..15 (see CANNABIS_EVENT_TYPE)
+    parentBatchId: Buffer;    // 16 bytes (zero-filled if root)
+    payloadHash: Buffer;      // 32 bytes (sha256 of canonicalized payload)
+    storageUri: string;       // up to 200 chars
+    cultivarCode: Buffer;     // 8 bytes (right-padded ascii)
+    emittedAt: bigint;        // i64 unix
+  }): Buffer {
+    if (args.batchId.length !== 16) throw new Error(`batchId must be 16 bytes, got ${args.batchId.length}`);
+    if (args.parentBatchId.length !== 16) throw new Error('parentBatchId must be 16 bytes (zeros if root)');
+    if (args.payloadHash.length !== 32) throw new Error('payloadHash must be 32 bytes');
+    if (args.cultivarCode.length !== 8) throw new Error('cultivarCode must be 8 bytes');
+    if (args.eventType < 1 || args.eventType > 15) throw new Error(`eventType out of range: ${args.eventType}`);
+    if (args.storageUri.length > 200) throw new Error('storageUri too long (max 200)');
+
+    const emittedBuf = Buffer.alloc(8);
+    emittedBuf.writeBigInt64LE(args.emittedAt, 0);
+
+    return Buffer.concat([
+      Buffer.from([0x06]),
+      args.batchId,
+      Buffer.from([args.eventType]),
+      args.parentBatchId,
+      args.payloadHash,
+      encodeBorshString(args.storageUri),
+      args.cultivarCode,
+      emittedBuf,
+    ]);
+  },
+
+  // ---------------------------------------------------------------------------
+  // submit_kcs_snapshot (selector 0x07) — Kolibri Score monthly snapshot
+  // ---------------------------------------------------------------------------
+
+  submitKcsSnapshot(args: {
+    tenant: Buffer;            // 32 bytes
+    period: number;            // yyyymm (e.g. 202606)
+    kcsCommitment: Buffer;     // 32 bytes (Poseidon, computed off-chain)
+    scores: number[];          // exactly 5 components, each 0..10_000 bps
+    composite: number;         // 0..10_000 bps
+    storageUri: string;        // up to 200 chars
+  }): Buffer {
+    if (args.tenant.length !== 32) throw new Error(`tenant must be 32 bytes, got ${args.tenant.length}`);
+    if (args.kcsCommitment.length !== 32) throw new Error('kcsCommitment must be 32 bytes');
+    if (args.scores.length !== 5) throw new Error(`scores must have 5 components, got ${args.scores.length}`);
+    if (args.storageUri.length > 200) throw new Error('storageUri too long (max 200)');
+
+    const periodBuf = encodeBorshU32LE(args.period);
+    const scoresBuf = Buffer.concat(args.scores.map((s) => encodeBorshU32LE(s)));
+    const compositeBuf = encodeBorshU32LE(args.composite);
+
+    return Buffer.concat([
+      Buffer.from([0x07]),
+      args.tenant,
+      periodBuf,
+      args.kcsCommitment,
+      scoresBuf,
+      compositeBuf,
+      encodeBorshString(args.storageUri),
+    ]);
+  },
 };
+
+// =============================================================================
+// Cannabis event types — single source of truth shared with Rust enum
+// programs/compliance-registry-pinocchio/src/lib.rs MAX_CANNABIS_EVENT_TYPE=15
+// =============================================================================
+
+export const CANNABIS_EVENT_TYPE = {
+  SEED_PLANTED: 1,
+  MOTHER_REGISTERED: 2,
+  CLONE_CUT: 3,
+  VEGETATION_START: 4,
+  FLOWERING_START: 5,
+  HARVEST: 6,
+  DRYING_START: 7,
+  CURING_START: 8,
+  LAB_SAMPLE_TAKEN: 9,
+  LAB_RESULT_RELEASED: 10,
+  PACKAGED: 11,
+  TRANSFERRED: 12,
+  DISPENSED: 13,
+  RECALLED: 14,
+  DESTROYED: 15,
+} as const;
+
+export type CannabisEventType = (typeof CANNABIS_EVENT_TYPE)[keyof typeof CANNABIS_EVENT_TYPE];
+
+export function deriveCannabisEventPda(
+  batchId: Uint8Array,
+  eventType: number,
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('cannabis_event'), Buffer.from(batchId), Buffer.from([eventType])],
+    PROGRAM_IDS.compliance_registry_pinocchio,
+  );
+}
+
+/** KCS snapshot PDA — one per (tenant, period). Mirrors the Rust seeds in
+ *  programs/compliance-registry-pinocchio/src/lib.rs (selector 0x07). */
+export function deriveKcsSnapshotPda(tenant: PublicKey, period: number): [PublicKey, number] {
+  const periodBuf = Buffer.alloc(4);
+  periodBuf.writeUInt32LE(period, 0);
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('kcs_snapshot'), tenant.toBuffer(), periodBuf],
+    PROGRAM_IDS.compliance_registry_pinocchio,
+  );
+}
+
+/** Random 16-byte ULID-shaped buffer for tests. Real code should use a ULID lib. */
+export function randomBatchId(): Buffer {
+  const b = Buffer.alloc(16);
+  for (let i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256);
+  return b;
+}
+
+/** Zero batch id — used as parent_batch_id when an event is a root (seed). */
+export const ROOT_BATCH_ID: Buffer = Buffer.alloc(16);
 
 // =============================================================================
 // AttestationLeaf — TS replica of the Rust struct in

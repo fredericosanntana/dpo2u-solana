@@ -32,6 +32,12 @@ use anchor_lang::prelude::*;
 
 declare_id!("4qPsou8f6QFacbZeW75ZZ1mZiYi5PtxuoRSJLyZZVQqx");
 
+use anchor_lang::solana_program::pubkey;
+// Devnet admin authority — rotate to multisig before mainnet.
+// Added 2026-05-15 (audit SOL-H002) to prevent first-caller-wins
+// initialize_rapporteur_config race.
+pub const ADMIN_PUBKEY: Pubkey = pubkey!("HjpGXPWQF1PiqjdWtNNEbAxqNamXKGpJspRZm9Jv5LZj");
+
 /// Attestation type discriminators. Values are stable on-chain and used as
 /// the 4th PDA seed component (`&[attestation_type]`).
 pub const ATTEST_CAIO: u8 = 1;              // DS-920 Chief AI Officer appointment
@@ -305,6 +311,34 @@ pub mod hiroshima_ai_process_attestation {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against any legal_source_manifest PDA.
+    /// Hiroshima ICOC is cross-framework — accepts any jurisdiction (JAPAN,
+    /// EU-AIA, KOREA, MGF-AGENTIC, AI-STACK, etc.). The emitted event carries
+    /// whichever jurisdiction the manifest decodes, plus the attestation type
+    /// the auditor wants to anchor against the corpus version.
+    /// Added 2026-05-15 (Sprint Replicate).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        // Trim NUL padding from on-chain jurisdiction
+        let nul = m.jurisdiction.iter().position(|&b| b == 0).unwrap_or(m.jurisdiction.len());
+        let mut jurisdiction_buf = [0u8; 16];
+        jurisdiction_buf[..nul].copy_from_slice(&m.jurisdiction[..nul]);
+        let att = &ctx.accounts.attestation;
+        emit!(AttestationVerifiedAgainstManifest {
+            attestor: att.attestor,
+            ai_system_id: att.ai_system_id,
+            attestation_type: att.attestation_type,
+            jurisdiction: jurisdiction_buf,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Account state --
@@ -445,7 +479,10 @@ pub struct RevokeAttestation<'info> {
 
 #[derive(Accounts)]
 pub struct InitRapporteurConfig<'info> {
-    #[account(mut)]
+    // Audit SOL-H002 fix (2026-05-15): only ADMIN_PUBKEY can initialize the
+    // singleton rapporteur_config. Prevents first-caller-wins race that
+    // would let attacker become admin + flag_termination authority.
+    #[account(mut, address = ADMIN_PUBKEY @ HiroErr::Unauthorized)]
     pub admin: Signer<'info>,
     #[account(
         init,
@@ -552,6 +589,39 @@ pub struct TerminationOrderEmitted {
     pub trigger: u8, // 1=AttestationRevocation, 2=RapporteurFlag
     pub reason: String,
     pub ordered_at: i64,
+}
+
+#[event]
+pub struct AttestationVerifiedAgainstManifest {
+    pub attestor: Pubkey,
+    pub ai_system_id: [u8; 32],
+    pub attestation_type: u8,
+    pub jurisdiction: [u8; 16],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
+}
+
+/// Cross-program verification accounts (Sprint Replicate 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [
+            b"hiroshima_ai",
+            attestation.attestor.as_ref(),
+            &attestation.ai_system_id,
+            &[attestation.attestation_type],
+        ],
+        bump = attestation.bump
+    )]
+    pub attestation: Account<'info, HiroshimaAttestation>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
 }
 
 // -- Errors --

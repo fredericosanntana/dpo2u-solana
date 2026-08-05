@@ -6,6 +6,31 @@ All notable changes to `dpo2u-solana`.
 
 Submission prep for Colosseum Frontier 2026 (deadline ~2026-05-11).
 
+### 2026-05-15 — Total audit + P1 hardening (audit follow-up)
+
+- **Security hardening (4 ix)**: `fee_distributor::initialize`, `hiroshima::initialize_rapporteur_config`, `agent_registry::register_mcp_server` now gated to `ADMIN_PUBKEY = HjpGXPWQF1Pi…`. Prevents first-caller-wins race / whitelist pollution. Audit SOL-H001/H002/H003. Tx: `5tNoFZ4A…oMK36B` + `5xjYVJYAwc7o…TGx1` + `2mm2xm6vbVom…YErGYN`.
+- **`agent_wallet_factory::verify_against_legal_manifest`** handler added (was orphan struct). Audit SOL-M002. Tx: `2j4h7Crsot3y…upR6XV`. **14/14 cross-ref now true at handler level** (was 13/14 + 1 orphan struct).
+- **MCP rate-limit hash hardening**: keyGenerator switched from `token.slice(-12)` to `sha256(token).slice(0,16)`. Prevents cross-tenant DoS. Audit MCP-H001. File: `packages/mcp-server/src/index.ts:862-880`.
+- **Test fixture follow-up**: bankrun `spl-token-cpi.test.ts` now loads `~/.config/solana/id.json` as admin keypair via new `loadAdminKeypair()` + `adminAccount()` helpers. 169/169 tests passing.
+- **Drift cleanup**: aiverify v1 ID `DSCVx…6cm` replaced in 4 live files (`solana-meta.ts`, `devnet-deployments.md`, `WALKTHROUGH.md`, `transfer-program-authorities.ts`). Historical refs in CHANGELOG + squads-config preserved.
+- **`verify-against-legal-manifest.test.ts`**: IDL coverage 10→13 (+payment_gateway, +fee_distributor, +agent_wallet_factory).
+- **client-sdk dist IDL parity**: copy-idls script now ships art_vault.json + agent_wallet_factory.json + fee_distributor.json.
+- **AI gov corpusReference backfill**: MGF-AGENTIC + AI-GOVERNANCE-STACK marked `verdict: "in-sync"`.
+- **GH Actions `cargo-audit.yml`** added. Nightly + on Cargo lockfile changes. Ignores 6 unmaintained-transitive warnings from solana-sdk/Anchor.
+- **Wallet devnet**: 9.05 → 8.93 SOL (~0.12 SOL gasto em 4 upgrades).
+
+### 2026-05-15 — Sprint Continuable round 2 (14/14 cross-ref milestone)
+
+- **aiverify-attestation REDEPLOY** as new program ID `CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j` (replaces orphaned `DSCVxsdJd…6cm` blocked by Squads V4 BPF deadlock since 2026-05-13). Authority restored to `HjpGXPWQF1Pi…`. Tx: `39j1fJt8dnZd…hatqo`.
+- **`compliance-registry-pinocchio` selector 0x05** added — manual cross-program verify against `legal_source_manifest::ID` (no Anchor `seeds::program` in Pinocchio). Bounds-safe owner check + PDA recompute + 3-line structured log. Tx: `4gBCsraBBe9v…PP78i`.
+- **`agent_registry`**: `register_mcp_server` (IMDA MGF-Agentic MCP whitelist) + `revoke_mcp_server` + `register_value_chain_node` (5-actor MGF + Kenney taxonomy A1-A5). 2 new account types: `McpServer` + `ValueChainNode` (DAG via optional parent). Tx upgrade: `4X8GcKcDb6Rv…dpnS`.
+- **`payment-gateway`** + **`fee-distributor`**: both gained `verify_against_legal_manifest`. Tx: `2ciS6QassFW1…EGDa` + `mNuY2fmx6JdRu9…wmUUQ9`.
+- **`agent-wallet-factory`** cross-ref initial upgrade. Tx: `5ERnWKpdcUCQ…WhwhJ`.
+- **DPDP/PDP-ID/BriberyAct-UK on-chain anchored** via mode=full worker runs. Manifests 16→18 on devnet.
+- **Hiroshima TS client expanded** with 8 new methods (attestCaio, submitRedTeam, commitIcoc, submitGeneric, revoke, initRapporteur, updateRapporteurAuthority, flagTermination).
+- **ADR-001 published** at `/root/DPO2U/docs/adr-001-legal-source-manifest-vs-sas.md` — DPO2U as L2 law-as-primitive above SAS L1. Resolves Colosseum-Copilot + Roast v4 + Kuka findings.
+- **Tests**: MCP 356 → 368 (+12 resolve_legal_citation). Solana 161 → 169.
+
 ### 2026-05-11 — install-eval + container redeploy + storage hardening
 
 - **MCP container redeployed** com Sprint E + F endpoints (66 paths / 53 `/tools`). Antes parado em 54 paths (Sprint D era).

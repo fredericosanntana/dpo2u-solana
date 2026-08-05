@@ -194,6 +194,30 @@ pub mod compliance_registry {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against ANY legal_source_manifest PDA.
+    /// Compliance-registry is general-purpose — accepts any jurisdiction.
+    /// Emits ComplianceAttestationVerifiedAgainstManifest event.
+    /// Added 2026-05-15 (Sprint Continuable).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        let nul = m.jurisdiction.iter().position(|&b| b == 0).unwrap_or(m.jurisdiction.len());
+        let mut juris_buf = [0u8; 16];
+        juris_buf[..nul].copy_from_slice(&m.jurisdiction[..nul]);
+        let att = &ctx.accounts.attestation;
+        emit!(ComplianceAttestationVerifiedAgainstManifest {
+            subject: att.subject,
+            commitment: att.commitment,
+            jurisdiction: juris_buf,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Accounts --
@@ -266,6 +290,22 @@ pub struct RevokeAttestation<'info> {
     pub attestation: Account<'info, Attestation>,
 }
 
+/// Cross-program verification accounts (Sprint Continuable 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [b"attestation", attestation.subject.as_ref(), &attestation.commitment],
+        bump = attestation.bump
+    )]
+    pub attestation: Account<'info, Attestation>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 // -- Events --
 
 #[event]
@@ -293,6 +333,17 @@ pub struct AttestationRevoked {
     pub commitment: [u8; 32],
     pub reason: String,
     pub revoked_at: i64,
+}
+
+#[event]
+pub struct ComplianceAttestationVerifiedAgainstManifest {
+    pub subject: Pubkey,
+    pub commitment: [u8; 32],
+    pub jurisdiction: [u8; 16],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
 }
 
 // -- Errors --

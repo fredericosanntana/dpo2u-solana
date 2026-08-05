@@ -23,7 +23,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm");
+declare_id!("CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j");
 
 #[program]
 pub mod aiverify_attestation {
@@ -80,6 +80,31 @@ pub mod aiverify_attestation {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against any legal_source_manifest PDA. AI
+    /// Verify (Singapore) attestations may need to reference MGF-AGENTIC,
+    /// EU-AIA, or other AI-governance manifests depending on the model's
+    /// deployment jurisdiction. Cross-framework by design.
+    /// Added 2026-05-15 (Sprint Continuable).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        let nul = m.jurisdiction.iter().position(|&b| b == 0).unwrap_or(m.jurisdiction.len());
+        let mut juris_buf = [0u8; 16];
+        juris_buf[..nul].copy_from_slice(&m.jurisdiction[..nul]);
+        let a = &ctx.accounts.attestation;
+        emit!(ModelVerifiedAgainstManifest {
+            operator: a.operator,
+            model_hash: a.model_hash,
+            jurisdiction: juris_buf,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Accounts --
@@ -131,6 +156,22 @@ pub struct RevokeAttestation<'info> {
     pub attestation: Account<'info, ModelAttestation>,
 }
 
+/// Cross-program verification accounts (Sprint Continuable 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [b"aiverify".as_ref(), attestation.operator.as_ref(), attestation.model_hash.as_ref()],
+        bump = attestation.bump
+    )]
+    pub attestation: Account<'info, ModelAttestation>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 // -- Events --
 
 #[event]
@@ -149,6 +190,17 @@ pub struct AttestationRevoked {
     pub model_hash: [u8; 32],
     pub reason_code: u16,
     pub revoked_at: i64,
+}
+
+#[event]
+pub struct ModelVerifiedAgainstManifest {
+    pub operator: Pubkey,
+    pub model_hash: [u8; 32],
+    pub jurisdiction: [u8; 16],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
 }
 
 // -- Errors --

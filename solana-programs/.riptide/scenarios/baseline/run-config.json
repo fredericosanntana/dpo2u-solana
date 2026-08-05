@@ -1,0 +1,13 @@
+{
+  "agents": 3,
+  "ticks": 5,
+  "scenario": "baseline",
+  "seed": 1337,
+  "personas": [
+    "dispensary-low-volume",
+    "dispensary-high-volume",
+    "dispensary-high-volume"
+  ],
+  "validator_url": "http://localhost:8899",
+  "output_path": ".riptide/scenarios/baseline"
+}

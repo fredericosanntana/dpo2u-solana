@@ -135,6 +135,30 @@ pub mod pipeda_consent_extension {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against the PIPEDA legal_source_manifest PDA.
+    /// Emits ConsentVerifiedAgainstManifest. Pure read.
+    /// Added 2026-05-15 (Sprint Replicate).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        require!(
+            m.jurisdiction.starts_with(b"PIPEDA"),
+            PipedaErr::ManifestJurisdictionMismatch
+        );
+        let consent = &ctx.accounts.consent;
+        emit!(ConsentVerifiedAgainstManifest {
+            subject: consent.subject,
+            organization: consent.organization,
+            purpose_hash: consent.purpose_hash,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Accounts --
@@ -246,6 +270,38 @@ pub struct RroshFlagged {
     pub flagged_at: i64,
 }
 
+#[event]
+pub struct ConsentVerifiedAgainstManifest {
+    pub subject: Pubkey,
+    pub organization: Pubkey,
+    pub purpose_hash: [u8; 32],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
+}
+
+/// Cross-program verification accounts (Sprint Replicate 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [
+            b"pipeda_consent",
+            consent.subject.as_ref(),
+            consent.organization.as_ref(),
+            &consent.purpose_hash,
+        ],
+        bump = consent.bump
+    )]
+    pub consent: Account<'info, PipedaConsentRecord>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 // -- Errors --
 
 #[error_code]
@@ -264,4 +320,6 @@ pub enum PipedaErr {
     Unauthorized,
     #[msg("principles_evidenced bitmap contains bits above Schedule 1 Principle 10 (mask 0x03FF)")]
     InvalidPrinciples,
+    #[msg("legal_manifest jurisdiction does not start with \"PIPEDA\"")]
+    ManifestJurisdictionMismatch,
 }

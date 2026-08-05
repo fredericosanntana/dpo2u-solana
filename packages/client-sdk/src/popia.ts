@@ -172,4 +172,54 @@ export class DPO2UPopiaClient {
     if (!info) return null;
     return this.coder.accounts.decode('InfoOfficerAppointment', info.data);
   }
+
+  /**
+   * Cross-program verify against the POPIA legal_source_manifest PDA.
+   * Pure read on-chain — emits AppointmentVerifiedAgainstManifest event.
+   * Added 2026-05-15 (Sprint Replicate).
+   */
+  async verifyAgainstLegalManifest(args: {
+    organizationId?: string;
+    organizationIdHash?: Uint8Array;
+    legalManifestJurisdiction?: string;
+  }): Promise<{
+    signature: string;
+    appointmentPda: PublicKey;
+    legalManifestPda: PublicKey;
+    explorerUrl: string;
+  }> {
+    const orgHash = args.organizationIdHash
+      ?? (args.organizationId
+        ? DPO2UPopiaClient.organizationIdHash(args.organizationId)
+        : (() => { throw new Error('organizationId or organizationIdHash required'); })());
+    const responsibleParty = this.signer.publicKey;
+    const [appointmentPda] = this.derivePda(responsibleParty, orgHash);
+
+    const { DPO2ULegalManifestClient } = await import('./legal-manifest.js');
+    const [legalManifestPda] = DPO2ULegalManifestClient.derivePda(
+      args.legalManifestJurisdiction ?? 'POPIA',
+    );
+
+    const data = this.coder.instruction.encode('verify_against_legal_manifest', {});
+    const ix = new TransactionInstruction({
+      programId: POPIA_INFO_OFFICER_PROGRAM_ID,
+      keys: [
+        { pubkey: appointmentPda, isSigner: false, isWritable: false },
+        { pubkey: legalManifestPda, isSigner: false, isWritable: false },
+      ],
+      data,
+    });
+    const tx = new Transaction()
+      .add(ComputeBudgetProgram.setComputeUnitLimit({ units: this.computeUnitLimit }))
+      .add(ix);
+    tx.feePayer = responsibleParty;
+    tx.recentBlockhash = (await this.connection.getLatestBlockhash('confirmed')).blockhash;
+    const signature = await sendAndConfirmTransaction(this.connection, tx, [this.signer]);
+    return {
+      signature,
+      appointmentPda,
+      legalManifestPda,
+      explorerUrl: buildExplorerUrl(signature, this.cluster),
+    };
+  }
 }

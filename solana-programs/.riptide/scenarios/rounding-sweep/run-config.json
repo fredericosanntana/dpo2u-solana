@@ -1,0 +1,16 @@
+{
+  "agents": 6,
+  "ticks": 20,
+  "scenario": "rounding-sweep",
+  "seed": 4242,
+  "personas": [
+    "dispensary-high-volume",
+    "dispensary-high-volume",
+    "dispensary-high-volume",
+    "dispensary-low-volume",
+    "dispensary-low-volume",
+    "dispensary-low-volume"
+  ],
+  "validator_url": "http://localhost:8899",
+  "output_path": ".riptide/scenarios/rounding-sweep"
+}

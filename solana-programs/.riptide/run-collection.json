@@ -1,0 +1,2245 @@
+{
+  "schema_version": 1,
+  "started_at": "2026-05-28T14:20:36.342Z",
+  "finished_at": "2026-05-28T14:20:37.853Z",
+  "selected_source_path": ".riptide/campaigns/tokenomics-tese.campaign.toml",
+  "allow_invariant_violations": false,
+  "total_scenarios": 8,
+  "totals_by_status": {
+    "pass": 0,
+    "fail": 8,
+    "error": 0,
+    "skipped": 0
+  },
+  "totals_by_verdict": {
+    "failure-observed": 8,
+    "no-failure-observed": 0,
+    "inconclusive": 0,
+    "setup-error": 0,
+    "interrupted": 0
+  },
+  "totals_by_coverage": {
+    "exercised": 0,
+    "partial": 0,
+    "unexercised": 8,
+    "unknown": 0
+  },
+  "scenarios": [
+    {
+      "name": "run_000000_dda2c471d7fc",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000000_dda2c471d7fc/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.449,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000000_dda2c471d7fc",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 10
+        }
+      ],
+      "invariant_fire_count": 44,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 44 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 11 times",
+          "invariant rollup: buyback_bps_canonical fired 11 times",
+          "invariant rollup: staking_bps_canonical fired 11 times",
+          "invariant rollup: fundo_bps_canonical fired 11 times",
+          "84 events recorded",
+          "11 timeseries snapshots recorded",
+          "4 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000000_dda2c471d7fc"
+        ],
+        "reasons": [
+          "44 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 10 of 10 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "40 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "4 final agents across 4 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 10 of 10 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "40 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "4 final agents across 4 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 4,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000000_dda2c471d7fc/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000000_dda2c471d7fc/report.md"
+    },
+    {
+      "name": "run_000001_73622645c483",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000001_73622645c483/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.255,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000001_73622645c483",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 10
+        }
+      ],
+      "invariant_fire_count": 44,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 44 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 11 times",
+          "invariant rollup: buyback_bps_canonical fired 11 times",
+          "invariant rollup: staking_bps_canonical fired 11 times",
+          "invariant rollup: fundo_bps_canonical fired 11 times",
+          "84 events recorded",
+          "11 timeseries snapshots recorded",
+          "4 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000001_73622645c483"
+        ],
+        "reasons": [
+          "44 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 10 of 10 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "40 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "4 final agents across 4 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 10 of 10 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "40 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "4 final agents across 4 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 4,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000001_73622645c483/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000001_73622645c483/report.md"
+    },
+    {
+      "name": "run_000002_c5b87a6406cd",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000002_c5b87a6406cd/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.126,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000002_c5b87a6406cd",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        }
+      ],
+      "invariant_fire_count": 24,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 24 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 6 times",
+          "invariant rollup: buyback_bps_canonical fired 6 times",
+          "invariant rollup: staking_bps_canonical fired 6 times",
+          "invariant rollup: fundo_bps_canonical fired 6 times",
+          "39 events recorded",
+          "6 timeseries snapshots recorded",
+          "3 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000002_c5b87a6406cd"
+        ],
+        "reasons": [
+          "24 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 15 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 5 of 5 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "15 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "15 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "3 final agents across 3 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 5 of 5 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "15 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "15 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "3 final agents across 3 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 3,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000002_c5b87a6406cd/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000002_c5b87a6406cd/report.md"
+    },
+    {
+      "name": "run_000003_0e80f7bc936d",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000003_0e80f7bc936d/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.088,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000003_0e80f7bc936d",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 10
+        }
+      ],
+      "invariant_fire_count": 44,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 44 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 11 times",
+          "invariant rollup: buyback_bps_canonical fired 11 times",
+          "invariant rollup: staking_bps_canonical fired 11 times",
+          "invariant rollup: fundo_bps_canonical fired 11 times",
+          "84 events recorded",
+          "11 timeseries snapshots recorded",
+          "4 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000003_0e80f7bc936d"
+        ],
+        "reasons": [
+          "44 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 10 of 10 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "40 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "4 final agents across 4 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 10 of 10 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "40 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "4 final agents across 4 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 4,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000003_0e80f7bc936d/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000003_0e80f7bc936d/report.md"
+    },
+    {
+      "name": "run_000004_b53d4f807242",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000004_b53d4f807242/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.064,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000004_b53d4f807242",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 10
+        }
+      ],
+      "invariant_fire_count": 44,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 44 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 11 times",
+          "invariant rollup: buyback_bps_canonical fired 11 times",
+          "invariant rollup: staking_bps_canonical fired 11 times",
+          "invariant rollup: fundo_bps_canonical fired 11 times",
+          "84 events recorded",
+          "11 timeseries snapshots recorded",
+          "4 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000004_b53d4f807242"
+        ],
+        "reasons": [
+          "44 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 10 of 10 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "40 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "4 final agents across 4 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 10 of 10 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "40 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "4 final agents across 4 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 4,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000004_b53d4f807242/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000004_b53d4f807242/report.md"
+    },
+    {
+      "name": "run_000005_32e1843d13e7",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000005_32e1843d13e7/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.048,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000005_32e1843d13e7",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 10
+        }
+      ],
+      "invariant_fire_count": 44,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 44 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 11 times",
+          "invariant rollup: buyback_bps_canonical fired 11 times",
+          "invariant rollup: staking_bps_canonical fired 11 times",
+          "invariant rollup: fundo_bps_canonical fired 11 times",
+          "84 events recorded",
+          "11 timeseries snapshots recorded",
+          "4 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000005_32e1843d13e7"
+        ],
+        "reasons": [
+          "44 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 10 of 10 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "40 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "4 final agents across 4 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 10 of 10 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "40 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "4 final agents across 4 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 4,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000005_32e1843d13e7/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000005_32e1843d13e7/report.md"
+    },
+    {
+      "name": "run_000006_b80f34296420",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.067,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        }
+      ],
+      "invariant_fire_count": 24,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 24 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 6 times",
+          "invariant rollup: buyback_bps_canonical fired 6 times",
+          "invariant rollup: staking_bps_canonical fired 6 times",
+          "invariant rollup: fundo_bps_canonical fired 6 times",
+          "39 events recorded",
+          "6 timeseries snapshots recorded",
+          "3 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420"
+        ],
+        "reasons": [
+          "24 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 15 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 5 of 5 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "15 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "15 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "3 final agents across 3 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 5 of 5 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "15 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "15 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "3 final agents across 3 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 3,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000006_b80f34296420/report.md"
+    },
+    {
+      "name": "run_000007_590057da852e",
+      "run_config_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000007_590057da852e/run-config.json",
+      "status": "fail",
+      "wall_clock_s": 0.056,
+      "artifacts_dir": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000007_590057da852e",
+      "invariant_fires": [
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 0
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 1
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 2
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 3
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 4
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 5
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 6
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 7
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 8
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 9
+        },
+        {
+          "name": "kbr_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "buyback_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "staking_bps_canonical",
+          "tick": 10
+        },
+        {
+          "name": "fundo_bps_canonical",
+          "tick": 10
+        }
+      ],
+      "invariant_fire_count": 44,
+      "interpretation": {
+        "verdict": "failure-observed",
+        "confidence": "medium",
+        "coverage": "unexercised",
+        "severity": "critical",
+        "summary": "Failure observed in this run: 44 invariant fires recorded.",
+        "next_action": "Review the first invariant fire and inspect simulation artifacts before changing the scenario or adapter.",
+        "evidence": [
+          "first invariant fire: kbr_bps_canonical at tick 0",
+          "invariant rollup: kbr_bps_canonical fired 11 times",
+          "invariant rollup: buyback_bps_canonical fired 11 times",
+          "invariant rollup: staking_bps_canonical fired 11 times",
+          "invariant rollup: fundo_bps_canonical fired 11 times",
+          "84 events recorded",
+          "11 timeseries snapshots recorded",
+          "4 final agent records recorded",
+          "artifacts directory: /root/dpo2u-solana/solana-programs/.riptide/campaigns/campaign_acc2b43f451c/runs/run_000007_590057da852e"
+        ],
+        "reasons": [
+          "44 invariant fires observed",
+          "coverage classified as unexercised",
+          "execution_outcomes: fail - 40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))",
+          "state_movement: fail - no numeric timeseries field changed"
+        ],
+        "coverage_checks": [
+          {
+            "name": "tick_progression",
+            "status": "pass",
+            "detail": "observed 10 of 10 requested ticks"
+          },
+          {
+            "name": "event_stream",
+            "status": "pass",
+            "detail": "40 scenario events observed"
+          },
+          {
+            "name": "execution_outcomes",
+            "status": "fail",
+            "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+          },
+          {
+            "name": "state_movement",
+            "status": "fail",
+            "detail": "no numeric timeseries field changed"
+          },
+          {
+            "name": "invariant_inventory",
+            "status": "pass",
+            "detail": "6 declared invariant rows present"
+          },
+          {
+            "name": "agent_roster",
+            "status": "pass",
+            "detail": "4 final agents across 4 personas"
+          },
+          {
+            "name": "artifact_readability",
+            "status": "pass",
+            "detail": "simulation-result.json and report.md are readable"
+          }
+        ]
+      },
+      "coverage_checks": [
+        {
+          "name": "tick_progression",
+          "status": "pass",
+          "detail": "observed 10 of 10 requested ticks"
+        },
+        {
+          "name": "event_stream",
+          "status": "pass",
+          "detail": "40 scenario events observed"
+        },
+        {
+          "name": "execution_outcomes",
+          "status": "fail",
+          "detail": "40 failed scenario events and zero successful executions; first failure: InstructionError(0, Custom(16394))"
+        },
+        {
+          "name": "state_movement",
+          "status": "fail",
+          "detail": "no numeric timeseries field changed"
+        },
+        {
+          "name": "invariant_inventory",
+          "status": "pass",
+          "detail": "6 declared invariant rows present"
+        },
+        {
+          "name": "agent_roster",
+          "status": "pass",
+          "detail": "4 final agents across 4 personas"
+        },
+        {
+          "name": "artifact_readability",
+          "status": "pass",
+          "detail": "simulation-result.json and report.md are readable"
+        }
+      ],
+      "metric_preview": {
+        "agents_active": 4,
+        "agents_liquidated": 0,
+        "agents_depleted": 0,
+        "split.buyback_bps_avg": 0,
+        "split.buyback_bps_max": 0,
+        "split.buyback_bps_min": 0,
+        "split.fundo_bps_avg": 0,
+        "split.fundo_bps_max": 0
+      },
+      "simulation_result_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000007_590057da852e/simulation-result.json",
+      "report_path": ".riptide/campaigns/campaign_acc2b43f451c/runs/run_000007_590057da852e/report.md"
+    }
+  ]
+}

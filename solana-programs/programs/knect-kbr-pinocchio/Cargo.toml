@@ -1,0 +1,23 @@
+[package]
+name = "knect-kbr-pinocchio"
+version = "0.1.0"
+description = "Kolibri KBR (Kolibri Bitcoin Reserve) — cbBTC reserve vault + sovereign redemption (KNECT WP v2.1 §05). redeem: burn KNECT, retain 1% fee, pay cbBTC at the KBR ratio; the floor of remaining holders can only rise. Pinocchio port for low-CU mainnet operation."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "knect_kbr_pinocchio"
+
+[features]
+no-entrypoint = []
+# Defined so `anchor build` at the workspace level treats this Pinocchio
+# crate as buildable. No Anchor IDL emitted.
+idl-build = []
+
+[dependencies]
+pinocchio = "0.9"
+pinocchio-system = "0.4"
+pinocchio-pubkey = "0.3"
+pinocchio-log = "0.4"
+pinocchio-token = "0.6"
+borsh = { version = "1.5", default-features = false, features = ["derive"] }

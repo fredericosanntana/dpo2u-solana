@@ -1,0 +1,250 @@
+# Riptide adapter — knect-tokenomics-pinocchio (Kolibri tokenomics)
+#
+# Atomic phased revenue split (KNECT WP v2.1 §04): Fase 1 = 50/25/0/25
+# (KBR cbBTC / Buyback→Reserva de Cashback / Staking / Fundo); Fase 2 = 25/25/25/25.
+# Buyback has NO burn (accumulates → cashback off-chain); the only burn is at the
+# floor redemption (separate KBR program).
+# Adapter stubs the 3 instructions (initialize_config / distribute / update_splits).
+# To finalize personas + scenarios + invariants, run `/riptide-config` from a
+# fresh Claude Code session (or edit manually following the lint output).
+
+protocol = "generic"
+program_so = "target/deploy/knect_tokenomics_pinocchio.so"
+idl_path = ".riptide/idl/knect_tokenomics_pinocchio.json"
+
+[lineage]
+idl_source = ".riptide/idl/knect_tokenomics_pinocchio.json"
+generator = "hand-authored"
+# Pinocchio programs do not emit Anchor IDL by default. The JSON shape mimics
+# Anchor's IDL format (instructions[].accounts, args, accounts[] type defs,
+# errors[]) so generic Riptide dispatch encodes instruction bytes
+# deterministically. Discriminator [223,18,91,144,207,33,86,12] matches the
+# on-chain Borsh layout in src/lib.rs.
+inferred_assumptions = [
+  "Pinocchio entrypoint dispatches by 1-byte selector (0x00 init, 0x01 distribute, 0x02 update_splits).",
+  "Config PDA seed = [b\"knect_config\", admin_pubkey]; bump computed by find_program_address.",
+  "All 4 vaults are SPL Token v1 accounts (165 bytes) with the SAME mint as config.fee_token_mint.",
+  "fee_token_mint is an SPL Token v1 Mint (82 bytes) with 6 decimals.",
+  "source_ata is owned by the agent (payer) and pre-funded by harness setup.",
+  "Splits are atomic: any failed transfer reverts the entire tx (no partial state).",
+  "Last vault (fundo) absorbs all rounding so Σ shares == amount exactly.",
+  "Token-2022 NOT supported in v0.1 — only SPL Token v1 (TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA)."
+]
+unsupported_fields = [
+  # Protocol-level deferred surfaces
+  "Cashback Fase A → B logic — orchestration off-chain via the gateway, no on-chain selector.",
+  "Buyback&burn KNECT swap leg — requires Jupiter aggregator integration (post-TGE).",
+  "DCA-to-cbBTC — requires Jupiter DCA program integration (post-TGE).",
+  "Token-2022 (transfer fees, transfer hooks) — defer to selector 0x03 in v0.2.",
+  "Multi-tenant config — one admin per chain instance currently; multi-admin shard goes to v0.3.",
+  # IDL fields that are immutable post-init or housekeeping-only — not telemetry-useful
+  "`config.admin` — set once at init, validated via NotAdmin error path, not observed as timeseries.",
+  "`config.fee_token_mint` — set once at init; the mint identity is structural, not a numeric observation.",
+  "`config.vault_kbr` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.vault_buyback` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.vault_staking` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.vault_fundo` — destination pubkey, set once; balance lives in the SPL account (external).",
+  "`config.last_distribution_at` — reserved for future Clock CPI; currently always 0.",
+  "`config.bump` — PDA derivation housekeeping, not telemetry-useful.",
+  "`config.schema_version` — forward-compat tag; always 1 in v0.1."
+]
+
+# -----------------------------------------------------------------------------
+# Accounts
+# -----------------------------------------------------------------------------
+
+[accounts]
+
+[accounts.config]
+kind = "shared"
+space = 230
+
+[accounts.source_ata]
+kind = "agent"
+space = 165
+
+[accounts.vault_kbr]
+kind = "shared"
+space = 165
+
+[accounts.vault_buyback]
+kind = "shared"
+space = 165
+
+[accounts.vault_staking]
+kind = "shared"
+space = 165
+
+[accounts.vault_fundo]
+kind = "shared"
+space = 165
+
+[accounts.fee_token_mint]
+kind = "shared"
+space = 82               # SPL Mint v1 size
+
+# -----------------------------------------------------------------------------
+# Instructions
+# -----------------------------------------------------------------------------
+
+[instructions]
+
+# Fase 1 canonical: bps_kbr=5000 (via amount binding), buyback=2500, staking=0, fundo=2500.
+[instructions.initialize_config]
+action = "init_config"
+amount = "bps_kbr"
+args = { fee_token_mint = "@persona.fee_mint", vault_kbr = "@persona.vault_kbr", vault_buyback = "@persona.vault_buyback", vault_staking = "@persona.vault_staking", vault_fundo = "@persona.vault_fundo", bps_buyback = 2500, bps_staking = 0, bps_fundo = 2500 }
+
+[instructions.distribute]
+action = "distribute_fee"
+amount = "amount"
+
+# Fase 2 transition: bps_kbr=2500 (via amount), buyback=2500, staking=2500, fundo=2500.
+[instructions.update_splits]
+action = "update_splits"
+amount = "bps_kbr"
+args = { bps_buyback = 2500, bps_staking = 2500, bps_fundo = 2500 }
+
+# -----------------------------------------------------------------------------
+# State mapping (on-chain → observation keys)
+# -----------------------------------------------------------------------------
+
+[state_mapping]
+# Only program-owned account fields are mappable here. SPL vault balances
+# are observed via external token-balance hooks added in S2.
+"config.bps_kbr"             = "split.kbr_bps"
+"config.bps_buyback"         = "split.buyback_bps"
+"config.bps_staking"         = "split.staking_bps"
+"config.bps_fundo"           = "split.fundo_bps"
+"config.total_distributed"   = "tokenomics.total_distributed"
+"config.distributions_count" = "tokenomics.distributions_count"
+
+# -----------------------------------------------------------------------------
+# Actions — dashboard-visible labels + bound numeric args
+# -----------------------------------------------------------------------------
+
+[actions]
+
+[actions.init_config]
+label = "Initialize tokenomics config"
+takes = []   # leave empty for IDL-backed arg inference (all 9 IDL args auto-bound)
+
+[actions.distribute_fee]
+label = "Distribute fee (4-way split)"
+takes = ["amount"]
+
+[actions.update_splits]
+label = "Update bps splits (admin)"
+takes = []
+
+# -----------------------------------------------------------------------------
+# Observations
+# -----------------------------------------------------------------------------
+
+[observations]
+"split.kbr_bps"                  = "uint"
+"split.buyback_bps"              = "uint"
+"split.staking_bps"              = "uint"
+"split.fundo_bps"                = "uint"
+"tokenomics.total_distributed"   = "uint"
+"tokenomics.distributions_count" = "uint"
+
+# -----------------------------------------------------------------------------
+# Invariants — KNECT tokenomics tese encoded as engine-checkable predicates
+# -----------------------------------------------------------------------------
+
+# Canonical Fase 1 split (KNECT WP v2.1 §04 = 50/25/0/25). A campaign starts in
+# Fase 1; the deliberate, Squads-gated Fase 1 → Fase 2 transition is the ONE event
+# expected to change these — the invariants flag any other drift.
+
+[[invariants]]
+name = "kbr_bps_canonical_fase1"
+field = "split.kbr_bps"
+op = "=="
+value = 5000
+# WP v2.1 §04 declares 50% to KBR Vault in Fase 1 (the floor/lastro share).
+
+[[invariants]]
+name = "buyback_bps_canonical"
+field = "split.buyback_bps"
+op = "=="
+value = 2500
+# WP v2.1 §04 declares 25% to Buyback → Reserva de Cashback (NO burn).
+
+[[invariants]]
+name = "staking_bps_canonical_fase1"
+field = "split.staking_bps"
+op = "=="
+value = 0
+# WP v2.1 §04: staking is 0% in Fase 1 — activates (25%) only in Fase 2, gated by parecer.
+
+[[invariants]]
+name = "fundo_bps_canonical"
+field = "split.fundo_bps"
+op = "=="
+value = 2500
+# WP v2.1 §04 declares 25% to Fundo Kolibri (multi-sig 3/5).
+
+[[invariants]]
+name = "total_distributed_nonnegative"
+field = "tokenomics.total_distributed"
+op = ">="
+value = 0
+# Cumulative sum invariant — fires only if u64 underflows (impossible by program guard 0x4008).
+
+[[invariants]]
+name = "distributions_count_nonnegative"
+field = "tokenomics.distributions_count"
+op = ">="
+value = 0
+# Counter never decrements; checked_add prevents wraparound.
+
+# -----------------------------------------------------------------------------
+# Personas — TO BE COMPLETED via /riptide-config
+# -----------------------------------------------------------------------------
+#
+# Suggested personas for Kolibri tokenomics stress tests:
+#   - dispensary-low-volume   (1 distribution / day, amount 50 USDC equiv)
+#   - dispensary-high-volume  (100 distributions / day, amount 500 USDC equiv)
+#   - admin_tuner             (occasionally adjusts splits — should be RARE)
+#   - attacker_zero_amount    (always tries amount=0 — should always revert)
+#   - attacker_substitute_vault (passes fake vault — should always revert)
+
+[personas]
+
+[personas.dispensary-low-volume]
+label = "Low-volume dispensary"
+action_rate_multiplier = 0.1
+action_weights = { distribute_fee = 1.0 }
+triggers = []
+
+[personas.dispensary-high-volume]
+label = "High-volume dispensary"
+action_rate_multiplier = 1.0
+action_weights = { distribute_fee = 1.0 }
+triggers = []
+
+# -----------------------------------------------------------------------------
+# Invariants (to be added via /riptide-config)
+# -----------------------------------------------------------------------------
+#
+# Recommended invariants to encode for the tokenomics tese:
+#
+#   1. SPLIT_SUMS_TO_AMOUNT
+#      After every distribute_fee, the sum of (kbr + buyback + staking + fundo)
+#      balance deltas MUST equal the amount field. No leakage.
+#
+#   2. NO_NEGATIVE_VAULT
+#      No vault balance ever decreases (config-only adds, never removes).
+#
+#   3. BPS_RATIO_HELD
+#      Over a campaign sweep, kbr_balance / total_distributed ≈ bps_kbr / 10000
+#      within rounding error proportional to distributions_count.
+#
+#   4. ADMIN_ONLY_UPDATE
+#      update_splits only succeeds when signer == config.admin.
+#
+#   5. AMOUNT_ZERO_REJECTED
+#      distribute_fee with amount=0 always returns ERR_AMOUNT_ZERO (0x4007).
+#
+# Encode each as a `[invariants.<name>]` block once scenarios are wired.

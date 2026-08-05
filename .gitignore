@@ -38,3 +38,11 @@ scripts/demo/cards/
 
 # Knightshield demo subject (sample data, regenerate via scripts/scan-knightshield-multi.ts)
 scripts/knightshield-demo-subject.json
+
+# Smoke run artifacts (audit DEBT-010 — added 2026-05-15)
+packages/client-sdk/smoke-*-result.json
+packages/client-sdk/bridge-*-results.json
+packages/client-sdk/retry-failed-results.json
+packages/client-sdk/demo-verify-popia-result.json
+packages/client-sdk/anchor-*.json
+solana-programs/smoke-*-result.json

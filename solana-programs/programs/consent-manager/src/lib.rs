@@ -200,6 +200,32 @@ pub mod consent_manager {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against ANY legal_source_manifest PDA.
+    /// Consent is cross-jurisdictional (LGPD/GDPR/DPDP/PIPEDA/etc) — accepts
+    /// any jurisdiction; emits ConsentVerifiedAgainstManifest with whichever
+    /// jurisdiction the manifest decodes.
+    /// Added 2026-05-15 (Sprint Replicate extension).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        let nul = m.jurisdiction.iter().position(|&b| b == 0).unwrap_or(m.jurisdiction.len());
+        let mut jurisdiction_buf = [0u8; 16];
+        jurisdiction_buf[..nul].copy_from_slice(&m.jurisdiction[..nul]);
+        let rec = &ctx.accounts.consent;
+        emit!(ConsentVerifiedAgainstManifest {
+            user: rec.user,
+            data_fiduciary: rec.data_fiduciary,
+            purpose_hash: rec.purpose_hash,
+            jurisdiction: jurisdiction_buf,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: Clock::get()?.unix_timestamp,
+        });
+        Ok(())
+    }
 }
 
 // -- Accounts --
@@ -250,6 +276,27 @@ pub struct RecordConsent<'info> {
     )]
     pub consent: Account<'info, ConsentRecord>,
     pub system_program: Program<'info, System>,
+}
+
+/// Cross-program verification accounts (Sprint Replicate 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [
+            b"consent",
+            consent.user.as_ref(),
+            consent.data_fiduciary.as_ref(),
+            &consent.purpose_hash,
+        ],
+        bump = consent.bump
+    )]
+    pub consent: Account<'info, ConsentRecord>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
 }
 
 #[derive(Accounts)]
@@ -327,6 +374,18 @@ pub struct ConsentRevoked {
     pub purpose_hash: [u8; 32],
     pub reason: String,
     pub revoked_at: i64,
+}
+
+#[event]
+pub struct ConsentVerifiedAgainstManifest {
+    pub user: Pubkey,
+    pub data_fiduciary: Pubkey,
+    pub purpose_hash: [u8; 32],
+    pub jurisdiction: [u8; 16],
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
 }
 
 // -- Errors --

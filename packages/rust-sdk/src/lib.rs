@@ -13,7 +13,7 @@
 //! | `sp1_verifier` | `5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW` | Groth16 pairing CPI target |
 //! | `consent_manager` | `D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB` | DPDP India consent events |
 //! | `art_vault` | `C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna` | MiCAR ART safeguards (PoR + liquidity + buffer + velocity) |
-//! | `aiverify_attestation` | `DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm` | AI Verify Singapore attestation |
+//! | `aiverify_attestation` | `CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j` | AI Verify Singapore attestation |
 //! | `agent_registry` | `5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7` | DPO/auditor DIDs with capability bits |
 //! | `payment_gateway` | `4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q` | MCP invoicing (SPL Token CPI) |
 //! | `fee_distributor` | `88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x` | Atomic 70/20/10 split |
@@ -49,7 +49,7 @@ pub mod programs {
     pub const CONSENT_MANAGER: Pubkey = pubkey!("D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB");
     pub const ART_VAULT: Pubkey = pubkey!("C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna");
     pub const AIVERIFY_ATTESTATION: Pubkey =
-        pubkey!("DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm");
+        pubkey!("CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j");
     pub const AGENT_REGISTRY: Pubkey = pubkey!("5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7");
     pub const PAYMENT_GATEWAY: Pubkey = pubkey!("4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q");
     pub const FEE_DISTRIBUTOR: Pubkey = pubkey!("88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x");

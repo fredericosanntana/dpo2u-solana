@@ -1,0 +1,95 @@
+{
+  "schema_version": "campaign-retention-manifest.v1",
+  "campaign_id": "campaign_acc2b43f451c",
+  "campaign_digest": "acc2b43f451c8223514b440b4ae719b37294328c5045a63d9331ae19534a22c2",
+  "campaign_name": "knect-tokenomics-tese",
+  "class": "lending.v1",
+  "risk_objective": "custom:split-correctness",
+  "requested_labels": [
+    "first_failure",
+    "median"
+  ],
+  "entries": [
+    {
+      "label": "first_failure",
+      "status": "selected",
+      "run_id": "run_000000_dda2c471d7fc",
+      "run_index": 0,
+      "scenario_family": "happy_split",
+      "sampled_parameters": {},
+      "reason": "earliest invariant failure tick observed within this campaign; tie: 8 runs shared the earliest failure tick; selected lowest run index 0",
+      "score": 0,
+      "tie_breaker": "8 runs shared the earliest failure tick; selected lowest run index 0",
+      "risk_signals": {
+        "status": "fail",
+        "first_failure_tick": 0,
+        "invariant_names": [
+          "buyback_bps_canonical",
+          "fundo_bps_canonical",
+          "kbr_bps_canonical",
+          "staking_bps_canonical"
+        ],
+        "semantic_signal_names": [],
+        "total_bad_debt": null,
+        "total_liquidations": null,
+        "max_utilization": null,
+        "min_tvl": null,
+        "min_available_liquidity": null,
+        "risk_score": 1445000
+      },
+      "rerun_command": "exec riptide run .riptide/campaigns/campaign_acc2b43f451c/runs/run_000000_dda2c471d7fc/run-config.json",
+      "paths": {
+        "run_dir": "runs/run_000000_dda2c471d7fc",
+        "run_config": "runs/run_000000_dda2c471d7fc/run-config.json",
+        "metadata": "runs/run_000000_dda2c471d7fc/metadata.json",
+        "case_dir": "retained/first_failure-run_000000_dda2c471d7fc",
+        "case_manifest": "retained/first_failure-run_000000_dda2c471d7fc/case.json",
+        "rerun_sh": "retained/first_failure-run_000000_dda2c471d7fc/rerun.sh",
+        "simulation_result": "runs/run_000000_dda2c471d7fc/simulation-result.json",
+        "report": "runs/run_000000_dda2c471d7fc/report.md"
+      },
+      "case_digest": "408018173c0b4abe6c2f9c516f54aeead7d599ce2f071dcd401aa21acb3fcf8b"
+    },
+    {
+      "label": "median",
+      "status": "selected",
+      "run_id": "run_000001_73622645c483",
+      "run_index": 1,
+      "scenario_family": "happy_split",
+      "sampled_parameters": {},
+      "reason": "middle completed run by deterministic campaign risk score; tie: 6 runs shared the same deterministic risk score; selected lowest run index 1",
+      "score": 1445000,
+      "tie_breaker": "6 runs shared the same deterministic risk score; selected lowest run index 1",
+      "risk_signals": {
+        "status": "fail",
+        "first_failure_tick": 0,
+        "invariant_names": [
+          "buyback_bps_canonical",
+          "fundo_bps_canonical",
+          "kbr_bps_canonical",
+          "staking_bps_canonical"
+        ],
+        "semantic_signal_names": [],
+        "total_bad_debt": null,
+        "total_liquidations": null,
+        "max_utilization": null,
+        "min_tvl": null,
+        "min_available_liquidity": null,
+        "risk_score": 1445000
+      },
+      "rerun_command": "exec riptide run .riptide/campaigns/campaign_acc2b43f451c/runs/run_000001_73622645c483/run-config.json",
+      "paths": {
+        "run_dir": "runs/run_000001_73622645c483",
+        "run_config": "runs/run_000001_73622645c483/run-config.json",
+        "metadata": "runs/run_000001_73622645c483/metadata.json",
+        "case_dir": "retained/median-run_000001_73622645c483",
+        "case_manifest": "retained/median-run_000001_73622645c483/case.json",
+        "rerun_sh": "retained/median-run_000001_73622645c483/rerun.sh",
+        "simulation_result": "runs/run_000001_73622645c483/simulation-result.json",
+        "report": "runs/run_000001_73622645c483/report.md"
+      },
+      "case_digest": "c3b47e52d255eb7199400a5870190615562071c2b75d770353a110163c3ee4f6"
+    }
+  ],
+  "warnings": []
+}

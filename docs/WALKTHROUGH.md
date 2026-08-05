@@ -80,7 +80,7 @@ Cada camada resolve **um problema específico**. Não são intercambiáveis — 
 | **sp1-verifier** | `5xrWphWXoFnXJh7jYt3tyWZAwX1itbyyxJQs8uumiRTW` | Verifica Groth16 pairing (DPO2U fork do SP1) | ✅ deployed |
 | **consent-manager** | `D5mLHU4uUQAkoMvtviAzBe1ugpdxfdqQ7VuGoKLaTjfB` | DPDP India — PDA por (user, fiduciary, purpose), `record_consent` / `record_verified_consent` / `revoke_consent` | ✅ deployed devnet (2026-04-22, 248 KB, live tx `67ggejJP...MVQZ8`, PDA example `33UFiLoDT3X796H5o1SgFy7i2bmW8MQ4uoFD7omq8wn6`) |
 | **art-vault** | `C7sGZFeWPxEkaGHACwqdzCcy4QkacqPLYEwEarVpidna` | MiCAR — Proof of Reserve + Liquidity + Capital Buffer 3% + Velocity Limiter + **Pyth oracle integration** (2026-04-22) | ✅ deployed devnet (254 KB) |
-| **aiverify-attestation** | `DSCVxsdJd5wVJan5WqQfpKkqxazWJR7D7cjd3r65s6cm` | AI Verify Singapore — `attest_model(model_hash, test_report_hash, vk_root)` | ✅ deployed devnet (208 KB) |
+| **aiverify-attestation** | `CmPVUPo54hV25r5iw59X1yR1f5tEsn7FNmywFMDiPT7j` | AI Verify Singapore — `attest_model(model_hash, test_report_hash, vk_root)` | ✅ deployed devnet (208 KB) |
 | **agent-registry** | `5qeuUAaJi9kTzsfmiphQ89PNrpqy7xW7sCvhBZQ6mya7` | DIDs de DPO/auditor + bitmask de capabilities | ✅ deployed |
 | **payment-gateway** | `4Qj6GziMjUfh4TszuSnasnEqnASqQBS6SHw6YAu9U23Q` | Invoicing MCP via SPL Token CPI | ✅ deployed |
 | **fee-distributor** | `88eKEEMMnugv8AFWRvqa4i7LEiL7tM9bEuPTVkRbD76x` | Split atômico 70/20/10 (treasury/operator/reserve) | ✅ deployed |

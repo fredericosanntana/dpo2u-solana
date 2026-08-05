@@ -19,3 +19,4 @@ idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 [dependencies]
 anchor-lang = "0.31.1"
 anchor-spl = { version = "0.31.1", features = ["token"] }
+legal-source-manifest = { path = "../legal-source-manifest", features = ["cpi"] }

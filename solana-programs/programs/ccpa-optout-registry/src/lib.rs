@@ -108,6 +108,33 @@ pub mod ccpa_optout_registry {
         });
         Ok(())
     }
+
+    /// Cross-program attestation against the on-chain `legal_source_manifest` PDA
+    /// for the CCPA jurisdiction. Emits `OptoutVerifiedAgainstManifest` so
+    /// auditors can prove "this opt-out was checked against CCPA corpus
+    /// version N at timestamp T". Pure read — does not modify the OptoutRecord.
+    /// Added 2026-05-15 (Sprint Replicate).
+    pub fn verify_against_legal_manifest(
+        ctx: Context<VerifyAgainstLegalManifest>,
+    ) -> Result<()> {
+        let m = &ctx.accounts.legal_manifest;
+        require!(
+            m.jurisdiction.starts_with(b"CCPA"),
+            OptoutErr::ManifestJurisdictionMismatch
+        );
+        let optout = &ctx.accounts.optout;
+        let now = Clock::get()?.unix_timestamp;
+        emit!(OptoutVerifiedAgainstManifest {
+            business: optout.business,
+            consumer_commitment_hash: optout.consumer_commitment_hash,
+            optout_kind: optout.optout_kind,
+            manifest_version: m.manifest_version,
+            content_hash: m.content_hash,
+            effective_date: m.effective_date,
+            verified_at: now,
+        });
+        Ok(())
+    }
 }
 
 // -- Accounts --
@@ -173,6 +200,27 @@ pub struct ReverseOptout<'info> {
     pub optout: Account<'info, OptoutRecord>,
 }
 
+/// Cross-program verification accounts (Sprint Replicate 2026-05-15).
+#[derive(Accounts)]
+pub struct VerifyAgainstLegalManifest<'info> {
+    #[account(
+        seeds = [
+            b"ccpa_optout",
+            optout.business.as_ref(),
+            &optout.consumer_commitment_hash,
+            &[optout.optout_kind],
+        ],
+        bump = optout.bump
+    )]
+    pub optout: Account<'info, OptoutRecord>,
+    #[account(
+        seeds = [b"legal_manifest".as_ref(), &legal_manifest.jurisdiction],
+        bump = legal_manifest.bump,
+        seeds::program = legal_source_manifest::ID,
+    )]
+    pub legal_manifest: Account<'info, legal_source_manifest::LegalSourceManifestAccount>,
+}
+
 // -- Events --
 
 #[event]
@@ -194,6 +242,17 @@ pub struct OptoutReversed {
     pub reversed_at: i64,
 }
 
+#[event]
+pub struct OptoutVerifiedAgainstManifest {
+    pub business: Pubkey,
+    pub consumer_commitment_hash: [u8; 32],
+    pub optout_kind: u8,
+    pub manifest_version: u32,
+    pub content_hash: [u8; 32],
+    pub effective_date: i64,
+    pub verified_at: i64,
+}
+
 // -- Errors --
 
 #[error_code]
@@ -206,4 +265,6 @@ pub enum OptoutErr {
     AlreadyReversed,
     #[msg("only the consumer who registered the opt-out can reverse it (CCPA §1798.135(c))")]
     UnauthorizedConsumer,
+    #[msg("legal_manifest jurisdiction does not start with \"CCPA\"")]
+    ManifestJurisdictionMismatch,
 }

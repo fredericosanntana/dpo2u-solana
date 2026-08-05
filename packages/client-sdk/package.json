@@ -1,7 +1,7 @@
 {
   "name": "@dpo2u/client-sdk",
-  "version": "0.3.0",
-  "description": "TypeScript client for dpo2u-solana — on-chain compliance primitives (LGPD/GDPR/DPDP), AES-GCM encrypted storage, MCP REST client for audit/docs toolkit, and OAuth login via `dpo2u-cli login`. Build on Solana.",
+  "version": "0.4.0",
+  "description": "TypeScript client for dpo2u-solana \u2014 on-chain compliance primitives (LGPD/GDPR/DPDP), AES-GCM encrypted storage, MCP REST client for audit/docs toolkit, and OAuth login via `dpo2u-cli login`. Build on Solana.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && pnpm copy-idls",
-    "copy-idls": "mkdir -p dist/idl && cp ../../solana-programs/target/idl/compliance_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/consent_manager.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/popia_info_officer_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/ccpa_optout_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipeda_consent_extension.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipa_korea_zk_identity.json dist/idl/ 2>/dev/null; echo 'IDL copy done'",
+    "copy-idls": "mkdir -p dist/idl && cp ../../solana-programs/target/idl/compliance_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/consent_manager.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/popia_info_officer_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/ccpa_optout_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipeda_consent_extension.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/pipa_korea_zk_identity.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/legal_source_manifest.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/hiroshima_ai_process_attestation.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/agent_registry.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/aiverify_attestation.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/payment_gateway.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/art_vault.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/agent_wallet_factory.json dist/idl/ 2>/dev/null; cp ../../solana-programs/target/idl/fee_distributor.json dist/idl/ 2>/dev/null; echo 'IDL copy done'",
     "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "prepublishOnly": "pnpm test && pnpm build"
@@ -62,6 +62,7 @@
     "@lightprotocol/stateless.js": "^0.13.0",
     "@shadow-drive/sdk": "^6.0.0",
     "@solana/web3.js": "^1.98.0",
+    "circomlibjs": "^0.1.7",
     "commander": "^12.1.0",
     "node-fetch": "^3.3.2"
   },
