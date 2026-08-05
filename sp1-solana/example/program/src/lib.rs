@@ -33,28 +33,52 @@ pub struct SP1Groth16Proof {
     pub sp1_public_inputs: Vec<u8>,
 }
 
+/// Hex-encode bytes como "0x…" (sem dep extra).
+fn vkey_to_hex(b: &[u8]) -> String {
+    const H: &[u8; 16] = b"0123456789abcdef";
+    let mut s = String::with_capacity(2 + b.len() * 2);
+    s.push('0');
+    s.push('x');
+    for &x in b {
+        s.push(H[(x >> 4) as usize] as char);
+        s.push(H[(x & 0x0f) as usize] as char);
+    }
+    s
+}
+
 pub fn process_instruction(
     _program_id: &Pubkey,
     _accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    let groth16_proof = SP1Groth16Proof::try_from_slice(instruction_data)
+    // Lê os 2 Vec do SP1Groth16Proof por cursor (deixa bytes trailing, se houver).
+    let mut cursor: &[u8] = instruction_data;
+    let groth16_proof = SP1Groth16Proof::deserialize(&mut cursor)
         .map_err(|_| ProgramError::InvalidInstructionData)?;
+
+    // vkey_hash GENÉRICO: 32 bytes trailing → usa-os (ex.: circuito de dispensação);
+    // ausente → fallback ao vkey da atestação (backward-compat com o selector 0x01).
+    let vkey_hash: String = if cursor.len() >= 32 {
+        vkey_to_hex(&cursor[..32])
+    } else {
+        DPO2U_COMPLIANCE_VKEY_HASH.into()
+    };
 
     let vk = sp1_solana::GROTH16_VK_6_1_0_BYTES;
 
     verify_proof_v6(
         &groth16_proof.proof,
         &groth16_proof.sp1_public_inputs,
-        DPO2U_COMPLIANCE_VKEY_HASH,
+        &vkey_hash,
         vk,
         &SP1_V6_1_0_VK_ROOT,
     )
     .map_err(|_| ProgramError::InvalidInstructionData)?;
 
     msg!(
-        "dpo2u compliance v6 proof verified: {} public-input bytes",
-        groth16_proof.sp1_public_inputs.len()
+        "sp1 v6 proof verified: {} public-input bytes, vkey {}",
+        groth16_proof.sp1_public_inputs.len(),
+        &vkey_hash[..10]
     );
 
     Ok(())
